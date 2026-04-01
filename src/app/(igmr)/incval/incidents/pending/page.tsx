@@ -1,13 +1,32 @@
-import IncvalPlaceholderPage from '@/features/incval/components/incval-placeholder-page';
+import PageContainer from '@/components/layout/page-container';
+import { Suspense } from 'react';
+import { searchParamsCache } from '@/lib/searchparams';
+import { SearchParams } from 'nuqs/server';
+import { PendingIncidentsTable } from '@/features/incval/components/pending-incidents-table';
 import { incvalInfo } from '@/config/incval-infoconfig';
 
-export default function IncidentsPendingPage() {
+export const metadata = {
+  title: 'Pending Incidents'
+};
+
+type PageProps = {
+  searchParams: Promise<SearchParams>;
+};
+
+export default async function IncidentsPendingPage(props: PageProps) {
+  const searchParams = await props.searchParams;
+  searchParamsCache.parse(searchParams);
+
   return (
-    <IncvalPlaceholderPage
-      title='Pending Incidents'
-      description='Inbox of unverified incident reports awaiting validation.'
+    <PageContainer
+      scrollable={false}
+      pageTitle='Pending Incidents'
+      pageDescription='Inbox of unverified incident reports awaiting validation.'
       infoContent={incvalInfo.incidentsPending}
-      dummyText='This page will provide a filterable queue of new incident reports for validator triage, prioritization, and entry into the formal verification workflow.'
-    />
+    >
+      <Suspense fallback={<div>Loading...</div>}>
+        <PendingIncidentsTable />
+      </Suspense>
+    </PageContainer>
   );
 }

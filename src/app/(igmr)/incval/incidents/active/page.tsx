@@ -1,13 +1,32 @@
-import IncvalPlaceholderPage from '@/features/incval/components/incval-placeholder-page';
+import PageContainer from '@/components/layout/page-container';
+import { Suspense } from 'react';
+import { searchParamsCache } from '@/lib/searchparams';
+import { SearchParams } from 'nuqs/server';
+import { ActiveIncidentsTable } from '@/features/incval/components/active-incidents-table';
 import { incvalInfo } from '@/config/incval-infoconfig';
 
-export default function IncidentsActivePage() {
+export const metadata = {
+  title: 'Active Incidents'
+};
+
+type PageProps = {
+  searchParams: Promise<SearchParams>;
+};
+
+export default async function IncidentsActivePage(props: PageProps) {
+  const searchParams = await props.searchParams;
+  searchParamsCache.parse(searchParams);
+
   return (
-    <IncvalPlaceholderPage
-      title='Active Incidents'
-      description='Monitor currently verified incidents that are still in progress.'
+    <PageContainer
+      scrollable={false}
+      pageTitle='Active Incidents'
+      pageDescription='Monitor currently verified incidents that are still in progress.'
       infoContent={incvalInfo.incidentsActive}
-      dummyText='This page will track all active incidents, showing lifecycle state, assigned teams, and operational updates to support continuous incident monitoring.'
-    />
+    >
+      <Suspense fallback={<div>Loading...</div>}>
+        <ActiveIncidentsTable />
+      </Suspense>
+    </PageContainer>
   );
 }

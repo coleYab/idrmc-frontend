@@ -87,17 +87,17 @@ const primaryRoutes = [
 const quickActions = [
   {
     title: 'Sample Details',
-    href: '/incval/incidents/sample-001/details',
+    href: '/incval/incidents/1/details',
     icon: IconMapPin
   },
   {
     title: 'Sample Verify',
-    href: '/incval/incidents/sample-001/verify',
+    href: '/incval/incidents/1/verify',
     icon: IconClipboardCheck
   },
   {
     title: 'Sample Update Status',
-    href: '/incval/incidents/sample-001/update-status',
+    href: '/incval/incidents/1/update-status',
     icon: IconProgressCheck
   },
   {

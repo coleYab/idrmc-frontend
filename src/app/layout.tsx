@@ -17,7 +17,11 @@ const META_THEME_COLORS = {
 
 export const metadata: Metadata = {
   title: 'Next Shadcn',
-  description: 'Basic dashboard with Next.js and Shadcn'
+  description: 'Basic dashboard with Next.js and Shadcn',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: META_THEME_COLORS.light },
+    { media: '(prefers-color-scheme: dark)', color: META_THEME_COLORS.dark }
+  ]
 };
 
 export const viewport: Viewport = {
@@ -36,20 +40,7 @@ export default async function RootLayout({
 
   return (
     <html lang='en' suppressHydrationWarning data-theme={themeToApply}>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                // Set meta theme color
-                if (localStorage.theme === 'dark' || ((!('theme' in localStorage) || localStorage.theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '${META_THEME_COLORS.dark}')
-                }
-              } catch (_) {}
-            `
-          }}
-        />
-      </head>
+      <head />
       <body
         className={cn(
           'bg-background overflow-x-hidden overscroll-none font-sans antialiased',
