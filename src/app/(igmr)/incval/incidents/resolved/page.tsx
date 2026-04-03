@@ -1,13 +1,32 @@
-import IncvalPlaceholderPage from '@/features/incval/components/incval-placeholder-page';
+import PageContainer from '@/components/layout/page-container';
+import { Suspense } from 'react';
+import { searchParamsCache } from '@/lib/searchparams';
+import { SearchParams } from 'nuqs/server';
+import { ResolvedIncidentsTable } from '@/features/incval/components/resolved-incidents-table';
 import { incvalInfo } from '@/config/incval-infoconfig';
 
-export default function IncidentsResolvedPage() {
+export const metadata = {
+  title: 'Resolved Incidents'
+};
+
+type PageProps = {
+  searchParams: Promise<SearchParams>;
+};
+
+export default async function IncidentsResolvedPage(props: PageProps) {
+  const searchParams = await props.searchParams;
+  searchParamsCache.parse(searchParams);
+
   return (
-    <IncvalPlaceholderPage
-      title='Resolved Incidents'
-      description='Searchable archive of incident records that are closed.'
+    <PageContainer
+      scrollable={false}
+      pageTitle='Resolved Incidents'
+      pageDescription='Searchable archive of incident records that are closed.'
       infoContent={incvalInfo.incidentsResolved}
-      dummyText='This page will provide historical incident retrieval for audits, trend analysis, and after-action reporting across all resolved cases.'
-    />
+    >
+      <Suspense fallback={<div>Loading...</div>}>
+        <ResolvedIncidentsTable />
+      </Suspense>
+    </PageContainer>
   );
 }
