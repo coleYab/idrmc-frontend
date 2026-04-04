@@ -1,13 +1,31 @@
-import IncvalPlaceholderPage from '@/features/incval/components/incval-placeholder-page';
+import PageContainer from '@/components/layout/page-container';
+import { Suspense } from 'react';
+import { searchParamsCache } from '@/lib/searchparams';
+import { SearchParams } from 'nuqs/server';
+import IncidentsSearchListingPage from '@/features/incval/components/incidents-search-listing';
 import { incvalInfo } from '@/config/incval-infoconfig';
 
-export default function IncidentsSearchPage() {
+export const metadata = {
+  title: 'IDRMC - Incident Search'
+};
+
+type PageProps = {
+  searchParams: Promise<SearchParams>;
+};
+
+export default async function IncidentsSearchPage(props: PageProps) {
+  const searchParams = await props.searchParams;
+
   return (
-    <IncvalPlaceholderPage
-      title='Advanced Incident Search'
-      description='Query incidents with detailed multi-criteria filters.'
+    <PageContainer
+      scrollable={false}
+      pageTitle='Advanced Incident Search'
+      pageDescription='Query incidents with detailed multi-criteria filters including date ranges, locations, and reporter information.'
       infoContent={incvalInfo.incidentsSearch}
-      dummyText='This page will offer advanced search controls for incident metadata, including date ranges, locations, coordinates, and reporter-specific identifiers.'
-    />
+    >
+      <Suspense fallback={<div>Loading...</div>}>
+        <IncidentsSearchListingPage searchParams={searchParams} />
+      </Suspense>
+    </PageContainer>
   );
 }

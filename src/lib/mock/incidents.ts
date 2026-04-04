@@ -19,8 +19,8 @@ export const mockIncidents: Incident[] = [
     requiresUrgentMedical: true,
     infrastructureDamage: ['Roads destroyed', 'Bridges collapsed'],
     reportedBy: 'anonymous',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
+    updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
     resolvedBy: null,
     resolvedAt: null
   },
@@ -38,8 +38,8 @@ export const mockIncidents: Incident[] = [
     requiresUrgentMedical: false,
     infrastructureDamage: ['Forest destroyed'],
     reportedBy: 'user123',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
+    updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
   },
 
   {
@@ -55,9 +55,9 @@ export const mockIncidents: Incident[] = [
     requiresUrgentMedical: false,
     infrastructureDamage: ['Road blocked'],
     reportedBy: 'anonymous',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(), // 14 days ago
+    updatedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
     resolvedBy: 'admin',
-    resolvedAt: new Date().toISOString()
+    resolvedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
   }
 ];

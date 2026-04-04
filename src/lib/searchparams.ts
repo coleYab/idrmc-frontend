@@ -2,7 +2,8 @@ import {
   createSearchParamsCache,
   createSerializer,
   parseAsInteger,
-  parseAsString
+  parseAsString,
+  parseAsArrayOf
 } from 'nuqs/server';
 
 export const searchParams = {
@@ -10,7 +11,16 @@ export const searchParams = {
   perPage: parseAsInteger.withDefault(10),
   name: parseAsString,
   gender: parseAsString,
-  category: parseAsString
+  category: parseAsString,
+  // Incident search params
+  incidentTitle: parseAsString,
+  incidentType: parseAsString,
+  severity: parseAsString,
+  status: parseAsString,
+  location: parseAsString,
+  reportedBy: parseAsString,
+  dateRange: parseAsArrayOf(parseAsString, ','),
+  requiresUrgentMedical: parseAsString
   // advanced filter
   // filters: getFiltersStateParser().withDefault([]),
   // joinOperator: parseAsStringEnum(['and', 'or']).withDefault('and')
