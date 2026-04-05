@@ -1,19 +1,33 @@
 import PageContainer from '@/components/layout/page-container';
+import { Suspense } from 'react';
+import { searchParamsCache, type SearchParams } from '@/lib/searchparams';
+import IncidentsListingPage from '@/features/incidents/components/incidents-listing';
+import { DataTableSkeleton } from '@/components/ui/table/data-table-skeleton';
 
 export const metadata = {
   title: 'Dashboard: Incident Management'
 };
 
-export default function IncidentsPage() {
+type PageProps = {
+  searchParams: Promise<SearchParams>;
+};
+
+export default async function IncidentsPage(props: PageProps) {
+  const searchParams = await props.searchParams;
+  searchParamsCache.parse(searchParams);
+
   return (
     <PageContainer
-      pageTitle="Incident Management"
-      pageDescription="Review pending incidents, update statuses, and escalate issues."
+      scrollable={false}
+      pageTitle='Incident Management'
+      pageDescription='Review pending incidents, update statuses, and escalate issues.'
     >
-      <div className="p-4 border rounded-lg bg-card text-card-foreground">
-        <h2>Incidents Module Placeholder</h2>
-        <p>This module will allow validators and managers to process field reports.</p>
-      </div>
+      <Suspense
+        key={searchParams.toString()} // re-render when search params change
+        fallback={<DataTableSkeleton columnCount={6} rowCount={10} />}
+      >
+        <IncidentsListingPage />
+      </Suspense>
     </PageContainer>
   );
 }
