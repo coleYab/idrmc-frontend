@@ -31,7 +31,7 @@ import { NavItem } from '@/types';
  */
 export const navItems: NavItem[] = [
   {
-    title: 'Dashboard',
+    title: 'Overview',
     url: '/dashboard/overview',
     icon: 'dashboard',
     isActive: false,
@@ -39,29 +39,84 @@ export const navItems: NavItem[] = [
     items: []
   },
   {
-    title: 'Product',
-    url: '/dashboard/product',
-    icon: 'product',
-    shortcut: ['p', 'p'],
+    title: 'Incident Management',
+    url: '/dashboard/incidents',
+    icon: 'incidents',
+    shortcut: ['i', 'i'],
     isActive: false,
-    items: []
+    items: [],
+    // access: { role: 'incident validator' } // Needs confirmation of Clerk role strings
   },
   {
-    title: 'Kanban',
-    url: '/dashboard/kanban',
-    icon: 'kanban',
-    shortcut: ['k', 'k'],
+    title: 'Emergency Alerts',
+    url: '/dashboard/alerts',
+    icon: 'alerts',
+    shortcut: ['a', 'a'],
     isActive: false,
-    items: []
+    items: [],
+    // access: { role: 'incident validator' }
   },
   {
-    title: 'Chat',
-    url: '/dashboard/chat',
-    icon: 'chat',
-    shortcut: ['c', 'c'],
+    title: 'Disaster Declarations',
+    url: '/dashboard/disasters',
+    icon: 'disasters',
+    shortcut: ['d', 'e'],
     isActive: false,
-    items: []
+    items: [],
+    // access: { role: 'disaster manager' }
   },
+  {
+    title: 'Logistics & Resources',
+    url: '/dashboard/resources',
+    icon: 'product', // We'll keep 'product' mapped to 'IconBox' or 'IconBox' logic
+    shortcut: ['r', 'r'],
+    isActive: false,
+    items: [],
+    // access: { role: 'emergency response team' }
+  },
+  {
+    title: 'Donation Campaigns',
+    url: '/dashboard/donations',
+    icon: 'donations',
+    shortcut: ['f', 'f'],
+    isActive: false,
+    items: [],
+    // access: { role: 'disaster manager' }
+  },
+  {
+    title: 'Administration',
+    url: '/dashboard/admin',
+    icon: 'admin',
+    shortcut: ['s', 's'],
+    isActive: false,
+    items: [],
+    // access: { role: 'administrator' }
+  },
+  /* --- REFERENCE / STARTER TEMPLATE CODE --- */
+  // {
+  //   title: 'Product',
+  //   url: '/dashboard/product',
+  //   icon: 'product',
+  //   shortcut: ['p', 'p'],
+  //   isActive: false,
+  //   items: []
+  // },
+  // {
+  //   title: 'Kanban',
+  //   url: '/dashboard/kanban',
+  //   icon: 'kanban',
+  //   shortcut: ['k', 'k'],
+  //   isActive: false,
+  //   items: []
+  // },
+  // {
+  //   title: 'Chat',
+  //   url: '/dashboard/chat',
+  //   icon: 'chat',
+  //   shortcut: ['c', 'c'],
+  //   isActive: false,
+  //   items: []
+  // },
   // {
   //   title: 'Account',
   //   url: '#', // Placeholder as there is no direct link for the parent
