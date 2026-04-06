@@ -129,6 +129,31 @@ export const incidentService = {
     return results;
   },
 
+  updateIncidentStatus: async (
+    id: string,
+    status: IncidentStatus,
+    notes: string,
+    resolvedBy?: string
+  ) => {
+    const incident = mockIncidents.find((i) => i.id === id);
+    if (incident) {
+      incident.status = status;
+      incident.updatedAt = new Date().toISOString();
+
+      if (status === IncidentStatus.RESOLVED) {
+        incident.resolvedBy = resolvedBy || 'incident-command';
+        incident.resolvedAt = new Date().toISOString();
+      } else {
+        incident.resolvedBy = null;
+        incident.resolvedAt = null;
+      }
+
+      // In a real app, you'd persist notes and audit history here.
+      return incident;
+    }
+    throw new Error('Incident not found');
+  },
+
   verifyIncident: async (
     id: string,
     severity: IncidentSeverityLevel,

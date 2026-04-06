@@ -1,5 +1,9 @@
-import IncvalPlaceholderPage from '@/features/incval/components/incval-placeholder-page';
+import { notFound } from 'next/navigation';
+import PageContainer from '@/components/layout/page-container';
+import { incidentService } from '@/services/incidentServices';
+import IncidentStatusUpdateForm from '@/features/incval/components/incident-status-update-form';
 import { getIncidentUpdateStatusInfo } from '@/config/incval-infoconfig';
+import type { Incident } from '@/lib/types/incident';
 
 interface IncidentUpdateStatusPageProps {
   params: Promise<{ incidentId: string }>;
@@ -10,12 +14,20 @@ export default async function IncidentUpdateStatusPage(
 ) {
   const { incidentId } = await props.params;
 
+  const incident: Incident | undefined =
+    await incidentService.getById(incidentId);
+
+  if (!incident) {
+    notFound();
+  }
+
   return (
-    <IncvalPlaceholderPage
-      title={`Incident ${incidentId} Status Management`}
-      description='Lifecycle transitions and operational work-log tracking.'
+    <PageContainer
+      pageTitle={`Incident ${incidentId} Status Update`}
+      pageDescription='Move incidents through operational lifecycle states and capture status notes.'
       infoContent={getIncidentUpdateStatusInfo(incidentId)}
-      dummyText='This page will support status transitions such as Verified, In-Progress, and Resolved, along with timestamped notes for an auditable work log.'
-    />
+    >
+      <IncidentStatusUpdateForm incident={incident} incidentId={incidentId} />
+    </PageContainer>
   );
 }
