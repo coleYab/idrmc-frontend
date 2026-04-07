@@ -155,3 +155,116 @@ export const fakeProducts = {
 
 // Initialize sample products
 fakeProducts.initialize();
+
+// Define the shape of Incident data
+export type Incident = {
+  id: string;
+  description: string;
+  location: string;
+  status: 'Pending' | 'Validated' | 'False Alarm' | 'Escalated';
+  reportDate: string;
+  severityLevel: 'Low' | 'Medium' | 'High' | 'Critical';
+};
+
+export const fakeIncidents = {
+  records: [] as Incident[],
+
+  initialize() {
+    const sampleIncidents: Incident[] = [];
+    const statuses: Incident['status'][] = ['Pending', 'Validated', 'False Alarm', 'Escalated'];
+    const severities: Incident['severityLevel'][] = ['Low', 'Medium', 'High', 'Critical'];
+    const locations = ['Oromia', 'Amhara', 'Somali', 'Tigray', 'Afar', 'Addis Ababa'];
+    const descriptors = ['Flood Alert', 'Drought Report', 'Internal Conflict', 'Landslide', 'Epidemic Outbreak', 'Locust Invasion'];
+
+    for (let i = 1; i <= 50; i++) {
+      sampleIncidents.push({
+        id: `INC-2026-${i.toString().padStart(4, '0')}`,
+        description: `${faker.helpers.arrayElement(descriptors)} reported near affected areas. ${faker.lorem.sentence()}`,
+        location: faker.helpers.arrayElement(locations),
+        status: faker.helpers.arrayElement(statuses),
+        reportDate: faker.date.recent({ days: 30 }).toISOString(),
+        severityLevel: faker.helpers.arrayElement(severities)
+      });
+    }
+
+    this.records = sampleIncidents.sort((a, b) => new Date(b.reportDate).getTime() - new Date(a.reportDate).getTime());
+  },
+
+  async getAll({
+    status = [],
+    severity = [],
+    search
+  }: {
+    status?: string[];
+    severity?: string[];
+    search?: string;
+  }) {
+    let incidents = [...this.records];
+
+    if (status.length > 0) {
+      incidents = incidents.filter((inc) => status.includes(inc.status.toLowerCase()));
+    }
+    
+    if (severity.length > 0) {
+      incidents = incidents.filter((inc) => severity.includes(inc.severityLevel.toLowerCase()));
+    }
+
+    if (search) {
+      incidents = matchSorter(incidents, search, {
+        keys: ['id', 'description', 'location']
+      });
+    }
+
+    return incidents;
+  },
+
+  async getIncidents({
+    page = 1,
+    limit = 10,
+    status,
+    severity,
+    search
+  }: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    severity?: string;
+    search?: string;
+  }) {
+    await delay(1000);
+    const statusArray = status ? status.split('.') : [];
+    const severityArray = severity ? severity.split('.') : [];
+    
+    const allIncidents = await this.getAll({
+      status: statusArray,
+      severity: severityArray,
+      search
+    });
+    const totalIncidents = allIncidents.length;
+
+    const offset = (page - 1) * limit;
+    const paginatedIncidents = allIncidents.slice(offset, offset + limit);
+
+    return {
+      success: true,
+      total_items: totalIncidents,
+      offset,
+      limit,
+      items: paginatedIncidents
+    };
+  },
+
+  async getIncidentById(id: string) {
+    await delay(1000);
+
+    const incident = this.records.find((inc) => inc.id === id);
+
+    if (!incident) {
+      return { success: false, message: `Incident with ID ${id} not found` };
+    }
+
+    return { success: true, incident };
+  }
+};
+
+fakeIncidents.initialize();

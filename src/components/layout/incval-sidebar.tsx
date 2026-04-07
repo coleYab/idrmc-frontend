@@ -9,6 +9,7 @@ import {
   IconClipboardCheck,
   IconFileSearch,
   IconLayoutDashboard,
+  IconList,
   IconLogout,
   IconMapPin,
   IconMapSearch,
@@ -46,6 +47,11 @@ const primaryRoutes = [
     title: 'Dashboard',
     href: '/incval/dashboard',
     icon: IconLayoutDashboard
+  },
+  {
+    title: 'Incident Management',
+    href: '/incval/incidents',
+    icon: IconList
   },
   {
     title: 'Pending Incidents',
