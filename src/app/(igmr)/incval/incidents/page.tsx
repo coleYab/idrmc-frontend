@@ -1,6 +1,6 @@
 import PageContainer from '@/components/layout/page-container';
 import { Suspense } from 'react';
-import { searchParamsCache, type SearchParams } from '@/lib/searchparams';
+import { searchParamsCache } from '@/lib/searchparams';
 import IncidentsListingPage from '@/features/incidents/components/incidents-listing';
 import { DataTableSkeleton } from '@/components/ui/table/data-table-skeleton';
 
@@ -9,7 +9,7 @@ export const metadata = {
 };
 
 type PageProps = {
-  searchParams: Promise<SearchParams>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export default async function IncvalIncidentsPage(props: PageProps) {
