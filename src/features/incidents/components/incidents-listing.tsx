@@ -12,9 +12,9 @@ export default async function IncidentsListingPage() {
   const data = await fakeIncidents.getIncidents({
     page,
     limit: pageLimit,
-    status: status,
-    severity: severity,
-    search: search
+    status: status ?? undefined,
+    severity: severity ?? undefined,
+    search: search ?? undefined
   });
 
   const totalItems = data.total_items;
