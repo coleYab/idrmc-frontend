@@ -31,6 +31,7 @@ import {
   Calendar,
   User
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Validation schema for verification form
 const verificationSchema = z
@@ -151,8 +152,13 @@ export default function IncidentVerificationForm({
   const handleFormSubmit = async (data: VerificationFormData) => {
     try {
       await onSubmit(incidentId, data);
-      // Redirect back to incidents list or dashboard
-      router.push('/incval/dashboard');
+      toast.success(
+        data.action === 'verify'
+          ? 'Incident verified successfully!'
+          : 'Incident rejected successfully!'
+      );
+      // Redirect back to verify incidents list
+      router.push('/incval/incidents/verify');
     } catch (error) {
       console.error('Verification failed:', error);
     }

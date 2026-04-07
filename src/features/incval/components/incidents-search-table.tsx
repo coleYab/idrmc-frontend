@@ -5,33 +5,34 @@ import { DataTableToolbar } from '@/components/ui/table/data-table-toolbar';
 import { useDataTable } from '@/hooks/use-data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { parseAsInteger, useQueryState } from 'nuqs';
-import { mockIncidents } from '@/lib/mock/incidents';
 import {
   Incident,
   IncidentSeverityLevel,
+  IncidentStatus,
   IncidentType
 } from '@/lib/types/incident';
 import { Badge } from '@/components/ui/badge';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
 import { Column } from '@tanstack/react-table';
-import { AlertTriangle, Clock, MapPin, Users } from 'lucide-react';
+import {
+  AlertTriangle,
+  Clock,
+  MapPin,
+  Users,
+  User,
+  Calendar
+} from 'lucide-react';
 import { format } from 'date-fns';
-import Link from 'next/link';
 
 export const columns: ColumnDef<Incident>[] = [
   {
-    id: 'title',
+    id: 'incidentTitle',
     accessorKey: 'title',
     header: ({ column }: { column: Column<Incident, unknown> }) => (
       <DataTableColumnHeader column={column} title='Title' />
     ),
     cell: ({ cell }) => (
-      <Link
-        href={`/incval/incidents/${cell.row.original.id}/verify`}
-        className='font-medium hover:underline'
-      >
-        {cell.getValue<string>()}
-      </Link>
+      <div className='font-medium'>{cell.getValue<string>()}</div>
     ),
     meta: {
       label: 'Title',
@@ -58,6 +59,36 @@ export const columns: ColumnDef<Incident>[] = [
       options: Object.values(IncidentType).map((type) => ({
         label: type,
         value: type
+      }))
+    },
+    enableColumnFilter: true
+  },
+  {
+    id: 'status',
+    accessorKey: 'status',
+    header: ({ column }: { column: Column<Incident, unknown> }) => (
+      <DataTableColumnHeader column={column} title='Status' />
+    ),
+    cell: ({ cell }) => {
+      const status = cell.getValue<IncidentStatus>();
+      const colorMap = {
+        [IncidentStatus.PENDING]: 'bg-yellow-100 text-yellow-800',
+        [IncidentStatus.VERIFIED]: 'bg-blue-100 text-blue-800',
+        [IncidentStatus.ACTIVE]: 'bg-red-100 text-red-800',
+        [IncidentStatus.RESOLVED]: 'bg-green-100 text-green-800',
+        [IncidentStatus.REPEATED]: 'bg-purple-100 text-purple-800',
+        [IncidentStatus.FALSE_ALARM]: 'bg-gray-100 text-gray-800',
+        [IncidentStatus.REJECTED]: 'bg-red-100 text-red-800'
+      };
+      return <Badge className={colorMap[status]}>{status}</Badge>;
+    },
+    meta: {
+      label: 'Status',
+      placeholder: 'Filter by status...',
+      variant: 'select',
+      options: Object.values(IncidentStatus).map((status) => ({
+        label: status,
+        value: status
       }))
     },
     enableColumnFilter: true
@@ -110,6 +141,26 @@ export const columns: ColumnDef<Incident>[] = [
     enableColumnFilter: true
   },
   {
+    id: 'reportedBy',
+    accessorKey: 'reportedBy',
+    header: ({ column }: { column: Column<Incident, unknown> }) => (
+      <DataTableColumnHeader column={column} title='Reporter' />
+    ),
+    cell: ({ cell }) => (
+      <div className='flex items-center gap-2'>
+        <User className='text-muted-foreground h-4 w-4' />
+        <span>{cell.getValue<string>()}</span>
+      </div>
+    ),
+    meta: {
+      label: 'Reporter',
+      placeholder: 'Search by reporter...',
+      variant: 'text',
+      icon: User
+    },
+    enableColumnFilter: true
+  },
+  {
     id: 'affectedPopulationCount',
     accessorKey: 'affectedPopulationCount',
     header: ({ column }: { column: Column<Incident, unknown> }) => (
@@ -126,20 +177,25 @@ export const columns: ColumnDef<Incident>[] = [
     }
   },
   {
-    id: 'createdAt',
+    id: 'dateRange',
     accessorKey: 'createdAt',
     header: ({ column }: { column: Column<Incident, unknown> }) => (
-      <DataTableColumnHeader column={column} title='Reported' />
+      <DataTableColumnHeader column={column} title='Reported Date' />
     ),
     cell: ({ cell }) => {
       const date = new Date(cell.getValue<string>());
       return (
         <div className='flex items-center gap-2'>
-          <Clock className='text-muted-foreground h-4 w-4' />
-          <span>{format(date, 'MMM dd, HH:mm')}</span>
+          <Calendar className='text-muted-foreground h-4 w-4' />
+          <span>{format(date, 'MMM dd, yyyy')}</span>
         </div>
       );
-    }
+    },
+    meta: {
+      label: 'Date Range',
+      variant: 'dateRange'
+    },
+    enableColumnFilter: true
   },
   {
     id: 'requiresUrgentMedical',
@@ -152,24 +208,30 @@ export const columns: ColumnDef<Incident>[] = [
       ) : (
         <Badge variant='secondary'>No</Badge>
       );
-    }
+    },
+    meta: {
+      label: 'Requires Medical',
+      variant: 'boolean'
+    },
+    enableColumnFilter: true
   }
 ];
 
-interface PendingIncidentsTableProps {}
+interface IncidentsSearchTableProps {
+  data: Incident[];
+  totalItems: number;
+}
 
-export function PendingIncidentsTable({}: PendingIncidentsTableProps) {
+export function IncidentsSearchTable({
+  data,
+  totalItems
+}: IncidentsSearchTableProps) {
   const [pageSize] = useQueryState('perPage', parseAsInteger.withDefault(10));
 
-  // Filter for pending incidents only
-  const pendingIncidents = mockIncidents.filter(
-    (incident) => incident.status === 'Pending'
-  );
-
-  const pageCount = Math.ceil(pendingIncidents.length / pageSize);
+  const pageCount = Math.ceil(totalItems / pageSize);
 
   const { table } = useDataTable({
-    data: pendingIncidents,
+    data,
     columns,
     pageCount,
     shallow: false,

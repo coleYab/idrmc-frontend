@@ -205,18 +205,28 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
 
     return Object.entries(filterValues).reduce<ColumnFiltersState>(
       (filters, [key, value]) => {
-        if (value !== null) {
-          const processedValue = Array.isArray(value)
-            ? value
-            : typeof value === 'string' && /[^a-zA-Z0-9]/.test(value)
-              ? value.split(/[^a-zA-Z0-9]+/).filter(Boolean)
-              : [value];
+        if (value === null) return filters;
 
-          filters.push({
-            id: key,
-            value: processedValue
-          });
-        }
+        const normalizedValues = Array.isArray(value)
+          ? value.filter((item) => `${item}`.trim() !== '')
+          : `${value}`.trim();
+
+        if (Array.isArray(value) && normalizedValues.length === 0)
+          return filters;
+        if (!Array.isArray(value) && normalizedValues === '') return filters;
+
+        const processedValue = Array.isArray(value)
+          ? normalizedValues
+          : typeof value === 'string' && /[^a-zA-Z0-9]/.test(value)
+            ? (normalizedValues as string)
+                .split(/[^a-zA-Z0-9]+/)
+                .filter(Boolean)
+            : [normalizedValues as string];
+
+        filters.push({
+          id: key,
+          value: processedValue
+        });
         return filters;
       },
       []
@@ -239,9 +249,18 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
         const filterUpdates = next.reduce<
           Record<string, string | string[] | null>
         >((acc, filter) => {
-          if (filterableColumns.find((column) => column.id === filter.id)) {
-            acc[filter.id] = filter.value as string | string[];
+          if (!filterableColumns.find((column) => column.id === filter.id)) {
+            return acc;
           }
+
+          const value = filter.value as string | string[];
+          const isEmptyString =
+            typeof value === 'string' && value.trim() === '';
+          const isEmptyArray =
+            Array.isArray(value) &&
+            value.every((item) => `${item}`.trim() === '');
+
+          acc[filter.id] = isEmptyString || isEmptyArray ? null : value;
           return acc;
         }, {});
 

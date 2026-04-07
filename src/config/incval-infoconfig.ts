@@ -41,6 +41,11 @@ export const incvalInfo = {
     'Inbox for all new, unverified incident reports.',
     'Review incoming reports, triage urgency, and begin the verification workflow from this queue.'
   ),
+  incidentsVerify: makeInfo(
+    'Verify Incidents',
+    'Selection interface for incident verification workflow.',
+    'Choose a pending incident from the list to begin the formal verification process, or see a message if none are available.'
+  ),
   incidentsActive: makeInfo(
     'Active Incidents',
     'Monitoring area for verified incidents that are still open.',

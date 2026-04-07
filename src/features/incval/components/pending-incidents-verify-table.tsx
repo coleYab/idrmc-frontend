@@ -9,7 +9,8 @@ import { mockIncidents } from '@/lib/mock/incidents';
 import {
   Incident,
   IncidentSeverityLevel,
-  IncidentType
+  IncidentType,
+  IncidentStatus
 } from '@/lib/types/incident';
 import { Badge } from '@/components/ui/badge';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
@@ -63,33 +64,6 @@ export const columns: ColumnDef<Incident>[] = [
     enableColumnFilter: true
   },
   {
-    id: 'severity',
-    accessorKey: 'severity',
-    header: ({ column }: { column: Column<Incident, unknown> }) => (
-      <DataTableColumnHeader column={column} title='Severity' />
-    ),
-    cell: ({ cell }) => {
-      const severity = cell.getValue<IncidentSeverityLevel>();
-      const colorMap = {
-        [IncidentSeverityLevel.LOW]: 'bg-green-100 text-green-800',
-        [IncidentSeverityLevel.MEDIUM]: 'bg-yellow-100 text-yellow-800',
-        [IncidentSeverityLevel.HIGH]: 'bg-orange-100 text-orange-800',
-        [IncidentSeverityLevel.CRITICAL]: 'bg-red-100 text-red-800'
-      };
-      return <Badge className={colorMap[severity]}>{severity}</Badge>;
-    },
-    meta: {
-      label: 'Severity',
-      placeholder: 'Filter by severity...',
-      variant: 'select',
-      options: Object.values(IncidentSeverityLevel).map((severity) => ({
-        label: severity,
-        value: severity
-      }))
-    },
-    enableColumnFilter: true
-  },
-  {
     id: 'location',
     accessorKey: 'location',
     header: ({ column }: { column: Column<Incident, unknown> }) => (
@@ -110,71 +84,62 @@ export const columns: ColumnDef<Incident>[] = [
     enableColumnFilter: true
   },
   {
-    id: 'affectedPopulationCount',
-    accessorKey: 'affectedPopulationCount',
+    id: 'reportedBy',
+    accessorKey: 'reportedBy',
     header: ({ column }: { column: Column<Incident, unknown> }) => (
-      <DataTableColumnHeader column={column} title='Affected' />
+      <DataTableColumnHeader column={column} title='Reported By' />
     ),
-    cell: ({ cell }) => {
-      const count = cell.getValue<number>();
-      return (
-        <div className='flex items-center gap-2'>
-          <Users className='text-muted-foreground h-4 w-4' />
-          <span>{count.toLocaleString()}</span>
-        </div>
-      );
-    }
+    cell: ({ cell }) => <div>{cell.getValue<string>()}</div>,
+    meta: {
+      label: 'Reported By',
+      placeholder: 'Search reporters...',
+      variant: 'text'
+    },
+    enableColumnFilter: true
   },
   {
     id: 'createdAt',
     accessorKey: 'createdAt',
     header: ({ column }: { column: Column<Incident, unknown> }) => (
-      <DataTableColumnHeader column={column} title='Reported' />
+      <DataTableColumnHeader column={column} title='Reported At' />
     ),
-    cell: ({ cell }) => {
-      const date = new Date(cell.getValue<string>());
-      return (
-        <div className='flex items-center gap-2'>
-          <Clock className='text-muted-foreground h-4 w-4' />
-          <span>{format(date, 'MMM dd, HH:mm')}</span>
-        </div>
-      );
-    }
-  },
-  {
-    id: 'requiresUrgentMedical',
-    accessorKey: 'requiresUrgentMedical',
-    header: 'Medical',
-    cell: ({ cell }) => {
-      const requires = cell.getValue<boolean>();
-      return requires ? (
-        <Badge variant='destructive'>Urgent</Badge>
-      ) : (
-        <Badge variant='secondary'>No</Badge>
-      );
-    }
+    cell: ({ cell }) => (
+      <div className='flex items-center gap-2'>
+        <Clock className='text-muted-foreground h-4 w-4' />
+        <span>{format(new Date(cell.getValue<string>()), 'PPp')}</span>
+      </div>
+    ),
+    enableSorting: true
   }
 ];
 
-interface PendingIncidentsTableProps {}
-
-export function PendingIncidentsTable({}: PendingIncidentsTableProps) {
+export function PendingIncidentsVerifyTable() {
   const [pageSize] = useQueryState('perPage', parseAsInteger.withDefault(10));
 
-  // Filter for pending incidents only
   const pendingIncidents = mockIncidents.filter(
-    (incident) => incident.status === 'Pending'
+    (incident) => incident.status === IncidentStatus.PENDING
   );
-
-  const pageCount = Math.ceil(pendingIncidents.length / pageSize);
 
   const { table } = useDataTable({
     data: pendingIncidents,
     columns,
-    pageCount,
+    pageCount: Math.ceil(pendingIncidents.length / pageSize),
     shallow: false,
     debounceMs: 500
   });
+
+  if (pendingIncidents.length === 0) {
+    return (
+      <div className='flex flex-col items-center justify-center py-12 text-center'>
+        <AlertTriangle className='text-muted-foreground mb-4 h-12 w-12' />
+        <h3 className='mb-2 text-lg font-medium'>No Incidents to Verify</h3>
+        <p className='text-muted-foreground'>
+          All incident reports have been verified or are currently being
+          processed.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <DataTable table={table}>

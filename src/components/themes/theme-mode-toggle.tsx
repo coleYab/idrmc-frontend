@@ -1,7 +1,7 @@
 'use client';
 
 import { IconBrightness } from '@tabler/icons-react';
-import { useTheme } from 'next-themes';
+import { useThemeConfig } from './active-theme';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -13,15 +13,15 @@ import {
 import { Kbd } from '@/components/ui/kbd';
 
 export function ThemeModeToggle() {
-  const { setTheme, resolvedTheme } = useTheme();
+  const { activeTheme, setActiveTheme } = useThemeConfig();
 
   const handleThemeToggle = React.useCallback(
     (e?: React.MouseEvent) => {
-      const newMode = resolvedTheme === 'dark' ? 'light' : 'dark';
+      const newMode = activeTheme === 'dark' ? 'light' : 'dark';
       const root = document.documentElement;
 
       if (!document.startViewTransition) {
-        setTheme(newMode);
+        setActiveTheme(newMode);
         return;
       }
 
@@ -32,10 +32,10 @@ export function ThemeModeToggle() {
       }
 
       document.startViewTransition(() => {
-        setTheme(newMode);
+        setActiveTheme(newMode);
       });
     },
-    [resolvedTheme, setTheme]
+    [activeTheme, setActiveTheme]
   );
 
   return (

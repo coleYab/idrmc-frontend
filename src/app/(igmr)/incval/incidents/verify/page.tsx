@@ -2,29 +2,30 @@ import PageContainer from '@/components/layout/page-container';
 import { Suspense } from 'react';
 import { searchParamsCache } from '@/lib/searchparams';
 import { SearchParams } from 'nuqs/server';
-import IncidentsSearchListingPage from '@/features/incval/components/incidents-search-listing';
+import { PendingIncidentsVerifyTable } from '@/features/incval/components/pending-incidents-verify-table';
 import { incvalInfo } from '@/config/incval-infoconfig';
 
 export const metadata = {
-  title: 'IDRMC - Incident Search'
+  title: 'Verify Incidents'
 };
 
 type PageProps = {
   searchParams: Promise<SearchParams>;
 };
 
-export default async function IncidentsSearchPage(props: PageProps) {
+export default async function IncidentsVerifyPage(props: PageProps) {
   const searchParams = await props.searchParams;
+  searchParamsCache.parse(searchParams);
 
   return (
     <PageContainer
       scrollable={false}
-      pageTitle='Advanced Incident Search'
-      pageDescription='Query incidents with detailed multi-criteria filters including date ranges, locations, and reporter information.'
-      infoContent={incvalInfo.incidentsSearch}
+      pageTitle='Verify Incidents'
+      pageDescription='Select a pending incident report to review and validate.'
+      infoContent={incvalInfo.incidentsVerify}
     >
       <Suspense fallback={<div>Loading...</div>}>
-        <IncidentsSearchListingPage searchParams={searchParams} />
+        <PendingIncidentsVerifyTable />
       </Suspense>
     </PageContainer>
   );
