@@ -1,5 +1,4 @@
 import PageContainer from '@/components/layout/page-container';
-import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardHeader,
@@ -8,15 +7,18 @@ import {
   CardAction,
   CardFooter
 } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { IconTrendingDown, IconTrendingUp } from '@tabler/icons-react';
 import React from 'react';
 
-export default function OverViewLayout({
+export default function IncvalDashboardLayout({
+  children,
   recent_incidents,
   pie_stats,
   bar_stats,
   area_stats
 }: {
+  children: React.ReactNode;
   recent_incidents: React.ReactNode;
   pie_stats: React.ReactNode;
   bar_stats: React.ReactNode;
@@ -54,7 +56,7 @@ export default function OverViewLayout({
               </div>
             </CardFooter>
           </Card>
-          
+
           <Card className='@container/card'>
             <CardHeader>
               <CardDescription>Pending Incidents</CardDescription>
@@ -77,7 +79,7 @@ export default function OverViewLayout({
               </div>
             </CardFooter>
           </Card>
-          
+
           <Card className='@container/card'>
             <CardHeader>
               <CardDescription>Active Alerts Sent</CardDescription>
@@ -100,7 +102,7 @@ export default function OverViewLayout({
               </div>
             </CardFooter>
           </Card>
-          
+
           <Card className='@container/card'>
             <CardHeader>
               <CardDescription>Relief Deployed</CardDescription>
@@ -124,15 +126,15 @@ export default function OverViewLayout({
             </CardFooter>
           </Card>
         </div>
-        
+
         <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7'>
           <div className='col-span-4'>{bar_stats}</div>
-          <div className='col-span-4 md:col-span-3'>
-            {recent_incidents}
-          </div>
+          <div className='col-span-4 md:col-span-3'>{recent_incidents}</div>
           <div className='col-span-4'>{area_stats}</div>
           <div className='col-span-4 min-h-0 md:col-span-3'>{pie_stats}</div>
         </div>
+
+        {children}
       </div>
     </PageContainer>
   );

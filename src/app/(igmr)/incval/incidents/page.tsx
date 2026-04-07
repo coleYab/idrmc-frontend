@@ -5,14 +5,14 @@ import IncidentsListingPage from '@/features/incidents/components/incidents-list
 import { DataTableSkeleton } from '@/components/ui/table/data-table-skeleton';
 
 export const metadata = {
-  title: 'Dashboard: Incident Management'
+  title: 'IDRMC - Incident Management'
 };
 
 type PageProps = {
   searchParams: Promise<SearchParams>;
 };
 
-export default async function IncidentsPage(props: PageProps) {
+export default async function IncvalIncidentsPage(props: PageProps) {
   const searchParams = await props.searchParams;
   searchParamsCache.parse(searchParams);
 
@@ -23,7 +23,7 @@ export default async function IncidentsPage(props: PageProps) {
       pageDescription='Review pending incidents, update statuses, and escalate issues.'
     >
       <Suspense
-        key={searchParams.toString()} // re-render when search params change
+        key={searchParams.toString()}
         fallback={<DataTableSkeleton columnCount={6} rowCount={10} />}
       >
         <IncidentsListingPage />
