@@ -18,11 +18,10 @@ import {
 } from '@/components/forms/form-radio-group';
 import { Form } from '@/components/ui/form';
 import {
-  Incident,
-  IncidentSeverityLevel,
-  IncidentStatus,
-  IncidentType
-} from '@/lib/types/incident';
+  IncidentTypeEnum,
+  SeverityLevelEnum,
+  type Incident
+} from '@/features/incidents/types';
 import {
   CheckCircle,
   XCircle,
@@ -48,7 +47,7 @@ const verificationSchema = z
     coordinatesAccurate: z
       .boolean()
       .refine((val) => val === true, 'Coordinates accuracy must be confirmed'),
-    severityLevel: z.nativeEnum(IncidentSeverityLevel),
+    severityLevel: SeverityLevelEnum,
     assessmentNotes: z
       .string()
       .min(10, 'Assessment notes must be at least 10 characters'),
@@ -76,19 +75,19 @@ type VerificationFormData = z.infer<typeof verificationSchema>;
 // Severity level options
 const severityOptions: RadioGroupOption[] = [
   {
-    value: IncidentSeverityLevel.LOW,
+    value: 'Low',
     label: 'Low - Minimal impact, routine response'
   },
   {
-    value: IncidentSeverityLevel.MEDIUM,
+    value: 'Medium',
     label: 'Medium - Moderate impact, coordinated response needed'
   },
   {
-    value: IncidentSeverityLevel.HIGH,
+    value: 'High',
     label: 'High - Significant impact, multi-agency response required'
   },
   {
-    value: IncidentSeverityLevel.CRITICAL,
+    value: 'Critical',
     label: 'Critical - Severe impact, national/international response needed'
   }
 ];
@@ -127,6 +126,7 @@ export default function IncidentVerificationForm({
   onSubmit
 }: IncidentVerificationFormProps) {
   const router = useRouter();
+  const attachments = incident.attachments ?? [];
 
   const form = useForm<VerificationFormData>({
     resolver: zodResolver(verificationSchema),
@@ -134,7 +134,7 @@ export default function IncidentVerificationForm({
       dataIntegrityConfirmed: false,
       disasterTypeAccurate: false,
       coordinatesAccurate: false,
-      severityLevel: IncidentSeverityLevel.LOW,
+      severityLevel: 'Low',
       assessmentNotes: '',
       action: 'verify',
       rejectionReason: ''
@@ -164,14 +164,16 @@ export default function IncidentVerificationForm({
     }
   };
 
-  const renderBadge = (type: IncidentType) => {
+  const renderBadge = (
+    type: (typeof IncidentTypeEnum)['enum'][keyof (typeof IncidentTypeEnum)['enum']]
+  ) => {
     const colors = {
-      [IncidentType.FLOOD]: 'bg-blue-100 text-blue-800',
-      [IncidentType.DROUGHT]: 'bg-yellow-100 text-yellow-800',
-      [IncidentType.LANDSLIDE]: 'bg-orange-100 text-orange-800',
-      [IncidentType.LOCUST]: 'bg-green-100 text-green-800',
-      [IncidentType.CONFLICT]: 'bg-red-100 text-red-800',
-      [IncidentType.FIRE]: 'bg-red-100 text-red-800'
+      Flood: 'bg-blue-100 text-blue-800',
+      Drought: 'bg-yellow-100 text-yellow-800',
+      Landslide: 'bg-orange-100 text-orange-800',
+      Locust: 'bg-green-100 text-green-800',
+      Conflict: 'bg-red-100 text-red-800',
+      Fire: 'bg-red-100 text-red-800'
     };
 
     return (
@@ -249,7 +251,7 @@ export default function IncidentVerificationForm({
             <p className='text-sm leading-relaxed'>{incident.description}</p>
           </div>
 
-          {incident.attachments.length > 0 && (
+          {attachments.length > 0 && (
             <>
               <Separator />
               <div>
@@ -257,7 +259,7 @@ export default function IncidentVerificationForm({
                   Attachments
                 </h4>
                 <div className='flex flex-wrap gap-2'>
-                  {incident.attachments.map((attachment, index) => (
+                  {attachments.map((attachment, index) => (
                     <Badge key={index} variant='outline'>
                       {attachment}
                     </Badge>

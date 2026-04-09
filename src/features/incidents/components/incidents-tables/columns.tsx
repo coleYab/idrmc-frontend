@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { CellAction } from './cell-action';
 import { STATUS_OPTIONS, SEVERITY_OPTIONS } from './options';
 import { Text } from 'lucide-react';
-import { Incident } from '@/constants/mock-api';
+import type { Incident } from '../../types';
 
 export const columns: ColumnDef<Incident>[] = [
   {
@@ -15,7 +15,9 @@ export const columns: ColumnDef<Incident>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Incident ID' />
     ),
-    cell: ({ cell }) => <div className="font-medium">{cell.getValue<string>()}</div>,
+    cell: ({ cell }) => (
+      <div className='font-medium'>{cell.getValue<string>()}</div>
+    ),
     meta: {
       label: 'Incident ID',
       placeholder: 'Search ID...',
@@ -31,7 +33,7 @@ export const columns: ColumnDef<Incident>[] = [
       <DataTableColumnHeader column={column} title='Description' />
     ),
     cell: ({ cell }) => (
-      <div className="max-w-[400px] truncate">{cell.getValue<string>()}</div>
+      <div className='max-w-[400px] truncate'>{cell.getValue<string>()}</div>
     ),
     meta: {
       label: 'Description',
@@ -64,10 +66,12 @@ export const columns: ColumnDef<Incident>[] = [
     ),
     cell: ({ cell }) => {
       const status = cell.getValue<string>();
-      let variant: 'default' | 'destructive' | 'outline' | 'secondary' = 'secondary';
+      let variant: 'default' | 'destructive' | 'outline' | 'secondary' =
+        'secondary';
       if (status.toLowerCase() === 'pending') variant = 'outline';
-      if (status.toLowerCase() === 'validated') variant = 'default';
-      if (status.toLowerCase() === 'escalated') variant = 'destructive';
+      if (status.toLowerCase() === 'verified') variant = 'default';
+      if (status.toLowerCase() === 'active') variant = 'destructive';
+      if (status.toLowerCase() === 'rejected') variant = 'destructive';
 
       return (
         <Badge variant={variant} className='capitalize'>
@@ -83,8 +87,8 @@ export const columns: ColumnDef<Incident>[] = [
     }
   },
   {
-    id: 'severityLevel',
-    accessorKey: 'severityLevel',
+    id: 'severity',
+    accessorKey: 'severity',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Severity' />
     ),
@@ -101,8 +105,8 @@ export const columns: ColumnDef<Incident>[] = [
     }
   },
   {
-    id: 'reportDate',
-    accessorKey: 'reportDate',
+    id: 'createdAt',
+    accessorKey: 'createdAt',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Reported On' />
     ),

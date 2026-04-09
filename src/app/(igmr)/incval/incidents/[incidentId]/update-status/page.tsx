@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation';
 import PageContainer from '@/components/layout/page-container';
-import { incidentService } from '@/services/incidentServices';
 import IncidentStatusUpdateForm from '@/features/incval/components/incident-status-update-form';
 import { getIncidentUpdateStatusInfo } from '@/config/incval-infoconfig';
-import type { Incident } from '@/lib/types/incident';
+import { fetchClient } from '@/lib/fetch-client';
+import { IncidentSchema, type Incident } from '@/features/incidents/types';
 
 interface IncidentUpdateStatusPageProps {
   params: Promise<{ incidentId: string }>;
@@ -14,8 +14,14 @@ export default async function IncidentUpdateStatusPage(
 ) {
   const { incidentId } = await props.params;
 
-  const incident: Incident | undefined =
-    await incidentService.getById(incidentId);
+  const incidentResponse = await fetchClient<unknown>(
+    `/incidents/${incidentId}`,
+    { cache: 'no-store' }
+  ).catch(() => undefined);
+
+  const incident: Incident | undefined = incidentResponse
+    ? IncidentSchema.safeParse(incidentResponse).data
+    : undefined;
 
   if (!incident) {
     notFound();
