@@ -234,7 +234,10 @@ export default function AlertDetailsPage(props: AlertDetailsPageProps) {
           </CardHeader>
           <CardContent>
             <div className='flex flex-wrap items-center gap-3'>
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <Select
+                value={selectedStatus}
+                onValueChange={(val) => setSelectedStatus(val as any)}
+              >
                 <SelectTrigger className='w-[180px]'>
                   <SelectValue placeholder='Select status' />
                 </SelectTrigger>

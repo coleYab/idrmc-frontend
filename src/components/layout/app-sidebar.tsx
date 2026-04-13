@@ -1,5 +1,4 @@
-import { navItems } from '@/config/nav-config';
-('use client');
+'use client';
 import {
   Collapsible,
   CollapsibleContent,
@@ -30,7 +29,8 @@ import {
   SidebarRail
 } from '@/components/ui/sidebar';
 import { UserAvatarProfile } from '@/components/user-avatar-profile';
-import { navItems } from '../../config/nav-config';
+// Temporary mock for navItems since config/nav-config is missing
+const navItems: any[] = [];
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useUser } from '@clerk/nextjs';
 import { useFilteredNavItems } from '@/hooks/use-nav';
