@@ -1,12 +1,8 @@
+'use client';
+
 import { SignIn as ClerkSignInForm } from '@clerk/nextjs';
-import { Metadata } from 'next';
 import Link from 'next/link';
 import { ShieldCheck } from 'lucide-react';
-
-export const metadata: Metadata = {
-  title: 'IDRMC | Sign In',
-  description: 'Secure access for EDRMC incident and risk management users.'
-};
 
 export default function SignInViewPage() {
   return (
@@ -24,10 +20,10 @@ export default function SignInViewPage() {
                 IDRMC Incident Operations Access
               </h1>
               <p className='max-w-xl text-sm leading-relaxed text-white/85'>
-                Welcome to the Ethiopian Disaster and Risk Management
-                Commission operational platform. Sign in to monitor incident
-                intake, coordinate response visibility, and maintain accurate
-                disaster verification workflows.
+                Welcome to the Ethiopian Disaster and Risk Management Commission
+                operational platform. Sign in to monitor incident intake,
+                coordinate response visibility, and maintain accurate disaster
+                verification workflows.
               </p>
             </div>
           </div>
@@ -54,12 +50,25 @@ export default function SignInViewPage() {
             </div>
 
             <ClerkSignInForm
+              path='/auth/sign-in'
+              routing='path'
+              signUpUrl='/auth/sign-up'
               appearance={{
                 variables: {
                   colorPrimary: '#0f766e'
                 }
               }}
             />
+
+            <div className='mt-4 text-center text-sm text-emerald-900/90'>
+              Don&apos;t have an account?{' '}
+              <Link
+                href='/auth/sign-up'
+                className='font-semibold text-emerald-900 underline underline-offset-2'
+              >
+                Sign up
+              </Link>
+            </div>
 
             <p className='text-muted-foreground mt-6 text-center text-xs'>
               By continuing, you agree to our{' '}

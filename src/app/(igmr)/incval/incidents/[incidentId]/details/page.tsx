@@ -11,6 +11,7 @@ import {
 import { getIncidentDetailsInfo } from '@/config/incval-infoconfig';
 import { incidentService } from '@/services/incidentServices';
 import type { Incident } from '@/lib/types/incident';
+import { IncidentAttachmentItem } from '@/components/incident/incident-attachment-item';
 
 interface IncidentDetailsPageProps {
   params: Promise<{ incidentId: string }>;
@@ -141,22 +142,25 @@ export default async function IncidentDetailsPage(
               Uploaded photos, screenshots, or evidence files.
             </CardDescription>
           </CardHeader>
+
           <CardContent>
-            {incident.attachments.length === 0 ? (
+            {!incident.attachments || incident.attachments.length === 0 ? (
               <p className='text-muted-foreground text-sm'>
                 No attachments uploaded.
               </p>
             ) : (
               <div className='grid gap-2 sm:grid-cols-2 lg:grid-cols-3'>
-                {incident.attachments.map((src, idx) => (
-                  <img
-                    key={idx}
-                    src={src}
-                    alt={`Incident attachment ${idx + 1}`}
-                    className='h-40 w-full rounded-md border object-cover'
-                    loading='lazy'
-                  />
-                ))}
+                {incident.attachments.map((src, idx) => {
+                  if (!src) return null;
+                  return (
+                    <IncidentAttachmentItem
+                      key={idx}
+                      src={src}
+                      index={idx}
+                      alt={`Incident attachment ${idx + 1}`}
+                    />
+                  );
+                })}
               </div>
             )}
           </CardContent>

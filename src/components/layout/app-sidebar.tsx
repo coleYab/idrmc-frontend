@@ -182,13 +182,19 @@ export default function AppSidebar() {
 
                 <DropdownMenuGroup>
                   <DropdownMenuItem
-                    onClick={() => router.push('/dashboard/profile')}
+                    onClick={() => {
+                      const baseRoute = pathname.split('/')[1] || 'dashboard';
+                      router.push(`/${baseRoute}/profile`);
+                    }}
                   >
                     <IconUserCircle className='mr-2 h-4 w-4' />
                     Profile
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => router.push('/dashboard/notifications')}
+                    onClick={() => {
+                      const baseRoute = pathname.split('/')[1] || 'dashboard';
+                      router.push(`/${baseRoute}/notifications`);
+                    }}
                   >
                     <IconBell className='mr-2 h-4 w-4' />
                     Notifications

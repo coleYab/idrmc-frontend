@@ -48,3 +48,14 @@ export interface Incident {
   resolvedBy?: string | null;
   resolvedAt?: string | null;
 }
+
+export type CreateIncidentPayload = Omit<
+  Incident,
+  | 'id'
+  | 'status'
+  | 'reportedBy'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'resolvedBy'
+  | 'resolvedAt'
+>;

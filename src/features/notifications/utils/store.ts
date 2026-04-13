@@ -20,6 +20,7 @@ type NotificationState = {
   markAllAsRead: () => void;
   removeNotification: (id: string) => void;
   addNotification: (notification: Omit<Notification, 'status'>) => void;
+  updateStatus: (id: string, status: NotificationStatus) => void;
   unreadCount: () => number;
 };
 
@@ -133,6 +134,13 @@ export const useNotificationStore = create<NotificationState>()(
           { ...notification, status: 'unread' as const },
           ...state.notifications
         ]
+      })),
+
+    updateStatus: (id, status) =>
+      set((state) => ({
+        notifications: state.notifications.map((n) =>
+          n.id === id ? { ...n, status } : n
+        )
       })),
 
     unreadCount: () =>

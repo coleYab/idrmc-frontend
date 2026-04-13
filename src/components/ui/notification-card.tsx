@@ -10,7 +10,12 @@ import {
 } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
 
-export type NotificationStatus = 'unread' | 'read' | 'archived';
+export type NotificationStatus =
+  | 'unread'
+  | 'read'
+  | 'archived'
+  | 'acknowledged'
+  | 'resolved';
 export type ActionType = 'redirect' | 'api_call' | 'workflow' | 'modal';
 export type ActionStyle = 'primary' | 'danger' | 'default';
 
