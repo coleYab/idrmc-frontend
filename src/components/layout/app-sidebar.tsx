@@ -1,4 +1,5 @@
-'use client';
+import { navItems } from '@/config/nav-config';
+('use client');
 import {
   Collapsible,
   CollapsibleContent,
@@ -29,7 +30,7 @@ import {
   SidebarRail
 } from '@/components/ui/sidebar';
 import { UserAvatarProfile } from '@/components/user-avatar-profile';
-import { navItems } from '@/config/nav-config';
+import { navItems } from '../../config/nav-config';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useUser } from '@clerk/nextjs';
 import { useFilteredNavItems } from '@/hooks/use-nav';
@@ -182,19 +183,13 @@ export default function AppSidebar() {
 
                 <DropdownMenuGroup>
                   <DropdownMenuItem
-                    onClick={() => {
-                      const baseRoute = pathname.split('/')[1] || 'dashboard';
-                      router.push(`/${baseRoute}/profile`);
-                    }}
+                    onClick={() => router.push('/dashboard/profile')}
                   >
                     <IconUserCircle className='mr-2 h-4 w-4' />
                     Profile
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => {
-                      const baseRoute = pathname.split('/')[1] || 'dashboard';
-                      router.push(`/${baseRoute}/notifications`);
-                    }}
+                    onClick={() => router.push('/dashboard/notifications')}
                   >
                     <IconBell className='mr-2 h-4 w-4' />
                     Notifications

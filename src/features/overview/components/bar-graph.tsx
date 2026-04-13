@@ -15,25 +15,22 @@ import {
   ChartTooltip,
   ChartTooltipContent
 } from '@/components/ui/chart';
-import { Badge } from '@/components/ui/badge';
-import { IconTrendingDown } from '@tabler/icons-react';
 
 const chartData = [
-  { month: 'January', desktop: 186, mobile: 80 },
-  { month: 'February', desktop: 305, mobile: 200 },
-  { month: 'March', desktop: 237, mobile: 120 },
-  { month: 'April', desktop: 73, mobile: 190 },
-  { month: 'May', desktop: 209, mobile: 130 },
-  { month: 'June', desktop: 214, mobile: 140 }
+  { region: 'Oromia', requested: 186, fulfilled: 80 },
+  { region: 'Amhara', requested: 305, fulfilled: 200 },
+  { region: 'Somali', requested: 237, fulfilled: 120 },
+  { region: 'Tigray', requested: 209, fulfilled: 130 },
+  { region: 'Afar', requested: 214, fulfilled: 140 }
 ];
 
 const chartConfig = {
-  desktop: {
-    label: 'Desktop',
+  requested: {
+    label: 'Requested (Tons)',
     color: 'var(--chart-1)'
   },
-  mobile: {
-    label: 'Mobile',
+  fulfilled: {
+    label: 'Fulfilled (Tons)',
     color: 'var(--chart-2)'
   }
 } satisfies ChartConfig;
@@ -42,14 +39,8 @@ export function BarGraph() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          Bar Chart - Multiple
-          <Badge variant='outline'>
-            <IconTrendingDown />
-            -5.2%
-          </Badge>
-        </CardTitle>
-        <CardDescription>January - June 2025</CardDescription>
+        <CardTitle>Resource Fulfillment by Region</CardTitle>
+        <CardDescription>Current relief dispatch operations</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
@@ -65,7 +56,7 @@ export function BarGraph() {
               <DottedBackgroundPattern />
             </defs>
             <XAxis
-              dataKey='month'
+              dataKey='region'
               tickLine={false}
               tickMargin={10}
               axisLine={false}
@@ -76,15 +67,15 @@ export function BarGraph() {
               content={<ChartTooltipContent indicator='dashed' hideLabel />}
             />
             <Bar
-              dataKey='desktop'
+              dataKey='requested'
               color='var(--chart-1)'
-              fill='var(--color-desktop)'
+              fill='var(--color-requested)'
               shape={<CustomHatchedBar isHatched={false} />}
               radius={4}
             />
             <Bar
-              dataKey='mobile'
-              fill='var(--color-mobile)'
+              dataKey='fulfilled'
+              fill='var(--color-fulfilled)'
               shape={<CustomHatchedBar />}
               radius={4}
             />

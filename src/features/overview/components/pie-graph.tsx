@@ -16,38 +16,37 @@ import {
   ChartTooltipContent
 } from '@/components/ui/chart';
 import { Badge } from '@/components/ui/badge';
-import { IconTrendingUp } from '@tabler/icons-react';
 
 const chartData = [
-  { browser: 'chrome', visitors: 275, fill: 'var(--color-chrome)' },
-  { browser: 'safari', visitors: 200, fill: 'var(--color-safari)' },
-  { browser: 'firefox', visitors: 187, fill: 'var(--color-firefox)' },
-  { browser: 'edge', visitors: 173, fill: 'var(--color-edge)' },
-  { browser: 'other', visitors: 90, fill: 'var(--color-other)' }
+  { type: 'floods', cases: 275, fill: 'var(--color-floods)' },
+  { type: 'drought', cases: 200, fill: 'var(--color-drought)' },
+  { type: 'conflict', cases: 187, fill: 'var(--color-conflict)' },
+  { type: 'landslide', cases: 173, fill: 'var(--color-landslide)' },
+  { type: 'epidemic', cases: 90, fill: 'var(--color-epidemic)' }
 ];
 
 const chartConfig = {
-  visitors: {
-    label: 'Visitors'
+  cases: {
+    label: 'Cases'
   },
-  chrome: {
-    label: 'Chrome',
+  floods: {
+    label: 'Floods',
     color: 'var(--chart-1)'
   },
-  safari: {
-    label: 'Safari',
+  drought: {
+    label: 'Drought',
     color: 'var(--chart-2)'
   },
-  firefox: {
-    label: 'Firefox',
+  conflict: {
+    label: 'Conflict',
     color: 'var(--chart-3)'
   },
-  edge: {
-    label: 'Edge',
+  landslide: {
+    label: 'Landslide',
     color: 'var(--chart-4)'
   },
-  other: {
-    label: 'Other',
+  epidemic: {
+    label: 'Epidemic',
     color: 'var(--chart-5)'
   }
 } satisfies ChartConfig;
@@ -56,14 +55,8 @@ export function PieGraph() {
   return (
     <Card className='flex h-full flex-col'>
       <CardHeader className='items-center pb-0'>
-        <CardTitle>
-          Pie Chart
-          <Badge variant='outline'>
-            <IconTrendingUp />
-            +5.2%
-          </Badge>
-        </CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle>Incident Types Breakdown</CardTitle>
+        <CardDescription>January - June 2026</CardDescription>
       </CardHeader>
       <CardContent className='flex flex-1 items-center justify-center pb-0'>
         <ChartContainer
@@ -72,18 +65,19 @@ export function PieGraph() {
         >
           <PieChart>
             <ChartTooltip
-              content={<ChartTooltipContent nameKey='visitors' hideLabel />}
+              content={<ChartTooltipContent nameKey='cases' hideLabel />}
             />
             <Pie
               data={chartData}
               innerRadius={30}
-              dataKey='visitors'
+              dataKey='cases'
+              nameKey='type'
               radius={10}
               cornerRadius={8}
               paddingAngle={4}
             >
               <LabelList
-                dataKey='visitors'
+                dataKey='cases'
                 stroke='none'
                 fontSize={12}
                 fontWeight={500}
