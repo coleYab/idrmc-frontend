@@ -11,25 +11,31 @@ import { Form } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
 import { FormSelect, type FormOption } from '@/components/forms/form-select';
 import { FormTextarea } from '@/components/forms/form-textarea';
-import { incidentService } from '@/services/incidentServices';
-import { Incident, IncidentStatus } from '@/lib/types/incident';
+import { useUpdateIncidentStatus } from '@/features/incidents/api/incidents';
+import type { Incident } from '@/features/incidents/types';
 
-const statusOptions: FormOption[] = Object.values(IncidentStatus).map(
-  (status) => ({
-    value: status,
-    label: status
-  })
-);
+const incidentStatusValues = [
+  'Pending',
+  'Verified',
+  'Active',
+  'Resolved',
+  'Rejected'
+] as const;
+
+const statusOptions: FormOption[] = incidentStatusValues.map((status) => ({
+  value: status,
+  label: status
+}));
 
 const statusUpdateSchema = z
   .object({
-    status: z.nativeEnum(IncidentStatus),
+    status: z.enum(incidentStatusValues),
     resolvedBy: z.string().optional(),
     workNotes: z.string().min(10, 'Notes must be at least 10 characters')
   })
   .refine(
     (data) => {
-      if (data.status === IncidentStatus.RESOLVED) {
+      if (data.status === 'Resolved') {
         return !!data.resolvedBy && data.resolvedBy.trim().length > 0;
       }
       return true;
@@ -52,6 +58,7 @@ export default function IncidentStatusUpdateForm({
   incidentId
 }: IncidentStatusUpdateFormProps) {
   const router = useRouter();
+  const updateIncidentStatus = useUpdateIncidentStatus(incidentId);
 
   const form = useForm<StatusUpdateFormData>({
     resolver: zodResolver(statusUpdateSchema),
@@ -72,12 +79,22 @@ export default function IncidentStatusUpdateForm({
 
   const handleFormSubmit = async (data: StatusUpdateFormData) => {
     try {
-      await incidentService.updateIncidentStatus(
-        incidentId,
-        data.status,
-        data.workNotes,
-        data.resolvedBy || undefined
-      );
+      const statusMap = {
+        Verified: 'VERIFIED',
+        Rejected: 'REJECTED',
+        Resolved: 'RESOLVED'
+      } as const;
+
+      const payloadStatus = statusMap[data.status as keyof typeof statusMap];
+
+      if (!payloadStatus) {
+        toast.error(
+          'Only Verified, Rejected, or Resolved can be submitted here.'
+        );
+        return;
+      }
+
+      await updateIncidentStatus.mutateAsync({ status: payloadStatus });
       toast.success('Incident status updated successfully.');
       router.push(`/incval/incidents/${incidentId}/details`);
     } catch (error) {
@@ -107,7 +124,7 @@ export default function IncidentStatusUpdateForm({
               placeholder='Select a new status'
             />
 
-            {selectedStatus === IncidentStatus.RESOLVED && (
+            {selectedStatus === 'Resolved' && (
               <FormSelect
                 control={form.control}
                 name='resolvedBy'

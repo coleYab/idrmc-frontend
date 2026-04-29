@@ -5,13 +5,8 @@ import { DataTableToolbar } from '@/components/ui/table/data-table-toolbar';
 import { useDataTable } from '@/hooks/use-data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { parseAsInteger, useQueryState } from 'nuqs';
-import { mockIncidents } from '@/lib/mock/incidents';
-import {
-  Incident,
-  IncidentSeverityLevel,
-  IncidentType,
-  IncidentStatus
-} from '@/lib/types/incident';
+import { useIncidents } from '@/features/incidents/api/incidents';
+import { IncidentTypeEnum, type Incident } from '@/features/incidents/types';
 import { Badge } from '@/components/ui/badge';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
 import { Column } from '@tanstack/react-table';
@@ -49,14 +44,17 @@ export const columns: ColumnDef<Incident>[] = [
       <DataTableColumnHeader column={column} title='Type' />
     ),
     cell: ({ cell }) => {
-      const type = cell.getValue<IncidentType>();
+      const type =
+        cell.getValue<
+          (typeof IncidentTypeEnum)['enum'][keyof (typeof IncidentTypeEnum)['enum']]
+        >();
       return <Badge variant='outline'>{type}</Badge>;
     },
     meta: {
       label: 'Type',
       placeholder: 'Filter by type...',
       variant: 'select',
-      options: Object.values(IncidentType).map((type) => ({
+      options: IncidentTypeEnum.options.map((type) => ({
         label: type,
         value: type
       }))
@@ -115,9 +113,10 @@ export const columns: ColumnDef<Incident>[] = [
 
 export function PendingIncidentsVerifyTable() {
   const [pageSize] = useQueryState('perPage', parseAsInteger.withDefault(10));
+  const { data, isLoading } = useIncidents({ limit: 100, offset: 0 });
 
-  const pendingIncidents = mockIncidents.filter(
-    (incident) => incident.status === IncidentStatus.PENDING
+  const pendingIncidents = (data?.items ?? []).filter(
+    (incident) => incident.status === 'Pending'
   );
 
   const { table } = useDataTable({
@@ -128,7 +127,7 @@ export function PendingIncidentsVerifyTable() {
     debounceMs: 500
   });
 
-  if (pendingIncidents.length === 0) {
+  if (!isLoading && pendingIncidents.length === 0) {
     return (
       <div className='flex flex-col items-center justify-center py-12 text-center'>
         <AlertTriangle className='text-muted-foreground mb-4 h-12 w-12' />
@@ -142,8 +141,16 @@ export function PendingIncidentsVerifyTable() {
   }
 
   return (
-    <DataTable table={table}>
-      <DataTableToolbar table={table} />
-    </DataTable>
+    <>
+      {isLoading ? (
+        <div className='text-muted-foreground text-sm'>
+          Loading incidents...
+        </div>
+      ) : (
+        <DataTable table={table}>
+          <DataTableToolbar table={table} />
+        </DataTable>
+      )}
+    </>
   );
 }

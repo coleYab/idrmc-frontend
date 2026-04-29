@@ -1,13 +1,14 @@
 export const STATUS_OPTIONS = [
-  { value: 'pending', label: 'Pending' },
-  { value: 'validated', label: 'Validated' },
-  { value: 'false alarm', label: 'False Alarm' },
-  { value: 'escalated', label: 'Escalated' }
+  { value: 'Pending', label: 'Pending' },
+  { value: 'Verified', label: 'Verified' },
+  { value: 'Active', label: 'Active' },
+  { value: 'Resolved', label: 'Resolved' },
+  { value: 'Rejected', label: 'Rejected' }
 ];
 
 export const SEVERITY_OPTIONS = [
-  { value: 'low', label: 'Low' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'high', label: 'High' },
-  { value: 'critical', label: 'Critical' }
+  { value: 'Low', label: 'Low' },
+  { value: 'Medium', label: 'Medium' },
+  { value: 'High', label: 'High' },
+  { value: 'Critical', label: 'Critical' }
 ];
