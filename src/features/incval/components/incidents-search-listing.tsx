@@ -1,14 +1,11 @@
-import { searchParamsCache } from '@/lib/searchparams';
 import { IncidentsSearchTable } from './incidents-search-table';
+import { fetchClientResponse } from '@/lib/fetch-client';
 import {
-  incidentService,
-  type IncidentSearchFilters
-} from '@/services/incidentServices';
-import {
-  IncidentStatus,
-  IncidentSeverityLevel,
-  IncidentType
-} from '@/lib/types/incident';
+  IncidentSchema,
+  IncidentStatusEnum,
+  IncidentTypeEnum,
+  SeverityLevelEnum
+} from '@/features/incidents/types';
 
 interface IncidentsSearchListingPageProps {
   searchParams: Record<string, string | string[] | undefined>;
@@ -30,25 +27,11 @@ export default async function IncidentsSearchListingPage({
   const requiresUrgentMedicalRaw = searchParams.requiresUrgentMedical as string;
 
   // Parse enum values
-  const incidentType =
-    incidentTypeRaw &&
-    Object.values(IncidentType).includes(incidentTypeRaw as IncidentType)
-      ? (incidentTypeRaw as IncidentType)
-      : undefined;
+  const incidentType = IncidentTypeEnum.safeParse(incidentTypeRaw).data;
 
-  const severity =
-    severityRaw &&
-    Object.values(IncidentSeverityLevel).includes(
-      severityRaw as IncidentSeverityLevel
-    )
-      ? (severityRaw as IncidentSeverityLevel)
-      : undefined;
+  const severity = SeverityLevelEnum.safeParse(severityRaw).data;
 
-  const status =
-    statusRaw &&
-    Object.values(IncidentStatus).includes(statusRaw as IncidentStatus)
-      ? (statusRaw as IncidentStatus)
-      : undefined;
+  const status = IncidentStatusEnum.safeParse(statusRaw).data;
 
   // Parse boolean
   const requiresUrgentMedical =
@@ -58,7 +41,9 @@ export default async function IncidentsSearchListingPage({
         ? false
         : undefined;
 
-  const filters: IncidentSearchFilters = {
+  const params = {
+    limit: 200,
+    offset: 0,
     title,
     incidentType,
     severity,
@@ -70,11 +55,18 @@ export default async function IncidentsSearchListingPage({
     requiresUrgentMedical
   };
 
-  const filteredIncidents = await incidentService.advancedSearch(filters);
+  const response = await fetchClientResponse<unknown[]>('/incidents', {
+    params,
+    cache: 'no-store'
+  });
+
+  const filteredIncidents = IncidentSchema.array().parse(response.data);
 
   return (
     <IncidentsSearchTable
-      data={filteredIncidents}
+      data={
+        filteredIncidents as Parameters<typeof IncidentsSearchTable>[0]['data']
+      }
       totalItems={filteredIncidents.length}
     />
   );

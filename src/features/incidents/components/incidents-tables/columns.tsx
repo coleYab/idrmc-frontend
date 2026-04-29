@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { CellAction } from './cell-action';
 import { STATUS_OPTIONS, SEVERITY_OPTIONS } from './options';
 import { Text } from 'lucide-react';
-import { Incident } from '@/constants/mock-api';
+import type { Incident } from '../../types';
 
 export const columns: ColumnDef<Incident>[] = [
   {
@@ -69,8 +69,9 @@ export const columns: ColumnDef<Incident>[] = [
       let variant: 'default' | 'destructive' | 'outline' | 'secondary' =
         'secondary';
       if (status.toLowerCase() === 'pending') variant = 'outline';
-      if (status.toLowerCase() === 'validated') variant = 'default';
-      if (status.toLowerCase() === 'escalated') variant = 'destructive';
+      if (status.toLowerCase() === 'verified') variant = 'default';
+      if (status.toLowerCase() === 'active') variant = 'destructive';
+      if (status.toLowerCase() === 'rejected') variant = 'destructive';
 
       return (
         <Badge variant={variant} className='capitalize'>
@@ -86,8 +87,8 @@ export const columns: ColumnDef<Incident>[] = [
     }
   },
   {
-    id: 'severityLevel',
-    accessorKey: 'severityLevel',
+    id: 'severity',
+    accessorKey: 'severity',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Severity' />
     ),
@@ -104,8 +105,8 @@ export const columns: ColumnDef<Incident>[] = [
     }
   },
   {
-    id: 'reportDate',
-    accessorKey: 'reportDate',
+    id: 'createdAt',
+    accessorKey: 'createdAt',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Reported On' />
     ),

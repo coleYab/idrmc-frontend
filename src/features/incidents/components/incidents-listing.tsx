@@ -1,6 +1,7 @@
 import { searchParamsCache } from '@/lib/searchparams';
 import { IncidentsTable } from './incidents-tables';
-import { fakeIncidents } from '@/constants/mock-api';
+import { fetchClientResponse } from '@/lib/fetch-client';
+import { IncidentSchema } from '../types';
 
 export default async function IncidentsListingPage() {
   const page = searchParamsCache.get('page');
@@ -9,16 +10,23 @@ export default async function IncidentsListingPage() {
   const status = searchParamsCache.get('status');
   const severity = searchParamsCache.get('severity');
 
-  const data = await fakeIncidents.getIncidents({
-    page,
-    limit: pageLimit,
-    status: status ?? undefined,
-    severity: severity ?? undefined,
-    search: search ?? undefined
+  const limit = pageLimit ?? 10;
+  const offset = Math.max((page - 1) * limit, 0);
+
+  const response = await fetchClientResponse<unknown[]>('/incidents', {
+    params: {
+      limit,
+      offset,
+      status: status ?? undefined,
+      severity: severity ?? undefined,
+      search: search ?? undefined
+    },
+    cache: 'no-store'
   });
 
-  const totalItems = data.total_items;
-  const items = data.items;
+  const items = IncidentSchema.array().parse(response.data);
+  const totalItems =
+    response.meta?.total ?? response.meta?.count ?? items.length;
 
   return <IncidentsTable data={items} totalItems={totalItems} />;
 }

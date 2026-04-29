@@ -9,8 +9,8 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { getIncidentDetailsInfo } from '@/config/incval-infoconfig';
-import { incidentService } from '@/services/incidentServices';
-import type { Incident } from '@/lib/types/incident';
+import { fetchClient } from '@/lib/fetch-client';
+import { IncidentSchema, type Incident } from '@/features/incidents/types';
 import { IncidentAttachmentItem } from '@/components/incident/incident-attachment-item';
 
 interface IncidentDetailsPageProps {
@@ -45,12 +45,21 @@ export default async function IncidentDetailsPage(
 ) {
   const { incidentId } = await props.params;
 
-  const incident: Incident | undefined =
-    await incidentService.getById(incidentId);
+  const incidentResponse = await fetchClient<unknown>(
+    `/incidents/${incidentId}`,
+    { cache: 'no-store' }
+  ).catch(() => undefined);
+
+  const incident: Incident | undefined = incidentResponse
+    ? IncidentSchema.safeParse(incidentResponse).data
+    : undefined;
 
   if (!incident) {
     notFound();
   }
+
+  const infrastructureDamage = incident.infrastructureDamage ?? [];
+  const attachments = incident.attachments ?? [];
 
   return (
     <PageContainer
@@ -104,8 +113,8 @@ export default async function IncidentDetailsPage(
                   Infrastructure Damage
                 </p>
                 <p>
-                  {incident.infrastructureDamage.length > 0
-                    ? incident.infrastructureDamage.join(', ')
+                  {infrastructureDamage.length > 0
+                    ? infrastructureDamage.join(', ')
                     : 'None reported'}
                 </p>
               </div>
@@ -144,13 +153,13 @@ export default async function IncidentDetailsPage(
           </CardHeader>
 
           <CardContent>
-            {!incident.attachments || incident.attachments.length === 0 ? (
+            {attachments.length === 0 ? (
               <p className='text-muted-foreground text-sm'>
                 No attachments uploaded.
               </p>
             ) : (
               <div className='grid gap-2 sm:grid-cols-2 lg:grid-cols-3'>
-                {incident.attachments.map((src, idx) => {
+                {attachments.map((src, idx) => {
                   if (!src) return null;
                   return (
                     <IncidentAttachmentItem
