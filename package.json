@@ -10,9 +10,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "lint:fix": "eslint src --fix && bun format",
-    "lint:strict": "eslint --max-warnings=0 src",
+    "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
+    "lint:fix": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix && bun format",
+    "lint:strict": "eslint --max-warnings=0 \"src/**/*.{js,jsx,ts,tsx}\"",
     "format": "prettier --write .",
     "format:check": "prettier -c -w .",
     "prepare": "husky"

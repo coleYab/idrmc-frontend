@@ -33,9 +33,18 @@ export const ReportIncidentSchema = z.object({
 
 export type ReportIncidentDto = z.infer<typeof ReportIncidentSchema>;
 
-export const IncidentSchema = ReportIncidentSchema.extend({
+export const IncidentSchema = z.object({
   id: z.string().uuid(),
+  title: z.string(),
+  description: z.string(),
+  incidentType: IncidentTypeEnum,
   status: IncidentStatusEnum,
+  severity: SeverityLevelEnum,
+  location: z.string(),
+  affectedPopulationCount: z.number().int().min(0),
+  requiresUrgentMedical: z.boolean(),
+  infrastructureDamage: z.array(z.string()).optional(),
+  attachments: z.array(z.string()).optional(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
   reportedBy: z.string(),

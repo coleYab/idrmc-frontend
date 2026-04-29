@@ -1,7 +1,7 @@
 import { searchParamsCache } from '@/lib/searchparams';
 import { IncidentsTable } from './incidents-tables';
 import { fetchClientResponse } from '@/lib/fetch-client';
-import { IncidentSchema } from '../types';
+import { IncidentSchema, type Incident } from '../types';
 
 export default async function IncidentsListingPage() {
   const page = searchParamsCache.get('page');
@@ -24,7 +24,17 @@ export default async function IncidentsListingPage() {
     cache: 'no-store'
   });
 
-  const items = IncidentSchema.array().parse(response.data);
+  const parsedItems = IncidentSchema.array().safeParse(response.data);
+  const items: Incident[] = parsedItems.success
+    ? parsedItems.data
+    : response.data.reduce<Incident[]>((acc, item) => {
+        const parsedItem = IncidentSchema.safeParse(item);
+        if (parsedItem.success) {
+          acc.push(parsedItem.data);
+        }
+        return acc;
+      }, []);
+
   const totalItems =
     response.meta?.total ?? response.meta?.count ?? items.length;
 
