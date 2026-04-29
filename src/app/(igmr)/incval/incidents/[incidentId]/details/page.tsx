@@ -11,6 +11,7 @@ import {
 import { getIncidentDetailsInfo } from '@/config/incval-infoconfig';
 import { fetchClient } from '@/lib/fetch-client';
 import { IncidentSchema, type Incident } from '@/features/incidents/types';
+import { IncidentAttachmentItem } from '@/components/incident/incident-attachment-item';
 
 interface IncidentDetailsPageProps {
   params: Promise<{ incidentId: string }>;
@@ -157,15 +158,18 @@ export default async function IncidentDetailsPage(
               </p>
             ) : (
               <div className='grid gap-2 sm:grid-cols-2 lg:grid-cols-3'>
-                {attachments.map((src, idx) => (
-                  <img
-                    key={idx}
-                    src={src}
-                    alt={`Incident attachment ${idx + 1}`}
-                    className='h-40 w-full rounded-md border object-cover'
-                    loading='lazy'
-                  />
-                ))}
+                {attachments.map((src, idx) => {
+                  if (!src) return null;
+
+                  return (
+                    <IncidentAttachmentItem
+                      key={idx}
+                      src={src}
+                      index={idx}
+                      alt={`Incident attachment ${idx + 1}`}
+                    />
+                  );
+                })}
               </div>
             )}
           </CardContent>
