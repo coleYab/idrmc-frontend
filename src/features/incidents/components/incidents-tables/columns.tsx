@@ -15,7 +15,9 @@ export const columns: ColumnDef<Incident>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Incident ID' />
     ),
-    cell: ({ cell }) => <div className="font-medium">{cell.getValue<string>()}</div>,
+    cell: ({ cell }) => (
+      <div className='font-medium'>{cell.getValue<string>()}</div>
+    ),
     meta: {
       label: 'Incident ID',
       placeholder: 'Search ID...',
@@ -31,7 +33,7 @@ export const columns: ColumnDef<Incident>[] = [
       <DataTableColumnHeader column={column} title='Description' />
     ),
     cell: ({ cell }) => (
-      <div className="max-w-[400px] truncate">{cell.getValue<string>()}</div>
+      <div className='max-w-[400px] truncate'>{cell.getValue<string>()}</div>
     ),
     meta: {
       label: 'Description',
@@ -64,7 +66,8 @@ export const columns: ColumnDef<Incident>[] = [
     ),
     cell: ({ cell }) => {
       const status = cell.getValue<string>();
-      let variant: 'default' | 'destructive' | 'outline' | 'secondary' = 'secondary';
+      let variant: 'default' | 'destructive' | 'outline' | 'secondary' =
+        'secondary';
       if (status.toLowerCase() === 'pending') variant = 'outline';
       if (status.toLowerCase() === 'validated') variant = 'default';
       if (status.toLowerCase() === 'escalated') variant = 'destructive';

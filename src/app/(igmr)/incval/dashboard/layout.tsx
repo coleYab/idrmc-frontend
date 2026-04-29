@@ -37,11 +37,14 @@ export default function IncvalDashboardLayout({
           <Card className='@container/card border-red-500/20'>
             <CardHeader>
               <CardDescription>Active Disasters</CardDescription>
-              <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl text-red-500'>
+              <CardTitle className='text-2xl font-semibold text-red-500 tabular-nums @[250px]/card:text-3xl'>
                 3
               </CardTitle>
               <CardAction>
-                <Badge variant='outline' className='text-red-500 border-red-500/30'>
+                <Badge
+                  variant='outline'
+                  className='border-red-500/30 text-red-500'
+                >
                   <IconTrendingUp />
                   +1
                 </Badge>

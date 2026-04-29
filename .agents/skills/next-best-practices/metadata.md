@@ -55,15 +55,20 @@ Separate from metadata for streaming support:
 ```tsx
 import type { Viewport } from 'next'
 
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  themeColor: '#000000',
-}
+import type { Viewport } from "next";
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#000000",
+};
 // Or dynamic
-export function generateViewport({ params }): Viewport {
-  return { themeColor: getThemeColor(params) }
+export function generateViewport({ params }: { params: any }): Viewport {
+  return {
+    width: "device-width",
+    initialScale: 1,
+    themeColor: getThemeColor(params),
+  };
 }
 ```
 

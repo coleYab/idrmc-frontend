@@ -171,10 +171,34 @@ export const fakeIncidents = {
 
   initialize() {
     const sampleIncidents: Incident[] = [];
-    const statuses: Incident['status'][] = ['Pending', 'Validated', 'False Alarm', 'Escalated'];
-    const severities: Incident['severityLevel'][] = ['Low', 'Medium', 'High', 'Critical'];
-    const locations = ['Oromia', 'Amhara', 'Somali', 'Tigray', 'Afar', 'Addis Ababa'];
-    const descriptors = ['Flood Alert', 'Drought Report', 'Internal Conflict', 'Landslide', 'Epidemic Outbreak', 'Locust Invasion'];
+    const statuses: Incident['status'][] = [
+      'Pending',
+      'Validated',
+      'False Alarm',
+      'Escalated'
+    ];
+    const severities: Incident['severityLevel'][] = [
+      'Low',
+      'Medium',
+      'High',
+      'Critical'
+    ];
+    const locations = [
+      'Oromia',
+      'Amhara',
+      'Somali',
+      'Tigray',
+      'Afar',
+      'Addis Ababa'
+    ];
+    const descriptors = [
+      'Flood Alert',
+      'Drought Report',
+      'Internal Conflict',
+      'Landslide',
+      'Epidemic Outbreak',
+      'Locust Invasion'
+    ];
 
     for (let i = 1; i <= 50; i++) {
       sampleIncidents.push({
@@ -187,7 +211,10 @@ export const fakeIncidents = {
       });
     }
 
-    this.records = sampleIncidents.sort((a, b) => new Date(b.reportDate).getTime() - new Date(a.reportDate).getTime());
+    this.records = sampleIncidents.sort(
+      (a, b) =>
+        new Date(b.reportDate).getTime() - new Date(a.reportDate).getTime()
+    );
   },
 
   async getAll({
@@ -202,11 +229,15 @@ export const fakeIncidents = {
     let incidents = [...this.records];
 
     if (status.length > 0) {
-      incidents = incidents.filter((inc) => status.includes(inc.status.toLowerCase()));
+      incidents = incidents.filter((inc) =>
+        status.includes(inc.status.toLowerCase())
+      );
     }
-    
+
     if (severity.length > 0) {
-      incidents = incidents.filter((inc) => severity.includes(inc.severityLevel.toLowerCase()));
+      incidents = incidents.filter((inc) =>
+        severity.includes(inc.severityLevel.toLowerCase())
+      );
     }
 
     if (search) {
@@ -234,7 +265,7 @@ export const fakeIncidents = {
     await delay(1000);
     const statusArray = status ? status.split('.') : [];
     const severityArray = severity ? severity.split('.') : [];
-    
+
     const allIncidents = await this.getAll({
       status: statusArray,
       severity: severityArray,

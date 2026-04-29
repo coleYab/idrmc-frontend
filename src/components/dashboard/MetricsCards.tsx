@@ -1,142 +1,148 @@
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardAction
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-  IconTrendingUp,
-  IconAlertTriangle,
-  IconCircleCheck
-} from '@tabler/icons-react';
+import { cn } from '@/lib/utils';
 import { mockIncidents } from '@/lib/mock/incidents';
 import { IncidentStatus } from '@/lib/types/incident';
+import {
+  IconTrendingUp,
+  IconTrendingDown,
+  IconAlertTriangle,
+  IconCircleCheck,
+  IconReportAnalytics
+} from '@tabler/icons-react';
 
 interface MetricsCardsProps {
   className?: string;
 }
 
+interface MetricCardProps {
+  label: string;
+  value: number | string;
+  badge: string;
+  badgeTrend: 'up' | 'down' | 'neutral';
+  trendLabel: string;
+  subtitle: string;
+}
+
+function MetricCard({
+  label,
+  value,
+  badge,
+  badgeTrend,
+  trendLabel,
+  subtitle
+}: MetricCardProps) {
+  const TrendIcon =
+    badgeTrend === 'up'
+      ? IconTrendingUp
+      : badgeTrend === 'down'
+        ? IconTrendingDown
+        : IconReportAnalytics;
+
+  const trendColor =
+    badgeTrend === 'up'
+      ? 'text-emerald-400'
+      : badgeTrend === 'down'
+        ? 'text-rose-400'
+        : 'text-sky-400';
+
+  return (
+    <div className='bg-card flex flex-1 flex-col justify-between gap-3 rounded-xl border p-5 shadow-sm transition-shadow hover:shadow-md'>
+      {/* Top row: label + badge */}
+      <div className='flex items-start justify-between gap-2'>
+        <span className='text-muted-foreground text-sm font-medium'>
+          {label}
+        </span>
+        <span
+          className={cn(
+            'flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold',
+            badgeTrend === 'up' &&
+              'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
+            badgeTrend === 'down' &&
+              'border-rose-500/30 bg-rose-500/10 text-rose-400',
+            badgeTrend === 'neutral' &&
+              'border-sky-500/30 bg-sky-500/10 text-sky-400'
+          )}
+        >
+          <TrendIcon className='size-3' />
+          {badge}
+        </span>
+      </div>
+
+      {/* Big number */}
+      <p className='text-foreground text-3xl font-bold tracking-tight tabular-nums'>
+        {value}
+      </p>
+
+      {/* Bottom: trend label + subtitle */}
+      <div className='space-y-0.5'>
+        <p
+          className={cn(
+            'flex items-center gap-1 text-sm font-semibold',
+            trendColor
+          )}
+        >
+          {trendLabel}
+          <TrendIcon className='size-4' />
+        </p>
+        <p className='text-muted-foreground text-xs'>{subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
 export function MetricsCards({ className }: MetricsCardsProps) {
-  // Calculate metrics from mock data
   const pendingReports = mockIncidents.filter(
-    (incident) => incident.status === IncidentStatus.PENDING
+    (i) => i.status === IncidentStatus.PENDING
   ).length;
   const activeIncidents = mockIncidents.filter(
-    (incident) => incident.status === IncidentStatus.ACTIVE
+    (i) => i.status === IncidentStatus.ACTIVE
   ).length;
   const resolvedIncidents = mockIncidents.filter(
-    (incident) => incident.status === IncidentStatus.RESOLVED
+    (i) => i.status === IncidentStatus.RESOLVED
   ).length;
   const totalIncidents = mockIncidents.length;
 
-  const pendingPercentage =
-    totalIncidents > 0
-      ? Math.round((pendingReports / totalIncidents) * 100)
-      : 0;
-  const activePercentage =
-    totalIncidents > 0
-      ? Math.round((activeIncidents / totalIncidents) * 100)
-      : 0;
-  const resolvedPercentage =
-    totalIncidents > 0
-      ? Math.round((resolvedIncidents / totalIncidents) * 100)
-      : 0;
+  const pct = (n: number) =>
+    totalIncidents > 0 ? `+${Math.round((n / totalIncidents) * 100)}%` : '0%';
 
   return (
     <div
-      className={`grid grid-cols-1 gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 ${className || ''}`}
+      className={cn(
+        'grid w-full grid-cols-1 gap-4 px-4 lg:grid-cols-4 lg:px-6',
+        className
+      )}
     >
-      <Card className='@container/card'>
-        <CardHeader>
-          <CardDescription>Pending Reports</CardDescription>
-          <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-            {pendingReports}
-          </CardTitle>
-          <CardAction>
-            <Badge variant='outline'>
-              <IconAlertTriangle className='size-4' />
-              {pendingPercentage}%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardAction className='flex-col items-start gap-1.5 text-sm'>
-          <div className='line-clamp-1 flex gap-2 font-medium'>
-            Awaiting verification <IconAlertTriangle className='size-4' />
-          </div>
-          <div className='text-muted-foreground'>
-            Reports requiring immediate attention
-          </div>
-        </CardAction>
-      </Card>
-
-      <Card className='@container/card'>
-        <CardHeader>
-          <CardDescription>Active Incidents</CardDescription>
-          <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-            {activeIncidents}
-          </CardTitle>
-          <CardAction>
-            <Badge variant='outline'>
-              <IconTrendingUp className='size-4' />
-              {activePercentage}%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardAction className='flex-col items-start gap-1.5 text-sm'>
-          <div className='line-clamp-1 flex gap-2 font-medium'>
-            Currently being managed <IconTrendingUp className='size-4' />
-          </div>
-          <div className='text-muted-foreground'>
-            Incidents under active response
-          </div>
-        </CardAction>
-      </Card>
-
-      <Card className='@container/card'>
-        <CardHeader>
-          <CardDescription>Resolved Incidents</CardDescription>
-          <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-            {resolvedIncidents}
-          </CardTitle>
-          <CardAction>
-            <Badge variant='outline'>
-              <IconCircleCheck className='size-4' />
-              {resolvedPercentage}%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardAction className='flex-col items-start gap-1.5 text-sm'>
-          <div className='line-clamp-1 flex gap-2 font-medium'>
-            Successfully handled <IconCircleCheck className='size-4' />
-          </div>
-          <div className='text-muted-foreground'>
-            Completed incident responses
-          </div>
-        </CardAction>
-      </Card>
-
-      <Card className='@container/card'>
-        <CardHeader>
-          <CardDescription>Total Incidents</CardDescription>
-          <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-            {totalIncidents}
-          </CardTitle>
-          <CardAction>
-            <Badge variant='outline'>
-              <IconTrendingUp className='size-4' />
-              All time
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardAction className='flex-col items-start gap-1.5 text-sm'>
-          <div className='line-clamp-1 flex gap-2 font-medium'>
-            Total reported incidents <IconTrendingUp className='size-4' />
-          </div>
-          <div className='text-muted-foreground'>Cumulative incident count</div>
-        </CardAction>
-      </Card>
+      <MetricCard
+        label='Pending Reports'
+        value={pendingReports}
+        badge={pct(pendingReports)}
+        badgeTrend='down'
+        trendLabel='Awaiting verification'
+        subtitle='Reports requiring immediate attention'
+      />
+      <MetricCard
+        label='Active Incidents'
+        value={activeIncidents}
+        badge={pct(activeIncidents)}
+        badgeTrend='up'
+        trendLabel='Currently being managed'
+        subtitle='Incidents under active response'
+      />
+      <MetricCard
+        label='Resolved Incidents'
+        value={resolvedIncidents}
+        badge={pct(resolvedIncidents)}
+        badgeTrend='up'
+        trendLabel='Successfully handled'
+        subtitle='Completed incident responses'
+      />
+      <MetricCard
+        label='Total Incidents'
+        value={totalIncidents}
+        badge='All time'
+        badgeTrend='neutral'
+        trendLabel='Total reported incidents'
+        subtitle='Cumulative incident count'
+      />
     </div>
   );
 }

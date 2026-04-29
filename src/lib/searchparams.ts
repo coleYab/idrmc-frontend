@@ -20,7 +20,7 @@ export const searchParams = {
   location: parseAsString,
   reportedBy: parseAsString,
   dateRange: parseAsArrayOf(parseAsString, ','),
-  requiresUrgentMedical: parseAsString,
+  requiresUrgentMedical: parseAsString
   // advanced filter
   // filters: getFiltersStateParser().withDefault([]),
   // joinOperator: parseAsStringEnum(['and', 'or']).withDefault('and')
