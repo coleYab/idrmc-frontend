@@ -34,7 +34,7 @@ export const ReportIncidentSchema = z.object({
 export type ReportIncidentDto = z.infer<typeof ReportIncidentSchema>;
 
 export const IncidentSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().nonempty(),
   title: z.string(),
   description: z.string(),
   incidentType: IncidentTypeEnum,

@@ -165,7 +165,6 @@ export default async function IncidentDetailsPage(
                     <IncidentAttachmentItem
                       key={idx}
                       src={src}
-                      index={idx}
                       alt={`Incident attachment ${idx + 1}`}
                     />
                   );

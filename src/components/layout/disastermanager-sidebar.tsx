@@ -8,14 +8,12 @@ import {
   IconChartBar,
   IconChevronsDown,
   IconClipboardCheck,
-  IconFileSearch,
   IconLayoutDashboard,
   IconLogout,
   IconMapPin,
   IconMapSearch,
   IconProgressCheck,
   IconReportAnalytics,
-  IconShare3,
   IconUserCircle
 } from '@tabler/icons-react';
 import {

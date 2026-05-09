@@ -32,7 +32,6 @@ import {
 } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -68,8 +67,6 @@ export function ActiveDisastersClient() {
   const activeDisasters = mockIncidents.filter(
     (incident) => incident.status === IncidentStatus.ACTIVE
   );
-
-  const [isBroadcasting, setIsBroadcasting] = useState<string | null>(null);
 
   interface BackendError {
     statusCode: number;

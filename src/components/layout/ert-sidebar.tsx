@@ -3,14 +3,15 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
+  IconAlertTriangle,
   IconBell,
   IconChevronsDown,
   IconClipboardList,
   IconFirstAidKit,
+  IconHeart,
   IconLayoutDashboard,
   IconLogout,
   IconMap,
-  IconMapPin,
   IconShare3,
   IconShieldCheck,
   IconUsers,
@@ -47,6 +48,26 @@ const primaryRoutes = [
     icon: IconLayoutDashboard
   },
   {
+    title: 'Resources',
+    href: '/ert/dashboard/resources',
+    icon: IconFirstAidKit
+  },
+  {
+    title: 'Alerts',
+    href: '/ert/dashboard/alerts',
+    icon: IconAlertTriangle
+  },
+  {
+    title: 'Donation',
+    href: '/ert/dashboard/donations',
+    icon: IconHeart
+  },
+  {
+    title: 'Map Resources',
+    href: '/ert/dashboard/map-resources',
+    icon: IconMap
+  },
+  {
     title: 'Assignments',
     href: '/ert/dashboard/assignments',
     icon: IconClipboardList
@@ -65,11 +86,6 @@ const primaryRoutes = [
     title: 'Response Protocols',
     href: '/ert/dashboard/protocols',
     icon: IconShieldCheck
-  },
-  {
-    title: 'Map View',
-    href: '/ert/dashboard/map',
-    icon: IconMap
   },
   {
     title: 'My Profile',

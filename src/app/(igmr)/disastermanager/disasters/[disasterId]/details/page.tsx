@@ -21,7 +21,7 @@ import {
   IconArrowLeft
 } from '@tabler/icons-react';
 import { mockIncidents } from '@/lib/mock/incidents';
-import { IncidentStatus, IncidentSeverityLevel } from '@/lib/types/incident';
+import { IncidentSeverityLevel } from '@/lib/types/incident';
 import Link from 'next/link';
 import { StatusUpdater } from '../../status-updater';
 

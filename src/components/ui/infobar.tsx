@@ -25,8 +25,6 @@ import { CircleXIcon } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
 
-const INFOBAR_COOKIE_NAME = 'infobar_state';
-const INFOBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const INFOBAR_WIDTH = '22rem';
 const INFOBAR_WIDTH_MOBILE = '22rem';
 const INFOBAR_WIDTH_ICON = '3rem';
@@ -155,7 +153,7 @@ function InfobarProvider({
         setIsPathnameChanging(false);
       }, 200);
     }
-  }, [pathname, contentPathname]);
+  }, [pathname, contentPathname, setOpen]);
 
   // Update setContent to also track pathname
   const handleSetContent = React.useCallback(

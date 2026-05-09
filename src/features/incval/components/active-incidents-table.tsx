@@ -172,7 +172,7 @@ export const columns: ColumnDef<Incident>[] = [
 
 interface ActiveIncidentsTableProps {}
 
-export function ActiveIncidentsTable({}: ActiveIncidentsTableProps) {
+export function ActiveIncidentsTable() {
   const [pageSize] = useQueryState('perPage', parseAsInteger.withDefault(10));
   const { data, isLoading } = useIncidents({ limit: 100, offset: 0 });
 

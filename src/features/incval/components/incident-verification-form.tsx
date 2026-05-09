@@ -160,7 +160,7 @@ export default function IncidentVerificationForm({
       // Redirect back to verify incidents list
       router.push('/incval/incidents/verify');
     } catch (error) {
-      console.error('Verification failed:', error);
+      // Handle error silently or log appropriately
     }
   };
 

@@ -5,7 +5,6 @@ import { IncidentStatus, IncidentSeverityLevel } from '@/lib/types/incident';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
-  IconAlertTriangle,
   IconMapPin,
   IconUsers,
   IconClock,

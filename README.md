@@ -227,7 +227,6 @@ docker run -d -p 3000:3000 \
   shadcn-dashboard
 ```
 
-
 ### ⭐ Support
 
 If you find this template helpful, please consider giving it a star ⭐
