@@ -31,6 +31,14 @@ const protectedPrefixes = Array.from(
   new Set(Object.values(routeAccessMap).flat())
 );
 
+const defaultRouteByRole: Record<string, string> = {
+  admin: '/incval',
+  incident_validator: '/incval',
+  disaster_response_team: '/disastermanager',
+  emergency_response_team: '/ert',
+  user: '/about'
+};
+
 function canAccessPath(role: string, pathname: string) {
   const allowedPrefixes = routeAccessMap[role];
 
@@ -44,13 +52,7 @@ function canAccessPath(role: string, pathname: string) {
 }
 
 function getDefaultDashboardPath(role: string) {
-  const allowedPrefixes = routeAccessMap[role];
-
-  if (!allowedPrefixes || allowedPrefixes.length === 0) {
-    return '/auth/sign-in';
-  }
-
-  return allowedPrefixes[0];
+  return defaultRouteByRole[role] ?? '/about';
 }
 
 export default clerkMiddleware(async (auth, request) => {
