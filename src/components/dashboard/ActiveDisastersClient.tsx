@@ -63,6 +63,7 @@ const formatDate = (dateString: string) => {
 export function ActiveDisastersClient() {
   const router = useRouter();
   const { addNotification } = useNotificationStore();
+  const [isBroadcasting, setIsBroadcasting] = useState<string | null>(null);
 
   const activeDisasters = mockIncidents.filter(
     (incident) => incident.status === IncidentStatus.ACTIVE
@@ -240,8 +241,11 @@ export function ActiveDisastersClient() {
                         <AlertDialogAction
                           onClick={() => broadcastAlertForDisaster(disaster)}
                           className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                          disabled={isBroadcasting === disaster.id}
                         >
-                          Broadcast Alert
+                          {isBroadcasting === disaster.id
+                            ? 'Broadcasting...'
+                            : 'Broadcast Alert'}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
