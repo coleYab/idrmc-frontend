@@ -1,7 +1,7 @@
 'use client';
 
-import { IconBrightness } from '@tabler/icons-react';
-import { useThemeConfig } from './active-theme';
+import { IconMoon, IconSun } from '@tabler/icons-react';
+import { useTheme } from 'next-themes';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -13,15 +13,15 @@ import {
 import { Kbd } from '@/components/ui/kbd';
 
 export function ThemeModeToggle() {
-  const { activeTheme, setActiveTheme } = useThemeConfig();
+  const { theme, setTheme } = useTheme();
 
   const handleThemeToggle = React.useCallback(
     (e?: React.MouseEvent) => {
-      const newMode = activeTheme === 'dark' ? 'light' : 'dark';
+      const newMode = theme === 'dark' ? 'light' : 'dark';
       const root = document.documentElement;
 
       if (!document.startViewTransition) {
-        setActiveTheme(newMode);
+        setTheme(newMode);
         return;
       }
 
@@ -32,10 +32,10 @@ export function ThemeModeToggle() {
       }
 
       document.startViewTransition(() => {
-        setActiveTheme(newMode);
+        setTheme(newMode);
       });
     },
-    [activeTheme, setActiveTheme]
+    [theme, setTheme]
   );
 
   return (
@@ -47,12 +47,15 @@ export function ThemeModeToggle() {
           className='group/toggle size-8'
           onClick={handleThemeToggle}
         >
-          <IconBrightness />
+          <IconSun className='h-4 w-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90' />
+          <IconMoon className='absolute h-4 w-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0' />
           <span className='sr-only'>Toggle theme</span>
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        Toggle theme <Kbd>D D</Kbd>
+        <p>
+          Switch to {theme === 'dark' ? 'light' : 'dark'} mode <Kbd>Ctrl J</Kbd>
+        </p>
       </TooltipContent>
     </Tooltip>
   );

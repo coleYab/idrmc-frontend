@@ -73,7 +73,7 @@ const primaryRoutes = [
   },
   {
     title: 'My Profile',
-    href: '/dashboard/profile',
+    href: '/disastermanager/profile',
     icon: IconUserCircle
   }
 ];
@@ -212,9 +212,7 @@ export default function DisasterManagerSidebar() {
                     Account
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() =>
-                      router.push('/disastermanager/notifications')
-                    }
+                    onClick={() => router.push('/disastermanager/alerts')}
                   >
                     <IconBell />
                     Notifications

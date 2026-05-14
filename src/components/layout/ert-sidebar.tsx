@@ -6,7 +6,6 @@ import {
   IconAlertTriangle,
   IconBell,
   IconChevronsDown,
-  IconClipboardList,
   IconFirstAidKit,
   IconHeart,
   IconLayoutDashboard,
@@ -67,21 +66,21 @@ const primaryRoutes = [
     href: '/ert/dashboard/map-resources',
     icon: IconMap
   },
-  {
-    title: 'Assignments',
-    href: '/ert/dashboard/assignments',
-    icon: IconClipboardList
-  },
+  // {
+  //   title: 'Assignments',
+  //   href: '/ert/dashboard/assignments',
+  //   icon: IconClipboardList
+  // },
   {
     title: 'Team Status',
     href: '/ert/dashboard/team',
     icon: IconUsers
   },
-  {
-    title: 'Medical Resources',
-    href: '/ert/dashboard/medical',
-    icon: IconFirstAidKit
-  },
+  // {
+  //   title: 'Medical Resources',
+  //   href: '/ert/dashboard/medical',
+  //   icon: IconFirstAidKit
+  // },
   {
     title: 'Response Protocols',
     href: '/ert/dashboard/protocols',
@@ -89,7 +88,7 @@ const primaryRoutes = [
   },
   {
     title: 'My Profile',
-    href: '/dashboard/profile',
+    href: '/ert/profile',
     icon: IconUserCircle
   }
 ];
@@ -100,7 +99,7 @@ export default function ErtSidebar() {
   const { user } = useUser();
 
   const handleShareProfileAccess = async () => {
-    const profileUrl = `${window.location.origin}/dashboard/profile`;
+    const profileUrl = `${window.location.origin}/ert/profile`;
     try {
       if (navigator.share) {
         await navigator.share({
@@ -199,9 +198,7 @@ export default function ErtSidebar() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    onClick={() => router.push('/dashboard/profile')}
-                  >
+                  <DropdownMenuItem onClick={() => router.push('/ert/profile')}>
                     <IconUserCircle className='mr-2 h-4 w-4' />
                     Profile
                   </DropdownMenuItem>
@@ -210,7 +207,7 @@ export default function ErtSidebar() {
                     Share Profile Access
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => router.push('/dashboard/notifications')}
+                    onClick={() => router.push('/ert/dashboard/alerts')}
                   >
                     <IconBell className='mr-2 h-4 w-4' />
                     Notifications

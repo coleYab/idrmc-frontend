@@ -20,23 +20,30 @@ export default function ResourcesClient() {
 
   const allocationTotals = useMemo(
     () =>
-      resources.map((resource) => ({
-        resource,
-        allocated: allocations
+      resources.map((resource) => {
+        const allocated = allocations
           .filter((allocation) => allocation.resourceId === resource.id)
-          .reduce((total, allocation) => total + allocation.quantity, 0)
-      })),
+          .reduce((total, allocation) => total + allocation.quantity, 0);
+
+        return {
+          resource,
+          allocated,
+          total: resource.available + allocated
+        };
+      }),
     [allocations, resources]
   );
 
   const alertsWithAllocations = useMemo(
     () =>
-      alerts.map((alert) => ({
-        alert,
-        allocations: allocations.filter(
-          (allocation) => allocation.alertId === alert.id
-        )
-      })),
+      alerts
+        .map((alert) => ({
+          alert,
+          allocations: allocations.filter(
+            (allocation) => allocation.alertId === alert.id
+          )
+        }))
+        .filter(({ allocations }) => allocations.length > 0),
     [alerts, allocations]
   );
 
@@ -47,7 +54,7 @@ export default function ResourcesClient() {
       pageDescription='See available food, vehicles, volunteers and other emergency resources currently ready for deployment.'
     >
       <div className='grid gap-4 lg:grid-cols-2'>
-        {allocationTotals.map(({ resource, allocated }) => (
+        {allocationTotals.map(({ resource, allocated, total }) => (
           <Card key={resource.id}>
             <CardHeader>
               <div className='flex items-center justify-between gap-3'>
@@ -61,7 +68,13 @@ export default function ResourcesClient() {
               </div>
             </CardHeader>
             <CardContent className='space-y-3'>
-              <div className='grid gap-2 sm:grid-cols-2'>
+              <div className='grid gap-2 sm:grid-cols-3'>
+                <div>
+                  <p className='text-muted-foreground text-sm'>Total</p>
+                  <p className='text-lg font-semibold'>
+                    {total.toLocaleString()} {resource.unit}
+                  </p>
+                </div>
                 <div>
                   <p className='text-muted-foreground text-sm'>Available</p>
                   <p className='text-lg font-semibold'>

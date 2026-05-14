@@ -1,3 +1,5 @@
+// NOTE: The Medical Resources page is currently disabled from sidebar navigation.
+// Resource allocation and inventory status are available through the Alerts and Resources dashboards.
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';

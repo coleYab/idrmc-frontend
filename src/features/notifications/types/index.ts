@@ -1,29 +1,60 @@
 import { z } from 'zod';
 
+const normalizeNotificationPayload = (rawData: unknown) => {
+  if (typeof rawData !== 'object' || rawData === null) {
+    return rawData;
+  }
+
+  const data = rawData as Record<string, unknown>;
+  const message = data.message ?? data.body ?? data.content;
+  const title = data.title ?? data.alertTitle ?? data.name;
+  const recipient = data.recipient ?? data.user ?? data.target;
+  const type = data.type ?? data.notificationType ?? data.alertType;
+
+  return {
+    ...data,
+    message,
+    title,
+    recipient,
+    type
+  };
+};
+
 export const NotificationTypeEnum = z.enum(['email', 'sms', 'push', 'in_app']);
 
-export const NotificationSchema = z.object({
-  id: z.string().uuid(),
-  title: z.string(),
-  message: z.string(),
-  recipient: z.string(),
-  type: NotificationTypeEnum,
-  createdAt: z.iso.datetime().optional(),
-  updatedAt: z.iso.datetime().optional()
-});
+export const NotificationSchema = z.preprocess(
+  normalizeNotificationPayload,
+  z.object({
+    id: z.string().uuid(),
+    title: z.string(),
+    message: z.string(),
+    recipient: z.string(),
+    type: NotificationTypeEnum,
+    createdAt: z.iso.datetime().optional(),
+    updatedAt: z.iso.datetime().optional()
+  })
+);
 
 export type Notification = z.infer<typeof NotificationSchema>;
 
-export const CreateNotificationSchema = z.object({
+const CreateNotificationShape = z.object({
   title: z.string().min(1),
   message: z.string().min(1),
   recipient: z.string().min(1),
   type: NotificationTypeEnum
 });
 
+export const CreateNotificationSchema = z.preprocess(
+  normalizeNotificationPayload,
+  CreateNotificationShape
+);
+
 export type CreateNotificationDto = z.infer<typeof CreateNotificationSchema>;
 
-export const UpdateNotificationSchema = CreateNotificationSchema.partial();
+export const UpdateNotificationSchema = z.preprocess(
+  normalizeNotificationPayload,
+  CreateNotificationShape.partial()
+);
 
 export type UpdateNotificationDto = z.infer<typeof UpdateNotificationSchema>;
 
