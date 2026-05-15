@@ -53,31 +53,31 @@ const primaryRoutes = [
     href: '/incval/incidents',
     icon: IconList
   },
-  {
-    title: 'Pending Incidents',
-    href: '/incval/incidents/pending',
-    icon: IconClipboardCheck
-  },
-  {
-    title: 'Active Incidents',
-    href: '/incval/incidents/active',
-    icon: IconProgressCheck
-  },
-  {
-    title: 'Resolved Incidents',
-    href: '/incval/incidents/resolved',
-    icon: IconChartBar
-  },
+  // {
+  //   title: 'Pending Incidents',
+  //   href: '/incval/incidents/pending',
+  //   icon: IconClipboardCheck
+  // },
+  // {
+  //   title: 'Active Incidents',
+  //   href: '/incval/incidents/active',
+  //   icon: IconProgressCheck
+  // },
+  // {
+  //   title: 'Resolved Incidents',
+  //   href: '/incval/incidents/resolved',
+  //   icon: IconChartBar
+  // },
   {
     title: 'Map Explorer',
     href: '/incval/incidents/map-explorer',
     icon: IconMapSearch
   },
-  {
-    title: 'Incident Search',
-    href: '/incval/incidents/search',
-    icon: IconFileSearch
-  },
+  // {
+  //   title: 'Incident Search',
+  //   href: '/incval/incidents/search',
+  //   icon: IconFileSearch
+  // },
   {
     title: 'Incident Summary',
     href: '/incval/reports/incident-summary',
