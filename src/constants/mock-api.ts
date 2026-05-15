@@ -220,11 +220,15 @@ export const fakeIncidents = {
   async getAll({
     status = [],
     severity = [],
-    search
+    id,
+    description,
+    location
   }: {
     status?: string[];
     severity?: string[];
-    search?: string;
+    id?: string;
+    description?: string;
+    location?: string;
   }) {
     let incidents = [...this.records];
 
@@ -240,10 +244,18 @@ export const fakeIncidents = {
       );
     }
 
-    if (search) {
-      incidents = matchSorter(incidents, search, {
-        keys: ['id', 'description', 'location']
+    if (id) {
+      incidents = matchSorter(incidents, id, { keys: ['id'] });
+    }
+
+    if (description) {
+      incidents = matchSorter(incidents, description, {
+        keys: ['description']
       });
+    }
+
+    if (location) {
+      incidents = matchSorter(incidents, location, { keys: ['location'] });
     }
 
     return incidents;
@@ -254,13 +266,17 @@ export const fakeIncidents = {
     limit = 10,
     status,
     severity,
-    search
+    id,
+    description,
+    location
   }: {
     page?: number;
     limit?: number;
     status?: string;
     severity?: string;
-    search?: string;
+    id?: string;
+    description?: string;
+    location?: string;
   }) {
     await delay(1000);
     const statusArray = status ? status.split('.') : [];
@@ -269,7 +285,9 @@ export const fakeIncidents = {
     const allIncidents = await this.getAll({
       status: statusArray,
       severity: severityArray,
-      search
+      id,
+      description,
+      location
     });
     const totalIncidents = allIncidents.length;
 

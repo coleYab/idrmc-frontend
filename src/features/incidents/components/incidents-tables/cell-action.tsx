@@ -8,6 +8,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+import { Incident } from '@/constants/mock-api';
 import Link from 'next/link';
 import type { Incident } from '../../types';
 import {
@@ -17,12 +18,15 @@ import {
   IconAlertTriangle,
   IconDatabase
 } from '@tabler/icons-react';
+import { useRouter } from 'next/navigation';
 
 interface CellActionProps {
   data: Incident;
 }
 
 export function CellAction({ data }: CellActionProps) {
+  const router = useRouter();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -33,6 +37,10 @@ export function CellAction({ data }: CellActionProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end'>
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuItem
+          onClick={() => router.push(`/incval/incidents/${data.id}/details`)}
+        >
+          <IconEye className='mr-2 h-4 w-4' /> View Details
         <DropdownMenuItem asChild>
           <Link href={`/incval/incidents/${data.id}/details`}>
             <IconEye className='mr-2 h-4 w-4' /> View Details
@@ -51,9 +59,10 @@ export function CellAction({ data }: CellActionProps) {
           <IconAlertTriangle className='mr-2 h-4 w-4' /> Escalate
         </DropdownMenuItem>
 
+        {/* <DropdownMenuItem className='text-muted-foreground focus:text-muted-foreground'>
         <DropdownMenuItem className='text-muted-foreground focus:text-muted-foreground'>
           <IconDatabase className='mr-2 h-4 w-4' /> Assign Resources
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
       </DropdownMenuContent>
     </DropdownMenu>
   );
