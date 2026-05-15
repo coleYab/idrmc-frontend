@@ -171,10 +171,34 @@ export const fakeIncidents = {
 
   initialize() {
     const sampleIncidents: Incident[] = [];
-    const statuses: Incident['status'][] = ['Pending', 'Validated', 'False Alarm', 'Escalated'];
-    const severities: Incident['severityLevel'][] = ['Low', 'Medium', 'High', 'Critical'];
-    const locations = ['Oromia', 'Amhara', 'Somali', 'Tigray', 'Afar', 'Addis Ababa'];
-    const descriptors = ['Flood Alert', 'Drought Report', 'Internal Conflict', 'Landslide', 'Epidemic Outbreak', 'Locust Invasion'];
+    const statuses: Incident['status'][] = [
+      'Pending',
+      'Validated',
+      'False Alarm',
+      'Escalated'
+    ];
+    const severities: Incident['severityLevel'][] = [
+      'Low',
+      'Medium',
+      'High',
+      'Critical'
+    ];
+    const locations = [
+      'Oromia',
+      'Amhara',
+      'Somali',
+      'Tigray',
+      'Afar',
+      'Addis Ababa'
+    ];
+    const descriptors = [
+      'Flood Alert',
+      'Drought Report',
+      'Internal Conflict',
+      'Landslide',
+      'Epidemic Outbreak',
+      'Locust Invasion'
+    ];
 
     for (let i = 1; i <= 50; i++) {
       sampleIncidents.push({
@@ -187,32 +211,51 @@ export const fakeIncidents = {
       });
     }
 
-    this.records = sampleIncidents.sort((a, b) => new Date(b.reportDate).getTime() - new Date(a.reportDate).getTime());
+    this.records = sampleIncidents.sort(
+      (a, b) =>
+        new Date(b.reportDate).getTime() - new Date(a.reportDate).getTime()
+    );
   },
 
   async getAll({
     status = [],
     severity = [],
-    search
+    id,
+    description,
+    location
   }: {
     status?: string[];
     severity?: string[];
-    search?: string;
+    id?: string;
+    description?: string;
+    location?: string;
   }) {
     let incidents = [...this.records];
 
     if (status.length > 0) {
-      incidents = incidents.filter((inc) => status.includes(inc.status.toLowerCase()));
-    }
-    
-    if (severity.length > 0) {
-      incidents = incidents.filter((inc) => severity.includes(inc.severityLevel.toLowerCase()));
+      incidents = incidents.filter((inc) =>
+        status.includes(inc.status.toLowerCase())
+      );
     }
 
-    if (search) {
-      incidents = matchSorter(incidents, search, {
-        keys: ['id', 'description', 'location']
+    if (severity.length > 0) {
+      incidents = incidents.filter((inc) =>
+        severity.includes(inc.severityLevel.toLowerCase())
+      );
+    }
+
+    if (id) {
+      incidents = matchSorter(incidents, id, { keys: ['id'] });
+    }
+
+    if (description) {
+      incidents = matchSorter(incidents, description, {
+        keys: ['description']
       });
+    }
+
+    if (location) {
+      incidents = matchSorter(incidents, location, { keys: ['location'] });
     }
 
     return incidents;
@@ -223,22 +266,28 @@ export const fakeIncidents = {
     limit = 10,
     status,
     severity,
-    search
+    id,
+    description,
+    location
   }: {
     page?: number;
     limit?: number;
     status?: string;
     severity?: string;
-    search?: string;
+    id?: string;
+    description?: string;
+    location?: string;
   }) {
     await delay(1000);
     const statusArray = status ? status.split('.') : [];
     const severityArray = severity ? severity.split('.') : [];
-    
+
     const allIncidents = await this.getAll({
       status: statusArray,
       severity: severityArray,
-      search
+      id,
+      description,
+      location
     });
     const totalIncidents = allIncidents.length;
 

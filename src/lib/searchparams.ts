@@ -13,14 +13,17 @@ export const searchParams = {
   gender: parseAsString,
   category: parseAsString,
   // Incident search params
+  id: parseAsString,
+  description: parseAsString,
+  location: parseAsString,
   incidentTitle: parseAsString,
   incidentType: parseAsString,
   severity: parseAsString,
+  severityLevel: parseAsString,
   status: parseAsString,
-  location: parseAsString,
   reportedBy: parseAsString,
   dateRange: parseAsArrayOf(parseAsString, ','),
-  requiresUrgentMedical: parseAsString,
+  requiresUrgentMedical: parseAsString
   // advanced filter
   // filters: getFiltersStateParser().withDefault([]),
   // joinOperator: parseAsStringEnum(['and', 'or']).withDefault('and')

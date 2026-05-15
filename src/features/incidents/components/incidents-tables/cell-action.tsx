@@ -9,13 +9,22 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Incident } from '@/constants/mock-api';
-import { IconDotsVertical, IconCheck, IconEye, IconAlertTriangle, IconDatabase } from '@tabler/icons-react';
+import {
+  IconDotsVertical,
+  IconCheck,
+  IconEye,
+  IconAlertTriangle,
+  IconDatabase
+} from '@tabler/icons-react';
+import { useRouter } from 'next/navigation';
 
 interface CellActionProps {
   data: Incident;
 }
 
 export function CellAction({ data }: CellActionProps) {
+  const router = useRouter();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -26,23 +35,25 @@ export function CellAction({ data }: CellActionProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end'>
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => router.push(`/incval/incidents/${data.id}/details`)}
+        >
           <IconEye className='mr-2 h-4 w-4' /> View Details
         </DropdownMenuItem>
-        
+
         {data.status.toLowerCase() === 'pending' && (
           <DropdownMenuItem>
             <IconCheck className='mr-2 h-4 w-4' /> Validate Incident
           </DropdownMenuItem>
         )}
-        
+
         <DropdownMenuItem className='text-amber-500 focus:text-amber-500'>
           <IconAlertTriangle className='mr-2 h-4 w-4' /> Escalate
         </DropdownMenuItem>
-        
-        <DropdownMenuItem className='text-muted-foreground focus:text-muted-foreground'>
+
+        {/* <DropdownMenuItem className='text-muted-foreground focus:text-muted-foreground'>
           <IconDatabase className='mr-2 h-4 w-4' /> Assign Resources
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
       </DropdownMenuContent>
     </DropdownMenu>
   );
