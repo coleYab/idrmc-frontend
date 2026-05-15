@@ -12,6 +12,9 @@ import { getIncidentDetailsInfo } from '@/config/incval-infoconfig';
 import { incidentService } from '@/services/incidentServices';
 import { fakeIncidents } from '@/constants/mock-api';
 import type { Incident } from '@/lib/types/incident';
+import { fetchClient } from '@/lib/fetch-client';
+import { IncidentSchema, type Incident } from '@/features/incidents/types';
+import { IncidentAttachmentItem } from '@/components/incident/incident-attachment-item';
 
 interface IncidentDetailsPageProps {
   params: Promise<{ incidentId: string }>;
@@ -47,6 +50,14 @@ export default async function IncidentDetailsPage(
 
   let incident: Incident | undefined =
     await incidentService.getById(incidentId);
+  const incidentResponse = await fetchClient<unknown>(
+    `/incidents/${incidentId}`,
+    { cache: 'no-store' }
+  ).catch(() => undefined);
+
+  const incident: Incident | undefined = incidentResponse
+    ? IncidentSchema.safeParse(incidentResponse).data
+    : undefined;
 
   // Fall back to fakeIncidents (table data) if not found in mockIncidents
   if (!incident) {
@@ -75,6 +86,9 @@ export default async function IncidentDetailsPage(
   if (!incident) {
     notFound();
   }
+
+  const infrastructureDamage = incident.infrastructureDamage ?? [];
+  const attachments = incident.attachments ?? [];
 
   return (
     <PageContainer
@@ -128,8 +142,8 @@ export default async function IncidentDetailsPage(
                   Infrastructure Damage
                 </p>
                 <p>
-                  {incident.infrastructureDamage.length > 0
-                    ? incident.infrastructureDamage.join(', ')
+                  {infrastructureDamage.length > 0
+                    ? infrastructureDamage.join(', ')
                     : 'None reported'}
                 </p>
               </div>
@@ -166,22 +180,25 @@ export default async function IncidentDetailsPage(
               Uploaded photos, screenshots, or evidence files.
             </CardDescription>
           </CardHeader>
+
           <CardContent>
-            {incident.attachments.length === 0 ? (
+            {attachments.length === 0 ? (
               <p className='text-muted-foreground text-sm'>
                 No attachments uploaded.
               </p>
             ) : (
               <div className='grid gap-2 sm:grid-cols-2 lg:grid-cols-3'>
-                {incident.attachments.map((src, idx) => (
-                  <img
-                    key={idx}
-                    src={src}
-                    alt={`Incident attachment ${idx + 1}`}
-                    className='h-40 w-full rounded-md border object-cover'
-                    loading='lazy'
-                  />
-                ))}
+                {attachments.map((src, idx) => {
+                  if (!src) return null;
+                  return (
+                    <IncidentAttachmentItem
+                      key={idx}
+                      src={src}
+                      index={idx}
+                      alt={`Incident attachment ${idx + 1}`}
+                    />
+                  );
+                })}
               </div>
             )}
           </CardContent>

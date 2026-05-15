@@ -1,13 +1,8 @@
+'use client';
+
 import { SignUp as ClerkSignUpForm } from '@clerk/nextjs';
-import { Metadata } from 'next';
 import Link from 'next/link';
 import { ShieldCheck } from 'lucide-react';
-
-export const metadata: Metadata = {
-  title: 'IDRMC | Sign Up',
-  description:
-    'Create secure access for the Ethiopian Disaster and Risk Management Commission operations portal.'
-};
 
 export default function SignUpViewPage() {
   return (
@@ -53,12 +48,25 @@ export default function SignUpViewPage() {
             </div>
 
             <ClerkSignUpForm
+              path='/auth/sign-up'
+              routing='path'
+              signInUrl='/auth/sign-in'
               appearance={{
                 variables: {
                   colorPrimary: '#0f766e'
                 }
               }}
             />
+
+            <div className='mt-4 text-center text-sm text-emerald-900/90'>
+              Already have an account?{' '}
+              <Link
+                href='/auth/sign-in'
+                className='font-semibold text-emerald-900 underline underline-offset-2'
+              >
+                Sign in
+              </Link>
+            </div>
 
             <p className='text-muted-foreground mt-6 text-center text-xs'>
               By continuing, you agree to our{' '}

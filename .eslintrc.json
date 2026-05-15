@@ -1,11 +1,27 @@
 {
-  "extends": "next/core-web-vitals",
-  "plugins": ["@typescript-eslint"],
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "react-hooks"],
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2022": true
+  },
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "ignorePatterns": [".next/", "node_modules/", "dist/", "build/"],
   "rules": {
     "@typescript-eslint/no-unused-vars": "warn",
-    "import/no-unresolved": "off",
-    "import/named": "off",
-    "no-console": "warn",
-    "react-hooks/exhaustive-deps": "warn"
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/ban-types": "off",
+    "no-empty-pattern": "warn",
+    "react-hooks/exhaustive-deps": "warn",
+    "no-console": "warn"
   }
 }

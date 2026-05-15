@@ -11,7 +11,7 @@ export const mockIncidents: Incident[] = [
     title: 'Severe Flood in Northern Region',
     description: 'Heavy rainfall caused rivers to overflow.',
     incidentType: IncidentType.FLOOD,
-    status: IncidentStatus.PENDING,
+    status: IncidentStatus.VERIFIED,
     severity: IncidentSeverityLevel.HIGH,
     location: 'Amhara Region, Ethiopia',
     attachments: ['https://via.placeholder.com/150'],
@@ -19,8 +19,8 @@ export const mockIncidents: Incident[] = [
     requiresUrgentMedical: true,
     infrastructureDamage: ['Roads destroyed', 'Bridges collapsed'],
     reportedBy: 'anonymous',
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
-    updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2026-04-06T12:00:00.000Z', // 7 days ago
+    updatedAt: '2026-04-06T12:00:00.000Z',
     resolvedBy: null,
     resolvedAt: null
   },
@@ -38,8 +38,8 @@ export const mockIncidents: Incident[] = [
     requiresUrgentMedical: false,
     infrastructureDamage: ['Forest destroyed'],
     reportedBy: 'user123',
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
-    updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+    createdAt: '2026-04-10T12:00:00.000Z', // 3 days ago
+    updatedAt: '2026-04-10T12:00:00.000Z'
   },
 
   {
@@ -55,9 +55,28 @@ export const mockIncidents: Incident[] = [
     requiresUrgentMedical: false,
     infrastructureDamage: ['Road blocked'],
     reportedBy: 'anonymous',
-    createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(), // 14 days ago
-    updatedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: '2026-03-30T12:00:00.000Z', // 14 days ago
+    updatedAt: '2026-03-30T12:00:00.000Z',
     resolvedBy: 'admin',
-    resolvedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
+    resolvedAt: '2026-04-03T12:00:00.000Z'
+  },
+
+  {
+    id: '4',
+    title: 'Drought in Southern Region',
+    description: 'Extended dry period affecting agriculture.',
+    incidentType: IncidentType.DROUGHT,
+    status: IncidentStatus.VERIFIED,
+    severity: IncidentSeverityLevel.MEDIUM,
+    location: 'Southern Nations Region, Ethiopia',
+    attachments: [],
+    affectedPopulationCount: 1800,
+    requiresUrgentMedical: false,
+    infrastructureDamage: ['Water supply affected'],
+    reportedBy: 'local_authority',
+    createdAt: '2026-04-11T12:00:00.000Z', // 2 days ago
+    updatedAt: '2026-04-11T12:00:00.000Z',
+    resolvedBy: null,
+    resolvedAt: null
   }
 ];

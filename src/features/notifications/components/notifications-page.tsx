@@ -1,12 +1,13 @@
 'use client';
 
 import { IconBell } from '@tabler/icons-react';
+import { useMemo, useState } from 'react';
 import PageContainer from '@/components/layout/page-container';
 import { Button } from '@/components/ui/button';
 import { NotificationCard } from '@/components/ui/notification-card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from 'next/navigation';
-import { useNotificationStore } from '../utils/store';
+import { useNotifications } from '../api/notifications';
 
 const actionRoutes: Record<string, string> = {
   view: '/dashboard/overview',
@@ -17,10 +18,39 @@ const actionRoutes: Record<string, string> = {
 };
 
 export default function NotificationsPage() {
-  const { notifications, markAsRead, markAllAsRead, unreadCount } =
-    useNotificationStore();
+  const { data, isLoading } = useNotifications();
+  const [readIds, setReadIds] = useState<Record<string, true>>({});
   const router = useRouter();
-  const count = unreadCount();
+
+  const notifications = useMemo(() => {
+    const items = data?.items ?? [];
+
+    return items.map((notification) => ({
+      id: notification.id,
+      title: notification.title,
+      body: notification.message,
+      status: readIds[notification.id]
+        ? ('read' as const)
+        : ('unread' as const),
+      createdAt: notification.createdAt
+    }));
+  }, [data?.items, readIds]);
+
+  const count = notifications.filter((n) => n.status === 'unread').length;
+
+  const markAsRead = (id: string) => {
+    setReadIds((prev) => ({ ...prev, [id]: true }));
+  };
+
+  const markAllAsRead = () => {
+    setReadIds((prev) => {
+      const next = { ...prev };
+      notifications.forEach((notification) => {
+        next[notification.id] = true;
+      });
+      return next;
+    });
+  };
 
   const unreadNotifications = notifications.filter(
     (n) => n.status === 'unread'
@@ -47,7 +77,6 @@ export default function NotificationsPage() {
             body={notification.body}
             status={notification.status}
             createdAt={notification.createdAt}
-            actions={notification.actions}
             onMarkAsRead={markAsRead}
             onAction={(notifId, actionId) => {
               const route = actionRoutes[actionId];
@@ -86,7 +115,13 @@ export default function NotificationsPage() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value='all' className='mt-4'>
-          {renderList(notifications)}
+          {isLoading ? (
+            <div className='text-muted-foreground text-sm'>
+              Loading notifications...
+            </div>
+          ) : (
+            renderList(notifications)
+          )}
         </TabsContent>
         <TabsContent value='unread' className='mt-4'>
           {renderList(unreadNotifications)}

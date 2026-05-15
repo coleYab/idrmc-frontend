@@ -39,9 +39,7 @@ export function BarGraph() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          Resource Fulfillment by Region
-        </CardTitle>
+        <CardTitle>Resource Fulfillment by Region</CardTitle>
         <CardDescription>Current relief dispatch operations</CardDescription>
       </CardHeader>
       <CardContent>

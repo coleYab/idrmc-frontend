@@ -8,7 +8,6 @@ import type { Metadata, Viewport } from 'next';
 import NextTopLoader from 'nextjs-toploader';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import '../styles/globals.css';
-
 const META_THEME_COLORS = {
   light: '#ffffff',
   dark: '#09090b'
@@ -16,17 +15,15 @@ const META_THEME_COLORS = {
 
 export const metadata: Metadata = {
   title: 'Next Shadcn',
-  description: 'Basic dashboard with Next.js and Shadcn',
+  description: 'Basic dashboard with Next.js and Shadcn'
+};
+
+export const viewport: Viewport = {
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: META_THEME_COLORS.light },
     { media: '(prefers-color-scheme: dark)', color: META_THEME_COLORS.dark }
   ]
 };
-
-export const viewport: Viewport = {
-  themeColor: META_THEME_COLORS.light
-};
-
 export default async function RootLayout({
   children
 }: {
