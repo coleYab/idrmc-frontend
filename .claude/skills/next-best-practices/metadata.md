@@ -56,16 +56,15 @@ Separate from metadata for streaming support:
 import type { Viewport } from 'next'
 
 export const viewport: Viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
-  themeColor: '#000000',
-}
-
+  themeColor: "#000000",
+};
 // Or dynamic
-export function generateViewport({ params }): Viewport {
-  return { themeColor: getThemeColor(params) }
+efunction getThemeColor(params: any) {
+  if (params?.theme === "dark") return "#000000";
+  return "#ffffff";
 }
-```
 
 ## Title Templates
 

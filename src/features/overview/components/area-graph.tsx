@@ -41,11 +41,10 @@ export function AreaGraph() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          Public Reports vs Validated Incidents
-        </CardTitle>
+        <CardTitle>Public Reports vs Validated Incidents</CardTitle>
         <CardDescription>
-          Showing incoming noise compared to official validated alarms over the last 6 months
+          Showing incoming noise compared to official validated alarms over the
+          last 6 months
         </CardDescription>
       </CardHeader>
       <CardContent>

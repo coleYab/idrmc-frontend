@@ -1,9 +1,9 @@
 import PageContainer from '@/components/layout/page-container';
 import IncidentVerificationForm from '@/features/incval/components/incident-verification-form';
-import { incidentService } from '@/services/incidentServices';
-import { IncidentSeverityLevel } from '@/lib/types/incident';
 import { getIncidentVerifyInfo } from '@/config/incval-infoconfig';
 import { redirect } from 'next/navigation';
+import { fetchClient } from '@/lib/fetch-client';
+import { IncidentSchema } from '@/features/incidents/types';
 
 interface IncidentVerifyPageProps {
   params: Promise<{ incidentId: string }>;
@@ -19,7 +19,7 @@ async function verifyIncidentAction(
     dataIntegrityConfirmed: boolean;
     disasterTypeAccurate: boolean;
     coordinatesAccurate: boolean;
-    severityLevel: IncidentSeverityLevel;
+    severityLevel: 'Low' | 'Medium' | 'High' | 'Critical';
     assessmentNotes: string;
     action: 'verify' | 'reject';
     rejectionReason?: string;
@@ -28,17 +28,20 @@ async function verifyIncidentAction(
   'use server';
 
   if (data.action === 'verify') {
-    await incidentService.verifyIncident(
-      incidentId,
-      data.severityLevel,
-      data.assessmentNotes
-    );
+    await fetchClient(`/incidents/${incidentId}/resolve`, {
+      method: 'PUT',
+      body: JSON.stringify({ status: 'VERIFIED' })
+    });
+
+    await fetchClient(`/incidents/${incidentId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ severity: data.severityLevel })
+    }).catch(() => undefined);
   } else {
-    await incidentService.rejectIncident(
-      incidentId,
-      data.rejectionReason || 'No reason provided',
-      data.assessmentNotes
-    );
+    await fetchClient(`/incidents/${incidentId}/resolve`, {
+      method: 'PUT',
+      body: JSON.stringify({ status: 'REJECTED' })
+    });
   }
 }
 
@@ -47,7 +50,16 @@ export default async function IncidentVerifyPage(
 ) {
   const { incidentId } = await props.params;
 
-  const incident = await incidentService.getById(incidentId);
+  const incidentResponse = await fetchClient<unknown>(
+    `/incidents/${incidentId}`,
+    {
+      cache: 'no-store'
+    }
+  ).catch(() => undefined);
+
+  const incident = incidentResponse
+    ? IncidentSchema.safeParse(incidentResponse).data
+    : undefined;
 
   if (!incident) {
     redirect('/incval/dashboard');

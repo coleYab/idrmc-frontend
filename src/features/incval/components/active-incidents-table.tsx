@@ -5,12 +5,12 @@ import { DataTableToolbar } from '@/components/ui/table/data-table-toolbar';
 import { useDataTable } from '@/hooks/use-data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { parseAsInteger, useQueryState } from 'nuqs';
-import { mockIncidents } from '@/lib/mock/incidents';
+import { useIncidents } from '@/features/incidents/api/incidents';
 import {
-  Incident,
-  IncidentSeverityLevel,
-  IncidentType
-} from '@/lib/types/incident';
+  IncidentTypeEnum,
+  SeverityLevelEnum,
+  type Incident
+} from '@/features/incidents/types';
 import { Badge } from '@/components/ui/badge';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
 import { Column } from '@tanstack/react-table';
@@ -42,14 +42,17 @@ export const columns: ColumnDef<Incident>[] = [
       <DataTableColumnHeader column={column} title='Type' />
     ),
     cell: ({ cell }) => {
-      const type = cell.getValue<IncidentType>();
+      const type =
+        cell.getValue<
+          (typeof IncidentTypeEnum)['enum'][keyof (typeof IncidentTypeEnum)['enum']]
+        >();
       return <Badge variant='outline'>{type}</Badge>;
     },
     meta: {
       label: 'Type',
       placeholder: 'Filter by type...',
       variant: 'select',
-      options: Object.values(IncidentType).map((type) => ({
+      options: IncidentTypeEnum.options.map((type) => ({
         label: type,
         value: type
       }))
@@ -63,12 +66,15 @@ export const columns: ColumnDef<Incident>[] = [
       <DataTableColumnHeader column={column} title='Severity' />
     ),
     cell: ({ cell }) => {
-      const severity = cell.getValue<IncidentSeverityLevel>();
+      const severity =
+        cell.getValue<
+          (typeof SeverityLevelEnum)['enum'][keyof (typeof SeverityLevelEnum)['enum']]
+        >();
       const colorMap = {
-        [IncidentSeverityLevel.LOW]: 'bg-green-100 text-green-800',
-        [IncidentSeverityLevel.MEDIUM]: 'bg-yellow-100 text-yellow-800',
-        [IncidentSeverityLevel.HIGH]: 'bg-orange-100 text-orange-800',
-        [IncidentSeverityLevel.CRITICAL]: 'bg-red-100 text-red-800'
+        Low: 'bg-green-100 text-green-800',
+        Medium: 'bg-yellow-100 text-yellow-800',
+        High: 'bg-orange-100 text-orange-800',
+        Critical: 'bg-red-100 text-red-800'
       };
       return <Badge className={colorMap[severity]}>{severity}</Badge>;
     },
@@ -76,7 +82,7 @@ export const columns: ColumnDef<Incident>[] = [
       label: 'Severity',
       placeholder: 'Filter by severity...',
       variant: 'select',
-      options: Object.values(IncidentSeverityLevel).map((severity) => ({
+      options: SeverityLevelEnum.options.map((severity) => ({
         label: severity,
         value: severity
       }))
@@ -168,9 +174,9 @@ interface ActiveIncidentsTableProps {}
 
 export function ActiveIncidentsTable({}: ActiveIncidentsTableProps) {
   const [pageSize] = useQueryState('perPage', parseAsInteger.withDefault(10));
+  const { data, isLoading } = useIncidents({ limit: 100, offset: 0 });
 
-  // Filter for active incidents only
-  const activeIncidents = mockIncidents.filter(
+  const activeIncidents = (data?.items ?? []).filter(
     (incident) => incident.status === 'Active'
   );
 
@@ -185,8 +191,16 @@ export function ActiveIncidentsTable({}: ActiveIncidentsTableProps) {
   });
 
   return (
-    <DataTable table={table}>
-      <DataTableToolbar table={table} />
-    </DataTable>
+    <>
+      {isLoading ? (
+        <div className='text-muted-foreground text-sm'>
+          Loading incidents...
+        </div>
+      ) : (
+        <DataTable table={table}>
+          <DataTableToolbar table={table} />
+        </DataTable>
+      )}
+    </>
   );
 }

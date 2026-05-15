@@ -1,6 +1,7 @@
 import { searchParamsCache } from '@/lib/searchparams';
 import { IncidentsTable } from './incidents-tables';
-import { fakeIncidents } from '@/constants/mock-api';
+import { fetchClientResponse } from '@/lib/fetch-client';
+import { IncidentSchema, type Incident } from '../types';
 
 export default async function IncidentsListingPage() {
   const page = searchParamsCache.get('page');
@@ -19,10 +20,33 @@ export default async function IncidentsListingPage() {
     id: id ?? undefined,
     description: description ?? undefined,
     location: location ?? undefined
+  const limit = pageLimit ?? 10;
+  const offset = Math.max((page - 1) * limit, 0);
+
+  const response = await fetchClientResponse<unknown[]>('/incidents', {
+    params: {
+      limit,
+      offset,
+      status: status ?? undefined,
+      severity: severity ?? undefined,
+      search: search ?? undefined
+    },
+    cache: 'no-store'
   });
 
-  const totalItems = data.total_items;
-  const items = data.items;
+  const parsedItems = IncidentSchema.array().safeParse(response.data);
+  const items: Incident[] = parsedItems.success
+    ? parsedItems.data
+    : response.data.reduce<Incident[]>((acc, item) => {
+        const parsedItem = IncidentSchema.safeParse(item);
+        if (parsedItem.success) {
+          acc.push(parsedItem.data);
+        }
+        return acc;
+      }, []);
+
+  const totalItems =
+    response.meta?.total ?? response.meta?.count ?? items.length;
 
   return <IncidentsTable data={items} totalItems={totalItems} />;
 }

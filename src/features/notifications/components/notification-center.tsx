@@ -1,6 +1,7 @@
 'use client';
 
 import { IconBell, IconChevronRight } from '@tabler/icons-react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,7 +12,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { NotificationCard } from '@/components/ui/notification-card';
-import { useNotificationStore } from '../utils/store';
+import { useNotifications } from '../api/notifications';
 import { useRouter } from 'next/navigation';
 
 const MAX_VISIBLE = 5;
@@ -25,10 +26,38 @@ const actionRoutes: Record<string, string> = {
 };
 
 export function NotificationCenter() {
-  const { notifications, markAsRead, markAllAsRead, unreadCount } =
-    useNotificationStore();
+  const { data } = useNotifications({ limit: MAX_VISIBLE, offset: 0 });
+  const [readIds, setReadIds] = useState<Record<string, true>>({});
   const router = useRouter();
-  const count = unreadCount();
+  const notifications = useMemo(() => {
+    const items = data?.items ?? [];
+
+    return items.map((notification) => ({
+      id: notification.id,
+      title: notification.title,
+      body: notification.message,
+      status: readIds[notification.id]
+        ? ('read' as const)
+        : ('unread' as const),
+      createdAt: notification.createdAt
+    }));
+  }, [data?.items, readIds]);
+
+  const count = notifications.filter((n) => n.status === 'unread').length;
+  const markAsRead = (id: string) => {
+    setReadIds((prev) => ({ ...prev, [id]: true }));
+  };
+
+  const markAllAsRead = () => {
+    setReadIds((prev) => {
+      const next = { ...prev };
+      notifications.forEach((notification) => {
+        next[notification.id] = true;
+      });
+      return next;
+    });
+  };
+
   const visibleNotifications = notifications.slice(0, MAX_VISIBLE);
 
   return (
@@ -96,7 +125,6 @@ export function NotificationCenter() {
                   body={notification.body}
                   status={notification.status}
                   createdAt={notification.createdAt}
-                  actions={notification.actions}
                   onMarkAsRead={markAsRead}
                   onAction={(notifId, actionId) => {
                     const route = actionRoutes[actionId];
