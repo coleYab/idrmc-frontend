@@ -24,3 +24,11 @@ export function formatBytes(
       : (sizes[i] ?? 'Bytes')
   }`;
 }
+
+export function normalizeRole(roleValue: unknown): string {
+  if (typeof roleValue !== 'string') {
+    return '';
+  }
+
+  return roleValue.trim().toLowerCase();
+}
