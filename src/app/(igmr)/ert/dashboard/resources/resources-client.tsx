@@ -53,7 +53,7 @@ export default function ResourcesClient() {
       pageTitle='Resource Inventory'
       pageDescription='See available food, vehicles, volunteers and other emergency resources currently ready for deployment.'
     >
-      <div className='grid gap-4 lg:grid-cols-2'>
+      <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-3'>
         {allocationTotals.map(({ resource, allocated, total }) => (
           <Card key={resource.id}>
             <CardHeader>
@@ -93,7 +93,7 @@ export default function ResourcesClient() {
         ))}
       </div>
 
-      <div className='grid gap-4 lg:grid-cols-2'>
+      <div className='grid gap-4 lg:grid-cols-[1.4fr_0.95fr]'>
         <Card>
           <CardHeader>
             <CardTitle>Current Allocations</CardTitle>
