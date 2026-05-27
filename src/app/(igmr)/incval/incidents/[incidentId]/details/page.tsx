@@ -9,6 +9,9 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { getIncidentDetailsInfo } from '@/config/incval-infoconfig';
+import { incidentService } from '@/services/incidentServices';
+import { fakeIncidents } from '@/constants/mock-api';
+import type { Incident } from '@/lib/types/incident';
 import { fetchClient } from '@/lib/fetch-client';
 import { IncidentSchema, type Incident } from '@/features/incidents/types';
 import { IncidentAttachmentItem } from '@/components/incident/incident-attachment-item';
@@ -45,6 +48,8 @@ export default async function IncidentDetailsPage(
 ) {
   const { incidentId } = await props.params;
 
+  let incident: Incident | undefined =
+    await incidentService.getById(incidentId);
   const incidentResponse = await fetchClient<unknown>(
     `/incidents/${incidentId}`,
     { cache: 'no-store' }
@@ -53,6 +58,30 @@ export default async function IncidentDetailsPage(
   const incident: Incident | undefined = incidentResponse
     ? IncidentSchema.safeParse(incidentResponse).data
     : undefined;
+
+  // Fall back to fakeIncidents (table data) if not found in mockIncidents
+  if (!incident) {
+    const fakeResult = await fakeIncidents.getIncidentById(incidentId);
+    if (fakeResult.success && fakeResult.incident) {
+      const fi = fakeResult.incident;
+      incident = {
+        id: fi.id,
+        title: fi.id,
+        description: fi.description,
+        incidentType: fi.id as any,
+        status: fi.status as any,
+        severity: fi.severityLevel as any,
+        location: fi.location,
+        attachments: [],
+        affectedPopulationCount: 0,
+        requiresUrgentMedical: false,
+        infrastructureDamage: [],
+        reportedBy: 'Unknown',
+        createdAt: fi.reportDate,
+        updatedAt: fi.reportDate
+      };
+    }
+  }
 
   if (!incident) {
     notFound();

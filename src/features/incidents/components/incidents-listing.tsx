@@ -6,11 +6,21 @@ import { IncidentSchema, type Incident } from '../types';
 
 export default async function IncidentsListingPage() {
   const page = searchParamsCache.get('page');
-  const search = searchParamsCache.get('name'); // Or search, depending on searchParams config
   const pageLimit = searchParamsCache.get('perPage');
   const status = searchParamsCache.get('status');
-  const severity = searchParamsCache.get('severity');
+  const severityLevel = searchParamsCache.get('severityLevel');
+  const id = searchParamsCache.get('id');
+  const description = searchParamsCache.get('description');
+  const location = searchParamsCache.get('location');
 
+  const data = await fakeIncidents.getIncidents({
+    page,
+    limit: pageLimit,
+    status: status ?? undefined,
+    severity: severityLevel ?? undefined,
+    id: id ?? undefined,
+    description: description ?? undefined,
+    location: location ?? undefined
   const limit = pageLimit ?? 10;
   const offset = Math.max((page - 1) * limit, 0);
 

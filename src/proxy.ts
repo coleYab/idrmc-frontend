@@ -1,14 +1,83 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import {
+  clerkClient,
+  clerkMiddleware,
+  createRouteMatcher
+} from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+import { normalizeRole } from '@/lib/utils';
 
 const isPublicRoute = createRouteMatcher([
   '/auth/sign-in(.*)',
   '/auth/sign-up(.*)',
-  '/'
+  '/',
+  '/about',
+  '/privacy-policy',
+  '/terms-of-service'
 ]);
 
+const routeAccessMap: Record<string, string[]> = {
+  admin: ['/incval', '/ert', '/disastermanager', '/dashboard'],
+  incident_validator: ['/incval', '/dashboard/incidents', '/dashboard/incval'],
+  disaster_response_team: [
+    '/disastermanager',
+    '/dashboard/disasters',
+    '/dashboard/locations'
+  ],
+  emergency_response_team: ['/ert', '/dashboard/incidents', '/dashboard/ert'],
+  user: ['/dashboard/profile']
+};
+
+const protectedPrefixes = Array.from(
+  new Set(Object.values(routeAccessMap).flat())
+);
+
+const defaultRouteByRole: Record<string, string> = {
+  admin: '/incval',
+  incident_validator: '/incval',
+  disaster_response_team: '/disastermanager',
+  emergency_response_team: '/ert',
+  user: '/about'
+};
+
+function canAccessPath(role: string, pathname: string) {
+  const allowedPrefixes = routeAccessMap[role];
+
+  if (!allowedPrefixes) {
+    return false;
+  }
+
+  return allowedPrefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+}
+
+function getDefaultDashboardPath(role: string) {
+  return defaultRouteByRole[role] ?? '/about';
+}
+
 export default clerkMiddleware(async (auth, request) => {
-  if (!isPublicRoute(request)) {
+  if (isPublicRoute(request)) {
+    return;
+  }
+
+  const { userId } = await auth();
+  if (!userId) {
     await auth.protect();
+    return;
+  }
+
+  const user = await (await clerkClient()).users.getUser(userId);
+  const role =
+    normalizeRole(user.publicMetadata?.role) ||
+    normalizeRole(user.unsafeMetadata?.role);
+  const { pathname } = request.nextUrl;
+
+  if (protectedPrefixes.some((prefix) => pathname.startsWith(prefix))) {
+    if (!canAccessPath(role, pathname)) {
+      return NextResponse.redirect(
+        new URL(getDefaultDashboardPath(role), request.url)
+      );
+    }
   }
 });
 export const config = {
