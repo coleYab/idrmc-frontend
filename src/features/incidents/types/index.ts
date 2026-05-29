@@ -1,5 +1,22 @@
 import { z } from 'zod';
 
+const normalizeIncidentPayload = (rawData: unknown) => {
+  if (typeof rawData !== 'object' || rawData === null) {
+    return rawData;
+  }
+
+  const data = rawData as Record<string, unknown>;
+  const incidentType = data.incidentType ?? data.type;
+  const affectedPopulationCount =
+    data.affectedPopulationCount ?? data.totalAffectedPopulation;
+
+  return {
+    ...data,
+    incidentType,
+    affectedPopulationCount
+  };
+};
+
 export const IncidentTypeEnum = z.enum([
   'Flood',
   'Drought',
@@ -19,7 +36,7 @@ export const IncidentStatusEnum = z.enum([
   'Rejected'
 ]);
 
-export const ReportIncidentSchema = z.object({
+export const ReportIncidentShape = z.object({
   title: z.string().min(3).max(100),
   description: z.string().min(10),
   incidentType: IncidentTypeEnum,
@@ -31,26 +48,34 @@ export const ReportIncidentSchema = z.object({
   attachments: z.array(z.string().url()).optional()
 });
 
+export const ReportIncidentSchema = z.preprocess(
+  normalizeIncidentPayload,
+  ReportIncidentShape
+);
+
 export type ReportIncidentDto = z.infer<typeof ReportIncidentSchema>;
 
-export const IncidentSchema = z.object({
-  id: z.string().uuid(),
-  title: z.string(),
-  description: z.string(),
-  incidentType: IncidentTypeEnum,
-  status: IncidentStatusEnum,
-  severity: SeverityLevelEnum,
-  location: z.string(),
-  affectedPopulationCount: z.number().int().min(0),
-  requiresUrgentMedical: z.boolean(),
-  infrastructureDamage: z.array(z.string()).optional(),
-  attachments: z.array(z.string()).optional(),
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
-  reportedBy: z.string(),
-  resolvedBy: z.string().nullable().optional(),
-  resolvedAt: z.iso.datetime().nullable().optional()
-});
+export const IncidentSchema = z.preprocess(
+  normalizeIncidentPayload,
+  z.object({
+    id: z.string().nonempty(),
+    title: z.string(),
+    description: z.string(),
+    incidentType: IncidentTypeEnum,
+    status: IncidentStatusEnum,
+    severity: SeverityLevelEnum,
+    location: z.string(),
+    affectedPopulationCount: z.number().int().min(0),
+    requiresUrgentMedical: z.boolean(),
+    infrastructureDamage: z.array(z.string()).optional(),
+    attachments: z.array(z.string()).optional(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    reportedBy: z.string(),
+    resolvedBy: z.string().nullable().optional(),
+    resolvedAt: z.iso.datetime().nullable().optional()
+  })
+);
 
 export type Incident = z.infer<typeof IncidentSchema>;
 
@@ -62,7 +87,10 @@ export type UpdateIncidentStatusDto = z.infer<
   typeof UpdateIncidentStatusSchema
 >;
 
-export const UpdateIncidentSchema = ReportIncidentSchema.partial();
+export const UpdateIncidentSchema = z.preprocess(
+  normalizeIncidentPayload,
+  ReportIncidentShape.partial()
+);
 
 export type UpdateIncidentDto = z.infer<typeof UpdateIncidentSchema>;
 

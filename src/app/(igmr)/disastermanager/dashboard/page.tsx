@@ -1,9 +1,5 @@
-import PageContainer from '@/components/layout/page-container';
 import { MetricsCards } from '@/components/dashboard/MetricsCards';
-import { NotificationFeed } from '@/components/dashboard/NotificationFeed';
-import { DisasterSummary } from '@/components/dashboard/DisasterSummary';
-import { VerifiedIncidents } from '@/components/dashboard/VerifiedIncidents';
-import { disastermanagerInfo } from '@/config/disastermanager-infoconfig';
+// import { DisasterSummary } from '@/components/dashboard/DisasterSummary';
 
 export const metadata = {
   title: 'IDRMC - Disaster Management Dashboard'
@@ -11,28 +7,14 @@ export const metadata = {
 
 export default function DisasterManagerDashboardPage() {
   return (
-    <PageContainer
-      scrollable={false}
-      pageTitle='Disaster Management Dashboard'
-      pageDescription='Central command center for disaster response coordination and management.'
-      infoContent={disastermanagerInfo.dashboard}
-    >
-      <div className='flex flex-1 flex-col space-y-6'>
-        {/* High-level metrics */}
-        <MetricsCards />
+    <div className='@container/main flex flex-1 flex-col gap-4 py-4'>
+      <MetricsCards />
 
-        {/* Main content grid */}
-        <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
-          {/* Real-time notification feed */}
-          <NotificationFeed />
+      {/* <DisasterSummary /> */}
 
-          {/* Regional disaster summary */}
-          <DisasterSummary />
-        </div>
-
-        {/* Verified incidents section */}
-        <VerifiedIncidents />
+      <div className='grid grid-cols-1 gap-4 px-4 lg:grid-cols-2 lg:px-6'>
+        {/* Graphs and recent incidents rendered by layout */}
       </div>
-    </PageContainer>
+    </div>
   );
 }

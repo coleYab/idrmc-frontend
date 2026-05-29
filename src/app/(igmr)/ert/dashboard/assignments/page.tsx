@@ -1,3 +1,5 @@
+// NOTE: The Assignments page is currently disabled from sidebar navigation.
+// Active alert allocation and resource tracking are managed through Alerts and Resources.
 import {
   Card,
   CardContent,

@@ -1,7 +1,9 @@
+// NOTE: The Medical Resources page is currently disabled from sidebar navigation.
+// Resource allocation and inventory status are available through the Alerts and Resources dashboards.
+import PageContainer from '@/components/layout/page-container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { mockIncidents } from '@/lib/mock/incidents';
 
 export const metadata = { title: 'ERT - Medical Resources' };
 
@@ -45,36 +47,13 @@ const mockMedical = [
 ];
 
 export default function MedicalPage() {
-  const urgentCases = mockIncidents.filter((i) => i.requiresUrgentMedical);
-
   return (
-    <div className='@container/main flex flex-1 flex-col gap-4 p-4 lg:p-6'>
-      <div>
-        <h2 className='text-xl font-semibold'>Medical Resources</h2>
-        <p className='text-muted-foreground text-sm'>
-          Inventory and triage summary
-        </p>
-      </div>
-
-      {urgentCases.length > 0 && (
-        <Card className='border-destructive'>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-destructive text-base'>
-              Urgent Medical Cases ({urgentCases.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className='space-y-1 text-sm'>
-            {urgentCases.map((i) => (
-              <div key={i.id} className='flex items-center justify-between'>
-                <span>{i.title}</span>
-                <Badge variant='destructive'>{i.location.split(',')[0]}</Badge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+    <PageContainer
+      scrollable={true}
+      pageTitle='Medical Resources'
+      pageDescription='Inventory and triage summary for medical response resources.'
+    >
+      <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-3'>
         {mockMedical.map((item) => {
           const pct = Math.round((item.available / item.total) * 100);
           const variant =
@@ -82,7 +61,7 @@ export default function MedicalPage() {
           return (
             <Card key={item.id}>
               <CardHeader className='pb-2'>
-                <div className='flex items-center justify-between'>
+                <div className='flex items-center justify-between gap-3'>
                   <CardTitle className='text-base'>{item.resource}</CardTitle>
                   <Badge variant={variant}>{pct}%</Badge>
                 </div>
@@ -97,6 +76,6 @@ export default function MedicalPage() {
           );
         })}
       </div>
-    </div>
+    </PageContainer>
   );
 }

@@ -4,8 +4,6 @@ import { IncidentStatus } from '@/lib/types/incident';
 import {
   IconTrendingUp,
   IconTrendingDown,
-  IconAlertTriangle,
-  IconCircleCheck,
   IconReportAnalytics
 } from '@tabler/icons-react';
 

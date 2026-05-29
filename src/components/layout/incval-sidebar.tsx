@@ -85,7 +85,7 @@ const primaryRoutes = [
   },
   {
     title: 'My Profile',
-    href: '/dashboard/profile',
+    href: '/incval/profile',
     icon: IconUserCircle
   }
 ];
@@ -119,7 +119,7 @@ export default function IncvalSidebar() {
   const { user } = useUser();
 
   const handleShareProfileAccess = async () => {
-    const profileUrl = `${window.location.origin}/dashboard/profile`;
+    const profileUrl = `${window.location.origin}/incval/profile`;
 
     try {
       if (navigator.share) {
@@ -241,7 +241,7 @@ export default function IncvalSidebar() {
 
                 <DropdownMenuGroup>
                   <DropdownMenuItem
-                    onClick={() => router.push('/dashboard/profile')}
+                    onClick={() => router.push('/incval/profile')}
                   >
                     <IconUserCircle className='mr-2 h-4 w-4' />
                     Profile

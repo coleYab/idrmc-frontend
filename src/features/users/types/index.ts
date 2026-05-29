@@ -8,6 +8,7 @@ export const UserSchema = z.object({
   username: z.string(),
   email: z.string().email(),
   role: UserRoleEnum,
+  active: z.boolean().optional(),
   createdAt: z.iso.datetime().optional(),
   updatedAt: z.iso.datetime().optional()
 });
@@ -17,11 +18,20 @@ export type User = z.infer<typeof UserSchema>;
 export const UpdateUserInputSchema = z
   .object({
     name: z.string().min(1).optional(),
-    password: z.string().min(1).optional()
+    password: z.string().min(1).optional(),
+    role: UserRoleEnum.optional(),
+    active: z.boolean().optional()
   })
-  .refine((data) => data.name !== undefined || data.password !== undefined, {
-    message: 'At least one field must be provided'
-  });
+  .refine(
+    (data) =>
+      data.name !== undefined ||
+      data.password !== undefined ||
+      data.role !== undefined ||
+      data.active !== undefined,
+    {
+      message: 'At least one field must be provided'
+    }
+  );
 
 export type UpdateUserInput = z.infer<typeof UpdateUserInputSchema>;
 

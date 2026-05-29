@@ -1,6 +1,5 @@
 import PageContainer from '@/components/layout/page-container';
 import { Suspense } from 'react';
-import { searchParamsCache } from '@/lib/searchparams';
 import { SearchParams } from 'nuqs/server';
 import IncidentsSearchListingPage from '@/features/incval/components/incidents-search-listing';
 import { incvalInfo } from '@/config/incval-infoconfig';
