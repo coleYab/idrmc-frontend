@@ -1,6 +1,7 @@
+'use client';
+
 import { cn } from '@/lib/utils';
-import { mockIncidents } from '@/lib/mock/incidents';
-import { IncidentStatus } from '@/lib/types/incident';
+import { useDisasters } from '@/features/disasters/api/disasters';
 import {
   IconTrendingUp,
   IconTrendingDown,
@@ -88,16 +89,19 @@ function MetricCard({
 }
 
 export function MetricsCards({ className }: MetricsCardsProps) {
-  const pendingReports = mockIncidents.filter(
-    (i) => i.status === IncidentStatus.PENDING
+  const { data: disasters, isLoading } = useDisasters();
+  const allDisasters = disasters ?? [];
+
+  const pendingReports = allDisasters.filter(
+    (i) => i.status === 'Pending' || i.status === 'pending'
   ).length;
-  const activeIncidents = mockIncidents.filter(
-    (i) => i.status === IncidentStatus.ACTIVE
+  const activeIncidents = allDisasters.filter(
+    (i) => i.status === 'Active' || i.status === 'active'
   ).length;
-  const resolvedIncidents = mockIncidents.filter(
-    (i) => i.status === IncidentStatus.RESOLVED
+  const resolvedIncidents = allDisasters.filter(
+    (i) => i.status === 'Resolved' || i.status === 'resolved'
   ).length;
-  const totalIncidents = mockIncidents.length;
+  const totalIncidents = allDisasters.length;
 
   const pct = (n: number) =>
     totalIncidents > 0 ? `+${Math.round((n / totalIncidents) * 100)}%` : '0%';

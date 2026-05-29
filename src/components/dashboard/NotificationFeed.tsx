@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Card,
   CardContent,
@@ -9,8 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { IconAlertTriangle, IconClock, IconMapPin } from '@tabler/icons-react';
-import { mockIncidents } from '@/lib/mock/incidents';
-import { IncidentStatus, IncidentSeverityLevel } from '@/lib/types/incident';
+import { useDisasters } from '@/features/disasters/api/disasters';
 import { formatDistanceToNow } from 'date-fns';
 
 interface NotificationFeedProps {
@@ -18,43 +19,38 @@ interface NotificationFeedProps {
 }
 
 export function NotificationFeed({ className }: NotificationFeedProps) {
+  const { data: disasters } = useDisasters();
+  const allDisasters = disasters ?? [];
+
   // Get recent incidents (pending and active) sorted by creation date
-  const recentIncidents = mockIncidents
+  const recentIncidents = allDisasters
     .filter(
       (incident) =>
-        incident.status === IncidentStatus.PENDING ||
-        incident.status === IncidentStatus.ACTIVE
+        incident.status === 'Pending' ||
+        incident.status === 'pending' ||
+        incident.status === 'Active' ||
+        incident.status === 'active'
     )
     .sort(
       (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        new Date(b.createdAt ?? '').getTime() -
+        new Date(a.createdAt ?? '').getTime()
     )
     .slice(0, 10); // Show latest 10
 
-  const getSeverityColor = (severity: IncidentSeverityLevel) => {
-    switch (severity) {
-      case IncidentSeverityLevel.CRITICAL:
-        return 'destructive';
-      case IncidentSeverityLevel.HIGH:
-        return 'destructive';
-      case IncidentSeverityLevel.MEDIUM:
-        return 'secondary';
-      case IncidentSeverityLevel.LOW:
-        return 'outline';
-      default:
-        return 'outline';
-    }
+  const getSeverityColor = (severity: string) => {
+    const s = severity.toLowerCase();
+    if (s === 'critical') return 'destructive';
+    if (s === 'high') return 'destructive';
+    if (s === 'medium') return 'secondary';
+    if (s === 'low') return 'outline';
+    return 'outline';
   };
 
-  const getStatusIcon = (status: IncidentStatus) => {
-    switch (status) {
-      case IncidentStatus.PENDING:
-        return <IconClock className='size-4' />;
-      case IncidentStatus.ACTIVE:
-        return <IconAlertTriangle className='size-4' />;
-      default:
-        return <IconAlertTriangle className='size-4' />;
-    }
+  const getStatusIcon = (status?: string) => {
+    const s = status?.toLowerCase();
+    if (s === 'pending') return <IconClock className='size-4' />;
+    return <IconAlertTriangle className='size-4' />;
   };
 
   return (
@@ -83,9 +79,10 @@ export function NotificationFeed({ className }: NotificationFeedProps) {
                 >
                   <Avatar className='size-8'>
                     <AvatarFallback className='text-xs'>
-                      {incident.reportedBy === 'anonymous'
+                      {(incident as any).reportedBy === 'anonymous' ||
+                      !(incident as any).reportedBy
                         ? 'A'
-                        : incident.reportedBy.charAt(0).toUpperCase()}
+                        : (incident as any).reportedBy.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className='flex-1 space-y-1'>
@@ -110,12 +107,15 @@ export function NotificationFeed({ className }: NotificationFeedProps) {
                       </div>
                       <div className='flex items-center gap-1'>
                         {getStatusIcon(incident.status)}
-                        {incident.status}
+                        {incident.status ?? 'Unknown'}
                       </div>
                       <div>
-                        {formatDistanceToNow(new Date(incident.createdAt), {
-                          addSuffix: true
-                        })}
+                        {formatDistanceToNow(
+                          new Date(incident.createdAt ?? ''),
+                          {
+                            addSuffix: true
+                          }
+                        )}
                       </div>
                     </div>
                   </div>

@@ -24,7 +24,7 @@ const routeAccessMap: Record<string, string[]> = {
     '/dashboard/locations'
   ],
   emergency_response_team: ['/ert', '/dashboard/incidents', '/dashboard/ert'],
-  user: ['/dashboard/profile']
+  user: ['/incval', '/ert', '/disastermanager', '/dashboard']
 };
 
 const protectedPrefixes = Array.from(
@@ -69,7 +69,8 @@ export default clerkMiddleware(async (auth, request) => {
   const user = await (await clerkClient()).users.getUser(userId);
   const role =
     normalizeRole(user.publicMetadata?.role) ||
-    normalizeRole(user.unsafeMetadata?.role);
+    normalizeRole(user.unsafeMetadata?.role) ||
+    'user';
   const { pathname } = request.nextUrl;
 
   if (protectedPrefixes.some((prefix) => pathname.startsWith(prefix))) {

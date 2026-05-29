@@ -26,8 +26,7 @@ import {
   IconMapPin,
   IconUsers
 } from '@tabler/icons-react';
-import { mockIncidents } from '@/lib/mock/incidents';
-import { IncidentStatus, IncidentSeverityLevel } from '@/lib/types/incident';
+import { useDisasters } from '@/features/disasters/api/disasters';
 import { useNotificationStore } from '@/features/notifications/utils/store';
 
 interface VerifiedIncidentsProps {
@@ -36,13 +35,16 @@ interface VerifiedIncidentsProps {
 
 export function VerifiedIncidents({ className }: VerifiedIncidentsProps) {
   const { addNotification } = useNotificationStore();
+  const { data: disasters } = useDisasters();
+  const allDisasters = disasters ?? [];
 
   // Filter verified incidents
-  const verifiedIncidents = mockIncidents.filter(
-    (incident) => incident.status === IncidentStatus.VERIFIED
+  const verifiedIncidents = allDisasters.filter(
+    (incident) =>
+      incident.status === 'Verified' || incident.status === 'verified'
   );
 
-  const createAlertForIncident = (incident: (typeof mockIncidents)[0]) => {
+  const createAlertForIncident = (incident: (typeof allDisasters)[number]) => {
     const alertNotification = {
       id: `alert-${incident.id}-${Date.now()}`,
       title: `Alert: ${incident.title}`,
@@ -82,19 +84,13 @@ export function VerifiedIncidents({ className }: VerifiedIncidentsProps) {
     addNotification(alertNotification);
   };
 
-  const getSeverityColor = (severity: IncidentSeverityLevel) => {
-    switch (severity) {
-      case IncidentSeverityLevel.CRITICAL:
-        return 'destructive';
-      case IncidentSeverityLevel.HIGH:
-        return 'destructive';
-      case IncidentSeverityLevel.MEDIUM:
-        return 'secondary';
-      case IncidentSeverityLevel.LOW:
-        return 'outline';
-      default:
-        return 'outline';
-    }
+  const getSeverityColor = (severity: string) => {
+    const s = severity.toLowerCase();
+    if (s === 'critical') return 'destructive';
+    if (s === 'high') return 'destructive';
+    if (s === 'medium') return 'secondary';
+    if (s === 'low') return 'outline';
+    return 'outline';
   };
 
   return (

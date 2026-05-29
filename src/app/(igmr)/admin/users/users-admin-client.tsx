@@ -30,9 +30,12 @@ import {
   IconUserCheck,
   IconUserX
 } from '@tabler/icons-react';
-import { sampleUsers, type AdminUser } from '../admin-mock-data';
+import { useUsers, useUpdateUser } from '@/features/users/api/users';
+import type { User } from '@/features/users/types';
+import { Loader2 } from 'lucide-react';
 
-function formatDate(dateString: string) {
+function formatDate(dateString?: string) {
+  if (!dateString) return 'N/A';
   return new Intl.DateTimeFormat('en-US', {
     dateStyle: 'medium',
     timeStyle: 'short'
@@ -40,13 +43,16 @@ function formatDate(dateString: string) {
 }
 
 export default function UsersAdminClient() {
-  const [users, setUsers] = useState<AdminUser[]>(sampleUsers);
+  const { data, isLoading } = useUsers();
+  const updateUser = useUpdateUser();
   const [search, setSearch] = useState('');
+
+  const users = data?.items ?? [];
 
   const filteredUsers = useMemo(
     () =>
       users.filter((user) =>
-        [user.name, user.email, user.username, user.department, user.role]
+        [user.name, user.email, user.username, user.role]
           .join(' ')
           .toLowerCase()
           .includes(search.toLowerCase())
@@ -58,25 +64,19 @@ export default function UsersAdminClient() {
   const inactiveUsers = users.length - activeUsers;
   const adminUsers = users.filter((user) => user.role === 'Admin').length;
 
-  const handleToggleActive = (id: string) => {
-    setUsers((current) =>
-      current.map((user) =>
-        user.id === id ? { ...user, active: !user.active } : user
-      )
-    );
-    const toggledUser = users.find((user) => user.id === id);
-    toast.success(
-      toggledUser?.active
-        ? `${toggledUser.name} has been deactivated.`
-        : `${toggledUser?.name} has been reactivated.`
-    );
-  };
-
-  const handleDeleteUser = (id: string) => {
-    const user = users.find((item) => item.id === id);
-    if (!user) return;
-    setUsers((current) => current.filter((item) => item.id !== id));
-    toast.success(`Deleted ${user.name} from the user registry.`);
+  const handleToggleActive = async (id: string) => {
+    try {
+      const user = users.find((u) => u.id === id);
+      if (!user) return;
+      await updateUser.mutateAsync({ id, payload: { active: !user.active } });
+      toast.success(
+        user.active
+          ? 'User has been deactivated.'
+          : 'User has been reactivated.'
+      );
+    } catch {
+      toast.error('Failed to update user status');
+    }
   };
 
   const handleInviteUser = () => {
@@ -86,6 +86,16 @@ export default function UsersAdminClient() {
   const handleExportCsv = () => {
     toast.info('Invite flow not connected in this demo.');
   };
+
+  if (isLoading) {
+    return (
+      <PageContainer scrollable={true}>
+        <div className='flex items-center justify-center py-20'>
+          <Loader2 className='h-8 w-8 animate-spin' />
+        </div>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer
@@ -142,7 +152,7 @@ export default function UsersAdminClient() {
               <ul className='text-muted-foreground list-disc pl-5'>
                 <li>Role and status overview</li>
                 <li>Direct user detail navigation</li>
-                <li>Account deactivation and deletion</li>
+                <li>Account deactivation and activation</li>
               </ul>
             </CardContent>
           </Card>
@@ -155,7 +165,7 @@ export default function UsersAdminClient() {
           <CardContent className='space-y-4'>
             <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
               <Input
-                placeholder='Search users, email, role, department'
+                placeholder='Search users, email, role'
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 className='max-w-lg'
@@ -173,7 +183,6 @@ export default function UsersAdminClient() {
                     <TableHead>Role</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Department</TableHead>
                     <TableHead className='text-right'>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -189,14 +198,13 @@ export default function UsersAdminClient() {
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell>{user.role}</TableCell>
+                        <TableCell>{user.role ?? 'User'}</TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>
                           <Badge variant={user.active ? 'default' : 'outline'}>
                             {user.active ? 'Active' : 'Inactive'}
                           </Badge>
                         </TableCell>
-                        <TableCell>{user.department}</TableCell>
                         <TableCell className='space-x-2 text-right'>
                           <Link href={`/admin/users/${user.id}`}>
                             <Button size='sm' variant='outline'>
@@ -208,24 +216,17 @@ export default function UsersAdminClient() {
                             size='sm'
                             variant={user.active ? 'secondary' : 'default'}
                             onClick={() => handleToggleActive(user.id)}
+                            disabled={updateUser.isPending}
                           >
                             {user.active ? <IconUserX /> : <IconUserCheck />}
                             {user.active ? 'Deactivate' : 'Reactivate'}
-                          </Button>
-                          <Button
-                            size='sm'
-                            variant='destructive'
-                            onClick={() => handleDeleteUser(user.id)}
-                          >
-                            <IconTrash />
-                            Delete
                           </Button>
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} className='h-24 text-center'>
+                      <TableCell colSpan={5} className='h-24 text-center'>
                         No users match your search.
                       </TableCell>
                     </TableRow>

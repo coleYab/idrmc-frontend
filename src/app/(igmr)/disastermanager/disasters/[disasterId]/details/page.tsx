@@ -1,4 +1,6 @@
-import { notFound } from 'next/navigation';
+'use client';
+
+import { useParams } from 'next/navigation';
 import PageContainer from '@/components/layout/page-container';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,14 +22,9 @@ import {
   IconCamera,
   IconArrowLeft
 } from '@tabler/icons-react';
-import { mockIncidents } from '@/lib/mock/incidents';
-import { IncidentSeverityLevel } from '@/lib/types/incident';
+import { useDisaster } from '@/features/disasters/api/disasters';
 import Link from 'next/link';
 import { StatusUpdater } from '../../status-updater';
-
-interface DisasterDetailsPageProps {
-  params: Promise<{ disasterId: string }>;
-}
 
 function formatDate(date?: string | null): string {
   if (!date) {
@@ -55,32 +52,61 @@ function renderBadge(
   );
 }
 
-function getSeverityColor(severity: IncidentSeverityLevel) {
-  switch (severity) {
-    case IncidentSeverityLevel.CRITICAL:
-      return 'destructive';
-    case IncidentSeverityLevel.HIGH:
-      return 'destructive';
-    case IncidentSeverityLevel.MEDIUM:
-      return 'secondary';
-    case IncidentSeverityLevel.LOW:
-      return 'outline';
-    default:
-      return 'outline';
-  }
+function getSeverityColor(severity: string) {
+  const s = severity.toLowerCase();
+  if (s === 'critical') return 'destructive';
+  if (s === 'high') return 'destructive';
+  if (s === 'medium') return 'secondary';
+  if (s === 'low') return 'outline';
+  return 'outline';
 }
 
-export default async function DisasterDetailsPage(
-  props: DisasterDetailsPageProps
-) {
-  const { disasterId } = await props.params;
+export default function DisasterDetailsPage() {
+  const params = useParams();
+  const disasterId = params.disasterId as string;
+  const { data: disaster, isLoading } = useDisaster(disasterId);
 
-  // Find the disaster (active incident) by ID
-  const disaster = mockIncidents.find((incident) => incident.id === disasterId);
+  if (isLoading) {
+    return (
+      <PageContainer scrollable={true}>
+        <div className='flex items-center justify-center py-20'>
+          <p className='text-muted-foreground'>Loading disaster details...</p>
+        </div>
+      </PageContainer>
+    );
+  }
 
   if (!disaster) {
-    notFound();
+    return (
+      <PageContainer
+        scrollable={true}
+        pageTitle='Disaster Not Found'
+        pageDescription='The requested disaster could not be found.'
+        pageHeaderAction={
+          <Button asChild variant='outline'>
+            <Link href='/disastermanager/disasters/active'>
+              <IconArrowLeft className='mr-2 size-4' />
+              Back to Active Disasters
+            </Link>
+          </Button>
+        }
+      >
+        <Card>
+          <CardContent className='flex flex-col items-center justify-center py-12'>
+            <IconAlertTriangle className='text-muted-foreground mb-4 size-12' />
+            <h3 className='mb-2 text-lg font-semibold'>Disaster Not Found</h3>
+            <p className='text-muted-foreground max-w-md text-center'>
+              The disaster with ID &quot;{disasterId}&quot; was not found. It
+              may have been removed or you may not have access to it.
+            </p>
+          </CardContent>
+        </Card>
+      </PageContainer>
+    );
   }
+
+  const infrastructureDamage = disaster.infrastructureDamage ?? [];
+  const attachments = disaster.attachments ?? [];
 
   return (
     <PageContainer
@@ -115,7 +141,7 @@ export default async function DisasterDetailsPage(
                   >
                     {disaster.severity} Severity
                   </Badge>
-                  {renderBadge(disaster.status, 'default')}
+                  {renderBadge(disaster.status ?? 'Unknown', 'default')}
                 </div>
               </div>
             </CardHeader>
@@ -149,7 +175,7 @@ export default async function DisasterDetailsPage(
                     <div>
                       <p className='text-sm font-medium'>Reported By</p>
                       <p className='text-muted-foreground text-sm'>
-                        {disaster.reportedBy}
+                        {(disaster as any).reportedBy ?? 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -220,8 +246,8 @@ export default async function DisasterDetailsPage(
                         Infrastructure Damage
                       </p>
                       <p className='text-muted-foreground text-sm'>
-                        {disaster.infrastructureDamage.length > 0
-                          ? `${disaster.infrastructureDamage.length} reported`
+                        {infrastructureDamage.length > 0
+                          ? `${infrastructureDamage.length} reported`
                           : 'None reported'}
                       </p>
                     </div>
@@ -230,7 +256,7 @@ export default async function DisasterDetailsPage(
               </div>
 
               {/* Infrastructure Damage Details */}
-              {disaster.infrastructureDamage.length > 0 && (
+              {infrastructureDamage.length > 0 && (
                 <>
                   <Separator />
                   <div className='space-y-4'>
@@ -238,7 +264,7 @@ export default async function DisasterDetailsPage(
                       Infrastructure Damage Details
                     </h3>
                     <div className='grid gap-2'>
-                      {disaster.infrastructureDamage.map((damage, index) => (
+                      {infrastructureDamage.map((damage, index) => (
                         <div
                           key={index}
                           className='bg-muted/50 flex items-center gap-3 rounded-lg p-3'
@@ -290,14 +316,15 @@ export default async function DisasterDetailsPage(
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {disaster.attachments.length === 0 ? (
+              {attachments.length === 0 ? (
                 <p className='text-muted-foreground py-4 text-center text-sm'>
                   No attachments uploaded
                 </p>
               ) : (
                 <div className='grid gap-3'>
-                  {disaster.attachments.map((src, idx) => (
+                  {attachments.map((src, idx) => (
                     <div key={idx} className='relative'>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={src}
                         alt={`Disaster attachment ${idx + 1}`}
@@ -322,7 +349,7 @@ export default async function DisasterDetailsPage(
             <CardContent className='space-y-3'>
               <div className='flex items-center justify-between'>
                 <span className='text-sm font-medium'>Current Status</span>
-                {renderBadge(disaster.status, 'default')}
+                {renderBadge(disaster.status ?? 'Unknown', 'default')}
               </div>
               <div className='flex items-center justify-between'>
                 <span className='text-sm font-medium'>Severity Level</span>
@@ -339,7 +366,7 @@ export default async function DisasterDetailsPage(
                 <span className='text-sm font-medium'>Update Status</span>
                 <StatusUpdater
                   disasterId={disaster.id}
-                  currentStatus={disaster.status}
+                  currentStatus={disaster.status ?? 'Unknown'}
                 />
               </div>
             </CardContent>

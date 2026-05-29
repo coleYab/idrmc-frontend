@@ -1,8 +1,7 @@
 'use client';
 
+import { useDisasters } from '@/features/disasters/api/disasters';
 import { useNotificationStore } from '@/features/notifications/utils/store';
-import { mockIncidents } from '@/lib/mock/incidents';
-import { IncidentStatus, IncidentSeverityLevel } from '@/lib/types/incident';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -35,19 +34,13 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-const getSeverityColor = (severity: IncidentSeverityLevel) => {
-  switch (severity) {
-    case IncidentSeverityLevel.CRITICAL:
-      return 'destructive';
-    case IncidentSeverityLevel.HIGH:
-      return 'destructive';
-    case IncidentSeverityLevel.MEDIUM:
-      return 'secondary';
-    case IncidentSeverityLevel.LOW:
-      return 'outline';
-    default:
-      return 'outline';
-  }
+const getSeverityColor = (severity: string) => {
+  const s = severity.toLowerCase();
+  if (s === 'critical') return 'destructive';
+  if (s === 'high') return 'destructive';
+  if (s === 'medium') return 'secondary';
+  if (s === 'low') return 'outline';
+  return 'outline';
 };
 
 const formatDate = (dateString: string) => {
@@ -65,8 +58,11 @@ export function ActiveDisastersClient() {
   const { addNotification } = useNotificationStore();
   const [isBroadcasting, setIsBroadcasting] = useState<string | null>(null);
 
-  const activeDisasters = mockIncidents.filter(
-    (incident) => incident.status === IncidentStatus.ACTIVE
+  const { data: disasters } = useDisasters();
+  const allDisasters = disasters ?? [];
+
+  const activeDisasters = allDisasters.filter(
+    (incident) => incident.status === 'Active' || incident.status === 'active'
   );
 
   interface BackendError {
@@ -81,7 +77,7 @@ export function ActiveDisastersClient() {
   }
 
   const broadcastAlertForDisaster = async (
-    disaster: (typeof mockIncidents)[0]
+    disaster: (typeof allDisasters)[number]
   ) => {
     setIsBroadcasting(disaster.id);
 
@@ -159,11 +155,13 @@ export function ActiveDisastersClient() {
                   </div>
                   <div className='flex items-center gap-2'>
                     <IconUser className='text-muted-foreground size-4' />
-                    <span className='truncate'>{disaster.reportedBy}</span>
+                    <span className='truncate'>
+                      {(disaster as any).reportedBy ?? 'N/A'}
+                    </span>
                   </div>
                   <div className='flex items-center gap-2'>
                     <IconClock className='text-muted-foreground size-4' />
-                    <span>{formatDate(disaster.createdAt)}</span>
+                    <span>{formatDate(disaster.createdAt ?? '')}</span>
                   </div>
                 </div>
 
@@ -180,20 +178,21 @@ export function ActiveDisastersClient() {
                       <span>Urgent Medical Attention Required</span>
                     </div>
                   )}
-                  {disaster.infrastructureDamage.length > 0 && (
+                  {(disaster.infrastructureDamage ?? []).length > 0 && (
                     <div className='text-sm'>
                       <span className='text-muted-foreground'>
                         Infrastructure Damage:
                       </span>
                       <ul className='mt-1 list-inside list-disc text-xs'>
-                        {disaster.infrastructureDamage
+                        {(disaster.infrastructureDamage ?? [])
                           .slice(0, 2)
                           .map((damage, idx) => (
                             <li key={idx}>{damage}</li>
                           ))}
-                        {disaster.infrastructureDamage.length > 2 && (
+                        {(disaster.infrastructureDamage ?? []).length > 2 && (
                           <li>
-                            +{disaster.infrastructureDamage.length - 2} more
+                            +{(disaster.infrastructureDamage ?? []).length - 2}{' '}
+                            more
                           </li>
                         )}
                       </ul>

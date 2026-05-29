@@ -2,6 +2,10 @@
 
 import { useMemo, useState } from 'react';
 import PageContainer from '@/components/layout/page-container';
+import {
+  useDonations,
+  useCreateDonation
+} from '@/features/donations/api/donations';
 import { useErtStore } from '@/features/ert/utils/store';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,9 +31,10 @@ import { IconHeart } from '@tabler/icons-react';
 
 export default function DonationsClient() {
   const alerts = useErtStore((state) => state.alerts);
-  const donations = useErtStore((state) => state.donations);
-  const addDonation = useErtStore((state) => state.addDonation);
-  const contributeDonation = useErtStore((state) => state.contributeDonation);
+  const { data: donationsData, isLoading } = useDonations();
+  const createDonation = useCreateDonation();
+
+  const donations = donationsData?.items ?? [];
 
   const [alertId, setAlertId] = useState(alerts[0]?.id ?? '');
   const [title, setTitle] = useState('');
@@ -40,12 +45,12 @@ export default function DonationsClient() {
     () =>
       donations.map((donation) => ({
         donation,
-        alert: alerts.find((alert) => alert.id === donation.alertId)
+        alert: alerts.find((a) => a.id === donation.disasterId)
       })),
     [alerts, donations]
   );
 
-  const handleCreateCampaign = () => {
+  const handleCreateCampaign = async () => {
     if (!alertId) {
       toast.error('Select an alert to tie the campaign to.');
       return;
@@ -59,19 +64,37 @@ export default function DonationsClient() {
       return;
     }
 
-    addDonation(alertId, title.trim(), goal);
-    setTitle('');
-    setGoal(25000);
-    toast.success('Donation campaign created.');
+    try {
+      await createDonation.mutateAsync({
+        title: title.trim(),
+        description: `Donation campaign for alert ${alertId}`,
+        goal
+      });
+      setTitle('');
+      setGoal(25000);
+      toast.success('Donation campaign created.');
+    } catch {
+      toast.error('Failed to create donation campaign.');
+    }
   };
 
-  const handleContribute = (donationId: string) => {
+  const handleContribute = async (donationId: string) => {
     if (giftAmount <= 0) {
       toast.error('Contribution amount must be positive.');
       return;
     }
-    contributeDonation(donationId, giftAmount);
-    toast.success('Donation contribution added.');
+    try {
+      const donation = donations.find((d) => d.id === donationId);
+      if (!donation) return;
+      await createDonation.mutateAsync({
+        title: donation.title,
+        description: donation.description ?? '',
+        goal: (donation.goal ?? 0) + giftAmount
+      });
+      toast.success('Donation contribution added.');
+    } catch {
+      toast.error('Failed to add contribution.');
+    }
   };
 
   return (
@@ -148,11 +171,13 @@ export default function DonationsClient() {
 
           <div className='space-y-4'>
             {donationWithAlerts.map(({ donation, alert }) => {
+              const raised = donation.raised ?? 0;
+              const goalAmount = donation.goal ?? 1;
               const percent = Math.min(
                 100,
-                Math.round((donation.raised / donation.goal) * 100)
+                Math.round((raised / goalAmount) * 100)
               );
-              const achieved = donation.raised >= donation.goal;
+              const achieved = raised >= goalAmount && goalAmount > 0;
 
               return (
                 <Card key={donation.id}>
@@ -174,8 +199,8 @@ export default function DonationsClient() {
                       <div className='text-muted-foreground flex items-center justify-between gap-2 text-sm'>
                         <span>Raised</span>
                         <span>
-                          ${donation.raised.toLocaleString()} / $
-                          {donation.goal.toLocaleString()}
+                          ${raised.toLocaleString()} / $
+                          {goalAmount.toLocaleString()}
                         </span>
                       </div>
                       <Progress value={percent} />
@@ -231,7 +256,7 @@ export default function DonationsClient() {
                     <div>
                       <p className='text-sm font-semibold'>Total campaigns</p>
                       <p className='text-muted-foreground text-xs'>
-                        {donations.length} campaigns created
+                        {donations.length} campaigns
                       </p>
                     </div>
                   </div>

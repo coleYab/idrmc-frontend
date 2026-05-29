@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { auth } from '@clerk/nextjs/server';
 import PageContainer from '@/components/layout/page-container';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -9,7 +10,6 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { getIncidentDetailsInfo } from '@/config/incval-infoconfig';
-import { incidentService } from '@/services/incidentServices';
 import { fakeIncidents } from '@/constants/mock-api';
 import { fetchClient } from '@/lib/fetch-client';
 import { IncidentSchema, type Incident } from '@/features/incidents/types';
@@ -46,10 +46,12 @@ export default async function IncidentDetailsPage(
   props: IncidentDetailsPageProps
 ) {
   const { incidentId } = await props.params;
+  const { getToken } = await auth();
 
   const incidentResponse = await fetchClient<unknown>(
     `/incidents/${incidentId}`,
-    { cache: 'no-store' }
+    { cache: 'no-store' },
+    getToken
   ).catch(() => undefined);
 
   let incident: Incident | undefined = incidentResponse
