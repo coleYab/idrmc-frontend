@@ -11,8 +11,7 @@ import {
   Mulish,
   Playfair_Display,
   Noto_Sans_Mono,
-  Outfit,
-  Space_Mono
+  Outfit
 } from 'next/font/google';
 
 import { cn } from '@/lib/utils';
@@ -68,12 +67,6 @@ const fontOutfit = Outfit({
   variable: '--font-outfit'
 });
 
-const fontSpaceMono = Space_Mono({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-space-mono'
-});
-
 const fontJetBrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-jetbrains-mono'
@@ -101,7 +94,6 @@ export const fontVariables = cn(
   fontDMSans.variable,
   fontFiraCode.variable,
   fontOutfit.variable,
-  fontSpaceMono.variable,
   fontJetBrainsMono.variable,
   fontMerriweather.variable,
   fontPlayfairDisplay.variable

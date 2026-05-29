@@ -77,13 +77,28 @@ export async function fetchClientResponse<T>(
     }
   });
 
-  // 4. Handle Errors
+  // 4. Read response body as text so we can report invalid JSON gracefully.
+  const responseText = await response.text();
+
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(
-      errorData.message ||
-        `API Error: ${response.status} ${response.statusText}`
-    );
+    let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+
+    try {
+      const errorData = JSON.parse(responseText);
+      if (
+        errorData &&
+        typeof errorData === 'object' &&
+        'message' in errorData
+      ) {
+        errorMessage = String((errorData as Record<string, unknown>).message);
+      }
+    } catch {
+      if (responseText.trim()) {
+        errorMessage += ` - ${responseText}`;
+      }
+    }
+
+    throw new Error(errorMessage);
   }
 
   if (response.status === 204) {
@@ -91,9 +106,18 @@ export async function fetchClientResponse<T>(
   }
 
   // 5. Parse Response
-  const result = (await response.json()) as ApiResponse<T>;
+  let result: ApiResponse<T>;
 
-  // Unwrap 'data' if it exists in the standard response format
+  try {
+    result = JSON.parse(responseText) as ApiResponse<T>;
+  } catch (error) {
+    throw new Error(
+      `Unable to parse JSON response from ${url.toString()}. ` +
+        `Response content-type: ${response.headers.get('content-type') ?? 'unknown'}. ` +
+        `Body: ${responseText.slice(0, 500)}`
+    );
+  }
+
   return result.data !== undefined
     ? result
     : ({ data: result as T } as ApiResponse<T>);

@@ -14,14 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
 import { Column } from '@tanstack/react-table';
-import {
-  AlertTriangle,
-  Clock,
-  MapPin,
-  Users,
-  User,
-  Calendar
-} from 'lucide-react';
+import { AlertTriangle, MapPin, Users, User, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 
 export const columns: ColumnDef<Incident>[] = [

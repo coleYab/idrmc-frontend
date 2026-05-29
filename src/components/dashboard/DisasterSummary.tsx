@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { IconAlertTriangle, IconMapPin, IconUsers } from '@tabler/icons-react';
+import { IconMapPin, IconUsers } from '@tabler/icons-react';
 import { mockIncidents } from '@/lib/mock/incidents';
 import { IncidentSeverityLevel, IncidentStatus } from '@/lib/types/incident';
 

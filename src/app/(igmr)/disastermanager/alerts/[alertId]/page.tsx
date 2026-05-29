@@ -48,7 +48,7 @@ interface AlertDetailsPageProps {
 
 export default function AlertDetailsPage(props: AlertDetailsPageProps) {
   const { alertId } = props.params;
-  const { notifications, markAsRead, removeNotification, updateStatus } =
+  const { notifications, removeNotification, updateStatus } =
     useNotificationStore();
 
   // Find the alert by ID

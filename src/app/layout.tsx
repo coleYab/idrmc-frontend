@@ -3,6 +3,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { fontVariables } from '@/components/themes/font.config';
 import { DEFAULT_THEME } from '@/components/themes/theme.config';
 import { ActiveThemeProvider } from '@/components/themes/active-theme';
+import ThemeProvider from '@/components/themes/theme-provider';
 import { cn } from '@/lib/utils';
 import type { Metadata, Viewport } from 'next';
 import NextTopLoader from 'nextjs-toploader';
@@ -32,12 +33,7 @@ export default async function RootLayout({
   const themeToApply = DEFAULT_THEME;
 
   return (
-    <html
-      lang='en'
-      suppressHydrationWarning
-      data-theme={themeToApply}
-      className='dark'
-    >
+    <html lang='en' suppressHydrationWarning data-theme={themeToApply}>
       <head />
       <body
         className={cn(
@@ -46,14 +42,21 @@ export default async function RootLayout({
         )}
       >
         <NextTopLoader color='var(--primary)' showSpinner={false} />
-        <NuqsAdapter>
-          <ActiveThemeProvider initialTheme={themeToApply}>
-            <Providers activeThemeValue={themeToApply}>
-              <Toaster />
-              {children}
-            </Providers>
-          </ActiveThemeProvider>
-        </NuqsAdapter>
+        <ThemeProvider
+          attribute='class'
+          defaultTheme='system'
+          enableSystem
+          disableTransitionOnChange
+        >
+          <NuqsAdapter>
+            <ActiveThemeProvider initialTheme={themeToApply}>
+              <Providers activeThemeValue={themeToApply}>
+                <Toaster />
+                {children}
+              </Providers>
+            </ActiveThemeProvider>
+          </NuqsAdapter>
+        </ThemeProvider>
       </body>
     </html>
   );

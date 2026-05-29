@@ -68,12 +68,18 @@ export function useUser(id: string) {
   });
 }
 
-export function useUpdateUser(id: string) {
+export function useUpdateUser() {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload: UpdateUserInput) => {
+    mutationFn: async ({
+      id,
+      payload
+    }: {
+      id: string;
+      payload: UpdateUserInput;
+    }) => {
       const data = await fetchClient<User>(
         `/users/${id}`,
         {
@@ -85,9 +91,11 @@ export function useUpdateUser(id: string) {
 
       return parseUser(data);
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.root });
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.detail(id) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.users.detail(variables.id)
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
     }
   });

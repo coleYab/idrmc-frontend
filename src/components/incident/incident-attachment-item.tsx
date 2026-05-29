@@ -7,14 +7,12 @@ interface IncidentAttachmentItemProps {
   src: string;
   alt: string;
   className?: string;
-  index: number;
 }
 
 export function IncidentAttachmentItem({
   src,
   alt,
-  className,
-  index
+  className
 }: IncidentAttachmentItemProps) {
   const [hasError, setHasError] = useState(false);
 

@@ -164,7 +164,7 @@ export const columns: ColumnDef<Incident>[] = [
 
 interface PendingIncidentsTableProps {}
 
-export function PendingIncidentsTable({}: PendingIncidentsTableProps) {
+export function PendingIncidentsTable() {
   const [pageSize] = useQueryState('perPage', parseAsInteger.withDefault(10));
   const { data, isLoading } = useIncidents({ limit: 100, offset: 0 });
 

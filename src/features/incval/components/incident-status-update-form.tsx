@@ -98,7 +98,6 @@ export default function IncidentStatusUpdateForm({
       toast.success('Incident status updated successfully.');
       router.push(`/incval/incidents/${incidentId}/details`);
     } catch (error) {
-      console.error('Failed to update incident status:', error);
       toast.error('Unable to update incident status.');
     }
   };
