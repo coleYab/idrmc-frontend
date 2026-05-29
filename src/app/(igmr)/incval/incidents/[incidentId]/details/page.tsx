@@ -11,7 +11,6 @@ import {
 import { getIncidentDetailsInfo } from '@/config/incval-infoconfig';
 import { incidentService } from '@/services/incidentServices';
 import { fakeIncidents } from '@/constants/mock-api';
-import type { Incident } from '@/lib/types/incident';
 import { fetchClient } from '@/lib/fetch-client';
 import { IncidentSchema, type Incident } from '@/features/incidents/types';
 import { IncidentAttachmentItem } from '@/components/incident/incident-attachment-item';
@@ -48,14 +47,12 @@ export default async function IncidentDetailsPage(
 ) {
   const { incidentId } = await props.params;
 
-  let incident: Incident | undefined =
-    await incidentService.getById(incidentId);
   const incidentResponse = await fetchClient<unknown>(
     `/incidents/${incidentId}`,
     { cache: 'no-store' }
   ).catch(() => undefined);
 
-  const incident: Incident | undefined = incidentResponse
+  let incident: Incident | undefined = incidentResponse
     ? IncidentSchema.safeParse(incidentResponse).data
     : undefined;
 

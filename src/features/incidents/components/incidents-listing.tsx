@@ -1,30 +1,23 @@
 import { searchParamsCache } from '@/lib/searchparams';
 import { IncidentsTable } from './incidents-tables';
-import { fetchClientResponse, type ApiResponse } from '@/lib/fetch-client';
+import { fetchClientResponse } from '@/lib/fetch-client';
 import { incidentService } from '@/services/incidentServices';
 import { IncidentSchema, type Incident } from '../types';
 
 export default async function IncidentsListingPage() {
-  const page = searchParamsCache.get('page');
-  const pageLimit = searchParamsCache.get('perPage');
+  const page = Number(searchParamsCache.get('page') ?? 1);
+  const pageLimit = Number(searchParamsCache.get('perPage') ?? 10);
+
   const status = searchParamsCache.get('status');
   const severityLevel = searchParamsCache.get('severityLevel');
   const id = searchParamsCache.get('id');
   const description = searchParamsCache.get('description');
   const location = searchParamsCache.get('location');
 
-  const data = await fakeIncidents.getIncidents({
-    page,
-    limit: pageLimit,
-    status: status ?? undefined,
-    severity: severityLevel ?? undefined,
-    id: id ?? undefined,
-    description: description ?? undefined,
-    location: location ?? undefined
   const limit = pageLimit ?? 10;
   const offset = Math.max((page - 1) * limit, 0);
 
-  let responseData: unknown[];
+  let responseData: unknown[] = [];
   let totalItems: number | undefined;
 
   try {
@@ -33,8 +26,10 @@ export default async function IncidentsListingPage() {
         limit,
         offset,
         status: status ?? undefined,
-        severity: severity ?? undefined,
-        search: search ?? undefined
+        severity: severityLevel ?? undefined,
+        id: id ?? undefined,
+        description: description ?? undefined,
+        location: location ?? undefined
       },
       cache: 'no-store'
     });
@@ -48,13 +43,16 @@ export default async function IncidentsListingPage() {
   }
 
   const parsedItems = IncidentSchema.array().safeParse(responseData);
+
   const items: Incident[] = parsedItems.success
     ? parsedItems.data
     : responseData.reduce<Incident[]>((acc, item) => {
         const parsedItem = IncidentSchema.safeParse(item);
+
         if (parsedItem.success) {
           acc.push(parsedItem.data);
         }
+
         return acc;
       }, []);
 

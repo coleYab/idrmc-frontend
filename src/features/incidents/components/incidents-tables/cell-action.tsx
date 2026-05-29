@@ -8,7 +8,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { Incident } from '@/constants/mock-api';
 import Link from 'next/link';
 import type { Incident } from '../../types';
 import {
@@ -41,6 +40,7 @@ export function CellAction({ data }: CellActionProps) {
           onClick={() => router.push(`/incval/incidents/${data.id}/details`)}
         >
           <IconEye className='mr-2 h-4 w-4' /> View Details
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href={`/incval/incidents/${data.id}/details`}>
             <IconEye className='mr-2 h-4 w-4' /> View Details

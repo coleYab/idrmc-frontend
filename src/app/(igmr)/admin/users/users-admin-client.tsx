@@ -80,13 +80,11 @@ export default function UsersAdminClient() {
   };
 
   const handleInviteUser = () => {
-    toast('Invite flow not connected in this demo.', { type: 'info' });
+    toast.info('Invite flow not connected in this demo.');
   };
 
   const handleExportCsv = () => {
-    toast('CSV export is ready when backend data is available.', {
-      type: 'info'
-    });
+    toast.info('Invite flow not connected in this demo.');
   };
 
   return (
