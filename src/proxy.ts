@@ -16,7 +16,7 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 const routeAccessMap: Record<string, string[]> = {
-  admin: ['/incval', '/ert', '/disastermanager', '/dashboard'],
+  admin: ['/admin', '/incval', '/ert', '/disastermanager', '/dashboard'],
   incident_validator: ['/incval', '/dashboard/incidents', '/dashboard/incval'],
   disaster_response_team: [
     '/disastermanager',

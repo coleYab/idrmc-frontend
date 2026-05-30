@@ -90,6 +90,12 @@ export const queryKeys = {
       list: (params?: QueryParams) =>
         ['admin', 'activity', 'list', params ?? {}] as const
     },
-    health: () => ['admin', 'health'] as const
+    health: () => ['admin', 'health'] as const,
+    clerkUsers: {
+      root: ['admin', 'clerk-users'] as const,
+      list: (query?: string) =>
+        ['admin', 'clerk-users', 'list', query ?? ''] as const,
+      detail: (id: string) => ['admin', 'clerk-users', 'detail', id] as const
+    }
   }
 };

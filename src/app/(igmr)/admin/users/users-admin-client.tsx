@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+
 import PageContainer from '@/components/layout/page-container';
 import {
   Card,
@@ -14,6 +15,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Table,
   TableBody,
@@ -23,90 +25,273 @@ import {
   TableRow
 } from '@/components/ui/table';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog';
+import {
   IconDownload,
   IconEye,
   IconPlus,
   IconTrash,
-  IconUserCheck,
-  IconUserX
+  IconRotate
 } from '@tabler/icons-react';
-import { useUsers, useUpdateUser } from '@/features/users/api/users';
-import type { User } from '@/features/users/types';
-import { Loader2 } from 'lucide-react';
+import {
+  useClerkUsers,
+  useCreateClerkUser,
+  useUpdateClerkUserRoles,
+  useDeleteClerkUser
+} from '@/features/admin/api/clerk-users';
+import { ROLE_OPTIONS } from '@/features/admin/types/clerk-user';
 
-function formatDate(dateString?: string) {
-  if (!dateString) return 'N/A';
-  return new Intl.DateTimeFormat('en-US', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(new Date(dateString));
+const roleColors: Record<string, string> = {
+  admin: 'destructive',
+  incident_validator: 'secondary',
+  disaster_response_team: 'default',
+  emergency_response_team: 'default',
+  user: 'outline'
+};
+
+function RoleBadges({ roles }: { roles: string[] }) {
+  if (roles.length === 0) {
+    return <span className='text-muted-foreground text-sm'>None</span>;
+  }
+  return (
+    <div className='flex flex-wrap gap-1'>
+      {roles.map((role) => (
+        <Badge
+          key={role}
+          variant={
+            (roleColors[role] as
+              | 'default'
+              | 'secondary'
+              | 'destructive'
+              | 'outline') ?? 'outline'
+          }
+          className='text-xs'
+        >
+          {role.replace(/_/g, ' ')}
+        </Badge>
+      ))}
+    </div>
+  );
 }
 
 export default function UsersAdminClient() {
-  const { data, isLoading } = useUsers();
-  const updateUser = useUpdateUser();
   const [search, setSearch] = useState('');
+  const { data, isLoading } = useClerkUsers(search || undefined);
+  const createUser = useCreateClerkUser();
+  const updateRoles = useUpdateClerkUserRoles();
+  const deleteUser = useDeleteClerkUser();
 
   const users = data?.items ?? [];
 
-  const filteredUsers = useMemo(
-    () =>
-      users.filter((user) =>
-        [user.name, user.email, user.username, user.role]
-          .join(' ')
-          .toLowerCase()
-          .includes(search.toLowerCase())
-      ),
-    [users, search]
-  );
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteFirstName, setInviteFirstName] = useState('');
+  const [inviteLastName, setInviteLastName] = useState('');
+  const [inviteRole, setInviteRole] = useState('user');
 
-  const activeUsers = users.filter((user) => user.active).length;
-  const inactiveUsers = users.length - activeUsers;
-  const adminUsers = users.filter((user) => user.role === 'Admin').length;
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  const handleToggleActive = async (id: string) => {
+  const handleInviteUser = async () => {
+    if (
+      !inviteEmail.trim() ||
+      !inviteFirstName.trim() ||
+      !inviteLastName.trim()
+    ) {
+      toast.error('All fields are required.');
+      return;
+    }
+
     try {
-      const user = users.find((u) => u.id === id);
-      if (!user) return;
-      await updateUser.mutateAsync({ id, payload: { active: !user.active } });
-      toast.success(
-        user.active
-          ? 'User has been deactivated.'
-          : 'User has been reactivated.'
-      );
-    } catch {
-      toast.error('Failed to update user status');
+      await createUser.mutateAsync({
+        emailAddress: inviteEmail.trim(),
+        firstName: inviteFirstName.trim(),
+        lastName: inviteLastName.trim(),
+        roles: [inviteRole]
+      });
+      setInviteEmail('');
+      setInviteFirstName('');
+      setInviteLastName('');
+      setInviteRole('user');
+      setInviteOpen(false);
+      toast.success('User created and invited.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to create user');
     }
   };
 
-  const handleInviteUser = () => {
-    toast.info('Invite flow not connected in this demo.');
+  const handleRemoveRole = async (
+    userId: string,
+    currentRoles: string[],
+    roleToRemove: string
+  ) => {
+    const updated = currentRoles.filter((r) => r !== roleToRemove);
+    try {
+      await updateRoles.mutateAsync({ id: userId, roles: updated });
+      toast.success(`Removed role ${roleToRemove.replace(/_/g, ' ')}.`);
+    } catch {
+      toast.error('Failed to update roles.');
+    }
+  };
+
+  const handleAddRole = async (
+    userId: string,
+    currentRoles: string[],
+    newRole: string
+  ) => {
+    if (currentRoles.includes(newRole)) {
+      toast.info('User already has this role.');
+      return;
+    }
+    const updated = [...currentRoles, newRole];
+    try {
+      await updateRoles.mutateAsync({ id: userId, roles: updated });
+      toast.success(`Added role ${newRole.replace(/_/g, ' ')}.`);
+    } catch {
+      toast.error('Failed to update roles.');
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteUser.mutateAsync(deleteTarget);
+      setDeleteTarget(null);
+      toast.success('User deleted successfully.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete user');
+    }
   };
 
   const handleExportCsv = () => {
-    toast.info('Invite flow not connected in this demo.');
+    if (users.length === 0) {
+      toast.error('No users to export.');
+      return;
+    }
+    const header = 'ID,First Name,Last Name,Email,Roles,Banned,Created At\n';
+    const rows = users
+      .map(
+        (u) =>
+          `${u.id},${u.firstName ?? ''},${u.lastName ?? ''},${u.emailAddress},"${u.roles.join('; ')}",${u.banned},${u.createdAt}`
+      )
+      .join('\n');
+    const blob = new Blob([header + rows], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'clerk-users.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV exported.');
   };
 
-  if (isLoading) {
-    return (
-      <PageContainer scrollable={true}>
-        <div className='flex items-center justify-center py-20'>
-          <Loader2 className='h-8 w-8 animate-spin' />
-        </div>
-      </PageContainer>
-    );
-  }
+  const activeUsers = users.filter((u) => !u.banned).length;
+  const adminUsers = users.filter((u) => u.roles.includes('admin')).length;
 
   return (
     <PageContainer
       scrollable={true}
       pageTitle='Users Management'
-      pageDescription='View all users, their roles, and user management actions.'
+      pageDescription='Manage Clerk users, roles, and account access.'
       pageHeaderAction={
         <div className='flex flex-wrap items-center gap-2'>
-          <Button size='sm' variant='secondary' onClick={handleInviteUser}>
-            <IconPlus /> Invite user
-          </Button>
+          <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+            <DialogTrigger asChild>
+              <Button size='sm' variant='secondary'>
+                <IconPlus /> Invite user
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Invite User</DialogTitle>
+                <DialogDescription>
+                  Create a new Clerk user with an initial role.
+                </DialogDescription>
+              </DialogHeader>
+              <div className='space-y-4'>
+                <div className='grid grid-cols-2 gap-3'>
+                  <div className='space-y-2'>
+                    <Label htmlFor='first-name'>First name</Label>
+                    <Input
+                      id='first-name'
+                      value={inviteFirstName}
+                      onChange={(e) => setInviteFirstName(e.target.value)}
+                      placeholder='John'
+                    />
+                  </div>
+                  <div className='space-y-2'>
+                    <Label htmlFor='last-name'>Last name</Label>
+                    <Input
+                      id='last-name'
+                      value={inviteLastName}
+                      onChange={(e) => setInviteLastName(e.target.value)}
+                      placeholder='Doe'
+                    />
+                  </div>
+                </div>
+                <div className='space-y-2'>
+                  <Label htmlFor='email'>Email address</Label>
+                  <Input
+                    id='email'
+                    type='email'
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder='john@example.com'
+                  />
+                </div>
+                <div className='space-y-2'>
+                  <Label htmlFor='role'>Role</Label>
+                  <Select value={inviteRole} onValueChange={setInviteRole}>
+                    <SelectTrigger id='role'>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ROLE_OPTIONS.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {role.replace(/_/g, ' ')}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant='outline' onClick={() => setInviteOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleInviteUser}
+                  disabled={createUser.isPending}
+                >
+                  {createUser.isPending ? 'Creating...' : 'Create & Invite'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <Button size='sm' variant='outline' onClick={handleExportCsv}>
             <IconDownload /> Export CSV
           </Button>
@@ -130,12 +315,8 @@ export default function UsersAdminClient() {
                   <Badge variant='secondary'>{activeUsers}</Badge>
                 </div>
                 <div className='flex items-center justify-between'>
-                  <span>Inactive accounts</span>
-                  <Badge variant='outline'>{inactiveUsers}</Badge>
-                </div>
-                <div className='flex items-center justify-between'>
-                  <span>Admin users</span>
-                  <Badge>{adminUsers}</Badge>
+                  <span>Admins</span>
+                  <Badge variant='destructive'>{adminUsers}</Badge>
                 </div>
               </div>
             </CardContent>
@@ -146,13 +327,14 @@ export default function UsersAdminClient() {
             </CardHeader>
             <CardContent className='space-y-2 text-sm'>
               <p>
-                Use the actions to review a user, deactivate/reactivate
-                accounts, or remove user access.
+                Users are managed directly in Clerk. Add, update roles, or
+                remove users from the list below.
               </p>
               <ul className='text-muted-foreground list-disc pl-5'>
                 <li>Role and status overview</li>
                 <li>Direct user detail navigation</li>
-                <li>Account deactivation and activation</li>
+                <li>Add or remove individual roles</li>
+                <li>Permanently delete users</li>
               </ul>
             </CardContent>
           </Card>
@@ -165,69 +347,178 @@ export default function UsersAdminClient() {
           <CardContent className='space-y-4'>
             <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
               <Input
-                placeholder='Search users, email, role'
+                placeholder='Search by name, email...'
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 className='max-w-lg'
               />
               <div className='text-muted-foreground text-sm'>
-                {filteredUsers.length} of {users.length} users shown
+                {users.length} user{users.length !== 1 ? 's' : ''} found
               </div>
             </div>
-
             <div className='overflow-hidden rounded-md border'>
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
-                    <TableHead>Role</TableHead>
+                    <TableHead>Roles</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className='text-right'>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.length > 0 ? (
-                    filteredUsers.map((user) => (
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className='h-24 text-center'>
+                        <div className='flex items-center justify-center gap-2'>
+                          <IconRotate className='h-4 w-4 animate-spin' />
+                          Loading users...
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : users.length > 0 ? (
+                    users.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell>
-                          <div className='flex flex-col gap-1'>
-                            <span className='font-medium'>{user.name}</span>
-                            <span className='text-muted-foreground text-xs'>
-                              {user.username}
-                            </span>
+                          <div className='flex items-center gap-3'>
+                            {user.imageUrl ? (
+                              <img
+                                src={user.imageUrl}
+                                alt=''
+                                className='h-8 w-8 rounded-full object-cover'
+                              />
+                            ) : (
+                              <div className='bg-muted flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium'>
+                                {(user.firstName?.[0] ?? '?').toUpperCase()}
+                              </div>
+                            )}
+                            <div className='flex flex-col'>
+                              <span className='font-medium'>
+                                {user.firstName ?? ''} {user.lastName ?? ''}
+                              </span>
+                              <span className='text-muted-foreground text-xs'>
+                                {user.id.slice(0, 8)}...
+                              </span>
+                            </div>
                           </div>
                         </TableCell>
-                        <TableCell>{user.role ?? 'User'}</TableCell>
-                        <TableCell>{user.email}</TableCell>
                         <TableCell>
-                          <Badge variant={user.active ? 'default' : 'outline'}>
-                            {user.active ? 'Active' : 'Inactive'}
+                          <RoleBadges roles={user.roles} />
+                        </TableCell>
+                        <TableCell>{user.emailAddress}</TableCell>
+                        <TableCell>
+                          <Badge variant={user.banned ? 'outline' : 'default'}>
+                            {user.banned ? 'Banned' : 'Active'}
                           </Badge>
                         </TableCell>
-                        <TableCell className='space-x-2 text-right'>
-                          <Link href={`/admin/users/${user.id}`}>
-                            <Button size='sm' variant='outline'>
-                              <IconEye />
-                              View
-                            </Button>
-                          </Link>
-                          <Button
-                            size='sm'
-                            variant={user.active ? 'secondary' : 'default'}
-                            onClick={() => handleToggleActive(user.id)}
-                            disabled={updateUser.isPending}
-                          >
-                            {user.active ? <IconUserX /> : <IconUserCheck />}
-                            {user.active ? 'Deactivate' : 'Reactivate'}
-                          </Button>
+                        <TableCell className='text-right'>
+                          <div className='flex items-center justify-end gap-2'>
+                            <Link href={`/admin/users/${user.id}`}>
+                              <Button size='sm' variant='outline'>
+                                <IconEye />
+                                View
+                              </Button>
+                            </Link>
+                            <div className='relative'>
+                              <Select
+                                onValueChange={(value) =>
+                                  handleAddRole(user.id, user.roles, value)
+                                }
+                              >
+                                <SelectTrigger className='h-8 w-32 text-xs'>
+                                  <SelectValue placeholder='+ Add role' />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {ROLE_OPTIONS.filter(
+                                    (r) => !user.roles.includes(r)
+                                  ).map((role) => (
+                                    <SelectItem key={role} value={role}>
+                                      {role.replace(/_/g, ' ')}
+                                    </SelectItem>
+                                  ))}
+                                  {ROLE_OPTIONS.every((r) =>
+                                    user.roles.includes(r)
+                                  ) && (
+                                    <SelectItem value='__none__' disabled>
+                                      All roles assigned
+                                    </SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            {user.roles.length > 0 && (
+                              <div className='relative hidden sm:inline-flex'>
+                                <Select
+                                  onValueChange={(value) =>
+                                    handleRemoveRole(user.id, user.roles, value)
+                                  }
+                                >
+                                  <SelectTrigger className='h-8 w-32 text-xs'>
+                                    <SelectValue placeholder='− Remove role' />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {user.roles.map((role) => (
+                                      <SelectItem key={role} value={role}>
+                                        {role.replace(/_/g, ' ')}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
+                            <AlertDialog
+                              open={deleteTarget === user.id}
+                              onOpenChange={(open) => {
+                                if (!open) setDeleteTarget(null);
+                              }}
+                            >
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  size='sm'
+                                  variant='destructive'
+                                  onClick={() => setDeleteTarget(user.id)}
+                                >
+                                  <IconTrash />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Delete user?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This permanently removes{' '}
+                                    {user.firstName ?? user.emailAddress} from
+                                    Clerk. This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={handleDeleteUser}
+                                    className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
                       <TableCell colSpan={5} className='h-24 text-center'>
-                        No users match your search.
+                        <div className='text-muted-foreground flex flex-col items-center gap-1'>
+                          <span>No users found.</span>
+                          <span className='text-xs'>
+                            {search
+                              ? 'Try a different search term.'
+                              : 'Invite a user to get started.'}
+                          </span>
+                        </div>
                       </TableCell>
                     </TableRow>
                   )}
@@ -236,7 +527,8 @@ export default function UsersAdminClient() {
             </div>
           </CardContent>
           <CardFooter className='text-muted-foreground text-sm'>
-            This view shows all users in the system along with status and role.
+            Users are fetched directly from Clerk. Roles are managed via
+            publicMetadata.
           </CardFooter>
         </Card>
       </div>
