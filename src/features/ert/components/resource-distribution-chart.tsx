@@ -12,17 +12,18 @@ import {
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent
 } from '@/components/ui/chart';
 
-const chartConfig = {
-  value: {
-    label: 'Quantity'
-  }
-} satisfies ChartConfig;
+const COLORS = [
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)'
+];
 
 export function ResourceDistributionChart() {
   const { data, isLoading } = useResources();
@@ -34,26 +35,20 @@ export function ResourceDistributionChart() {
     byCategory.set(category, (byCategory.get(category) ?? 0) + r.quantity);
   }
 
-  const colors = [
-    'var(--chart-1)',
-    'var(--chart-2)',
-    'var(--chart-3)',
-    'var(--chart-4)',
-    'var(--chart-5)'
-  ];
+  const entries = Array.from(byCategory.entries());
 
-  const chartData = Array.from(byCategory.entries()).map(
-    ([name, value], i) => ({
-      name,
-      value,
-      fill: colors[i % colors.length]
-    })
+  const chartData = entries.map(([name, value], i) => ({
+    name,
+    value,
+    fill: COLORS[i % COLORS.length]
+  }));
+
+  const chartConfig = Object.fromEntries(
+    entries.map(([name], i) => [
+      name.toLowerCase().replace(/\s+/g, '-'),
+      { label: name, color: COLORS[i % COLORS.length] }
+    ])
   );
-
-  for (const entry of chartData) {
-    const key = entry.name.toLowerCase().replace(/\s+/g, '-');
-    chartConfig[key] = { label: entry.name, color: entry.fill };
-  }
 
   return (
     <Card>

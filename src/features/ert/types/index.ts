@@ -40,6 +40,7 @@ export const ResourceNeedSchema = z.object({
   id: z.string().uuid(),
   resourceID: z.string().uuid(),
   quantityRequired: z.number().min(1),
+  quantityFulfilled: z.number().min(0).optional(),
   priority: ResourceNeedPriorityEnum,
   incidentID: z.string().uuid().optional(),
   status: ResourceNeedStatusEnum.optional()
