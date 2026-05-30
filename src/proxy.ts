@@ -56,7 +56,9 @@ function getDefaultDashboardPath(role: string) {
 }
 
 export default clerkMiddleware(async (auth, request) => {
-  if (isPublicRoute(request)) {
+  const { pathname } = request.nextUrl;
+
+  if (isPublicRoute(request) || pathname.startsWith('/api/clerk')) {
     return;
   }
 
@@ -85,8 +87,6 @@ export default clerkMiddleware(async (auth, request) => {
   if (roles.length === 0) {
     roles.push('user');
   }
-
-  const { pathname } = request.nextUrl;
 
   if (protectedPrefixes.some((prefix) => pathname.startsWith(prefix))) {
     const hasAccess = roles.some((role) => canAccessPath(role, pathname));

@@ -101,7 +101,9 @@ function RoleBadges({ roles }: { roles: string[] }) {
 
 export default function UsersAdminClient() {
   const [search, setSearch] = useState('');
-  const { data, isLoading } = useClerkUsers(search || undefined);
+  const { data, isLoading, isError, error } = useClerkUsers(
+    search || undefined
+  );
   const createUser = useCreateClerkUser();
   const updateRoles = useUpdateClerkUserRoles();
   const deleteUser = useDeleteClerkUser();
@@ -377,6 +379,19 @@ export default function UsersAdminClient() {
                         <div className='flex items-center justify-center gap-2'>
                           <IconRotate className='h-4 w-4 animate-spin' />
                           Loading users...
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : isError ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className='h-24 text-center'>
+                        <div className='text-destructive flex flex-col items-center gap-1'>
+                          <span>Failed to load users.</span>
+                          <span className='text-xs'>
+                            {error instanceof Error
+                              ? error.message
+                              : 'Check the console for details.'}
+                          </span>
                         </div>
                       </TableCell>
                     </TableRow>

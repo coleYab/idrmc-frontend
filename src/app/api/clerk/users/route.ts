@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { clerkClient, auth } from '@clerk/nextjs/server';
+import { currentUser, auth, createClerkClient } from '@clerk/nextjs/server';
 import {
   CreateClerkUserSchema,
   mapClerkUser
@@ -31,20 +31,29 @@ function parseRoles(raw: unknown): string[] {
   return roles;
 }
 
+const clerk = createClerkClient({
+  secretKey: process.env.CLERK_SECRET_KEY
+});
+
 export async function GET(request: NextRequest) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const adminUser = await currentUser();
+  const adminRoles = parseRoles(adminUser?.publicMetadata?.roles);
+  if (!adminRoles.includes('admin')) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('q') || undefined;
-  const limit = Math.min(Number(searchParams.get('limit')) || 50, 100);
+  const limit = Math.min(Number(searchParams.get('limit')) || 100, 200);
   const offset = Number(searchParams.get('offset')) || 0;
 
   try {
-    const client = await clerkClient();
-    const clerkResponse = await client.users.getUserList({
+    const clerkResponse = await clerk.users.getUserList({
       query,
       limit,
       offset
@@ -87,8 +96,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const parsed = CreateClerkUserSchema.parse(body);
 
-    const client = await clerkClient();
-    const clerkUser = await client.users.createUser({
+    const clerkUser = await clerk.users.createUser({
       emailAddress: [parsed.emailAddress],
       firstName: parsed.firstName,
       lastName: parsed.lastName,
