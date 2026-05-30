@@ -24,6 +24,7 @@ import {
   SidebarRail
 } from '@/components/ui/sidebar';
 import { SignOutButton, useUser } from '@clerk/nextjs';
+import DashboardSwitcher from './dashboard-switcher';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -107,6 +108,8 @@ export default function AdminSidebar() {
             ))}
           </SidebarMenu>
         </SidebarGroup>
+
+        <DashboardSwitcher variant='sidebar' />
 
         {/* {pathname !== '/admin/dashboard' && (
           // <SidebarGroup>

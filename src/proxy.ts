@@ -67,16 +67,33 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   const user = await (await clerkClient()).users.getUser(userId);
-  const role =
-    normalizeRole(user.publicMetadata?.role) ||
-    normalizeRole(user.unsafeMetadata?.role) ||
-    'user';
+
+  const rawRoles = user.publicMetadata?.roles as unknown;
+  const rawRole = user.publicMetadata?.role as unknown;
+
+  const roles: string[] = [];
+  if (Array.isArray(rawRoles)) {
+    for (const r of rawRoles) {
+      const normalized = normalizeRole(r);
+      if (normalized) roles.push(normalized);
+    }
+  }
+  const legacyRole = normalizeRole(rawRole);
+  if (legacyRole && !roles.includes(legacyRole)) {
+    roles.push(legacyRole);
+  }
+  if (roles.length === 0) {
+    roles.push('user');
+  }
+
   const { pathname } = request.nextUrl;
 
   if (protectedPrefixes.some((prefix) => pathname.startsWith(prefix))) {
-    if (!canAccessPath(role, pathname)) {
+    const hasAccess = roles.some((role) => canAccessPath(role, pathname));
+    if (!hasAccess) {
+      const defaultRole = roles[0];
       return NextResponse.redirect(
-        new URL(getDefaultDashboardPath(role), request.url)
+        new URL(getDefaultDashboardPath(defaultRole), request.url)
       );
     }
   }
