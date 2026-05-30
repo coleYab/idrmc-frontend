@@ -265,7 +265,10 @@ export default function UsersAdminClient() {
                 </div>
                 <div className='space-y-2'>
                   <Label htmlFor='role'>Role</Label>
-                  <Select value={inviteRole} onValueChange={setInviteRole}>
+                  <Select
+                    value={inviteRole}
+                    onValueChange={(v) => setInviteRole(v as Role)}
+                  >
                     <SelectTrigger id='role'>
                       <SelectValue />
                     </SelectTrigger>
