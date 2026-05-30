@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { currentUser, auth, createClerkClient } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import {
   CreateClerkUserSchema,
   mapClerkUser
@@ -31,20 +31,10 @@ function parseRoles(raw: unknown): string[] {
   return roles;
 }
 
-const clerk = createClerkClient({
-  secretKey: process.env.CLERK_SECRET_KEY
-});
-
 export async function GET(request: NextRequest) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const adminUser = await currentUser();
-  const adminRoles = parseRoles(adminUser?.publicMetadata?.roles);
-  if (!adminRoles.includes('admin')) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const { searchParams } = new URL(request.url);
@@ -53,6 +43,7 @@ export async function GET(request: NextRequest) {
   const offset = Number(searchParams.get('offset')) || 0;
 
   try {
+    const clerk = await clerkClient();
     const clerkResponse = await clerk.users.getUserList({
       query,
       limit,
@@ -96,6 +87,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const parsed = CreateClerkUserSchema.parse(body);
 
+    const clerk = await clerkClient();
     const clerkUser = await clerk.users.createUser({
       emailAddress: [parsed.emailAddress],
       firstName: parsed.firstName,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth, createClerkClient } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { mapClerkUser } from '@/features/admin/types/clerk-user';
 
 const VALID_ROLES = [
@@ -28,10 +28,6 @@ function parseRoles(raw: unknown): string[] {
   return roles;
 }
 
-const clerk = createClerkClient({
-  secretKey: process.env.CLERK_SECRET_KEY
-});
-
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -44,6 +40,7 @@ export async function GET(
   const { id } = await params;
 
   try {
+    const clerk = await clerkClient();
     const clerkUser = await clerk.users.getUser(id);
 
     const user = mapClerkUser({
@@ -94,6 +91,7 @@ export async function PATCH(
     if (firstName) updatePayload.firstName = firstName;
     if (lastName) updatePayload.lastName = lastName;
 
+    const clerk = await clerkClient();
     const clerkUser = await clerk.users.updateUser(id, updatePayload);
 
     const user = mapClerkUser({
@@ -144,6 +142,7 @@ export async function DELETE(
   }
 
   try {
+    const clerk = await clerkClient();
     await clerk.users.deleteUser(id);
     return NextResponse.json({ success: true });
   } catch (error) {

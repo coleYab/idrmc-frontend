@@ -11,6 +11,13 @@ export const ROLE_OPTIONS = [
 export const RoleEnum = z.enum(ROLE_OPTIONS);
 export type Role = z.infer<typeof RoleEnum>;
 
+function toISOString(value: unknown): string | null {
+  if (value === null || value === undefined) return 'unknown';
+  if (typeof value === 'number') return new Date(value).toISOString();
+  if (typeof value === 'string') return value;
+  return 'unknown';
+}
+
 export const ClerkUserSchema = z.object({
   id: z.string(),
   firstName: z.string().nullable(),
@@ -46,10 +53,14 @@ export const UpdateClerkUserSchema = z.object({
 
 export type UpdateClerkUser = z.infer<typeof UpdateClerkUserSchema>;
 
-export function mapClerkUser(data: unknown): ClerkUser {
-  return ClerkUserSchema.parse(data);
+export function mapClerkUser(data: Record<string, unknown>): ClerkUser {
+  return ClerkUserSchema.parse({
+    ...data,
+    createdAt: toISOString(data.createdAt),
+    lastSignInAt: toISOString(data.lastSignInAt)
+  });
 }
 
-export function mapClerkUsers(data: unknown): ClerkUser[] {
-  return z.array(ClerkUserSchema).parse(data);
+export function mapClerkUsers(data: Record<string, unknown>[]): ClerkUser[] {
+  return data.map(mapClerkUser);
 }
