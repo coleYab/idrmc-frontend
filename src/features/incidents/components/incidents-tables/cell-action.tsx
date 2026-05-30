@@ -41,11 +41,6 @@ export function CellAction({ data }: CellActionProps) {
         >
           <IconEye className='mr-2 h-4 w-4' /> View Details
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={`/incval/incidents/${data.id}/details`}>
-            <IconEye className='mr-2 h-4 w-4' /> View Details
-          </Link>
-        </DropdownMenuItem>
 
         {data.status.toLowerCase() === 'pending' && (
           <DropdownMenuItem asChild>

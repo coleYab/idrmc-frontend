@@ -5,7 +5,6 @@ import { DataTableToolbar } from '@/components/ui/table/data-table-toolbar';
 import { useDataTable } from '@/hooks/use-data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { parseAsInteger, useQueryState } from 'nuqs';
-import { useIncidents } from '@/features/incidents/api/incidents';
 import {
   IncidentTypeEnum,
   SeverityLevelEnum,
@@ -17,6 +16,8 @@ import { Column } from '@tanstack/react-table';
 import { AlertTriangle, Clock, MapPin, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { incidentService } from '@/services/incidentServices';
 
 export const columns: ColumnDef<Incident>[] = [
   {
@@ -162,20 +163,31 @@ export const columns: ColumnDef<Incident>[] = [
   }
 ];
 
-interface PendingIncidentsTableProps {}
-
 export function PendingIncidentsTable() {
   const [pageSize] = useQueryState('perPage', parseAsInteger.withDefault(10));
-  const { data, isLoading } = useIncidents({ limit: 100, offset: 0 });
+  const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const pendingIncidents = (data?.items ?? []).filter(
-    (incident) => incident.status === 'Pending'
-  );
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    incidentService.getAll().then((items) => {
+      if (!cancelled) {
+        setIncidents(
+          items.filter((item) => item.status === 'Pending') as Incident[]
+        );
+        setLoading(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  const pageCount = Math.ceil(pendingIncidents.length / pageSize);
+  const pageCount = Math.ceil(incidents.length / pageSize);
 
   const { table } = useDataTable({
-    data: pendingIncidents,
+    data: incidents,
     columns,
     pageCount,
     shallow: false,
@@ -184,7 +196,7 @@ export function PendingIncidentsTable() {
 
   return (
     <>
-      {isLoading ? (
+      {loading ? (
         <div className='text-muted-foreground text-sm'>
           Loading incidents...
         </div>

@@ -5,7 +5,6 @@ import { DataTableToolbar } from '@/components/ui/table/data-table-toolbar';
 import { useDataTable } from '@/hooks/use-data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { parseAsInteger, useQueryState } from 'nuqs';
-import { useIncidents } from '@/features/incidents/api/incidents';
 import {
   IncidentTypeEnum,
   SeverityLevelEnum,
@@ -23,6 +22,8 @@ import {
   User
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { useEffect, useState } from 'react';
+import { incidentService } from '@/services/incidentServices';
 
 export const columns: ColumnDef<Incident>[] = [
   {
@@ -202,20 +203,31 @@ export const columns: ColumnDef<Incident>[] = [
   }
 ];
 
-interface ResolvedIncidentsTableProps {}
-
-export function ResolvedIncidentsTable({}: ResolvedIncidentsTableProps) {
+export function ResolvedIncidentsTable() {
   const [pageSize] = useQueryState('perPage', parseAsInteger.withDefault(10));
-  const { data, isLoading } = useIncidents({ limit: 100, offset: 0 });
+  const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const resolvedIncidents = (data?.items ?? []).filter(
-    (incident) => incident.status === 'Resolved'
-  );
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    incidentService.getAll().then((items) => {
+      if (!cancelled) {
+        setIncidents(
+          items.filter((item) => item.status === 'Resolved') as Incident[]
+        );
+        setLoading(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  const pageCount = Math.ceil(resolvedIncidents.length / pageSize);
+  const pageCount = Math.ceil(incidents.length / pageSize);
 
   const { table } = useDataTable({
-    data: resolvedIncidents,
+    data: incidents,
     columns,
     pageCount,
     shallow: false,
@@ -224,7 +236,7 @@ export function ResolvedIncidentsTable({}: ResolvedIncidentsTableProps) {
 
   return (
     <>
-      {isLoading ? (
+      {loading ? (
         <div className='text-muted-foreground text-sm'>
           Loading incidents...
         </div>
