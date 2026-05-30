@@ -44,5 +44,14 @@ export const queryKeys = {
     list: (params?: QueryParams) =>
       ['notifications', 'list', params ?? {}] as const,
     detail: (id: string) => ['notifications', 'detail', id] as const
+  },
+  admin: {
+    root: ['admin'] as const,
+    activity: {
+      root: ['admin', 'activity'] as const,
+      list: (params?: QueryParams) =>
+        ['admin', 'activity', 'list', params ?? {}] as const
+    },
+    health: () => ['admin', 'health'] as const
   }
 };
