@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Card,
   CardDescription,
@@ -6,35 +8,32 @@ import {
   CardAction
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   IconAlertTriangle,
   IconCircleCheck,
   IconFirstAidKit,
   IconUsers
 } from '@tabler/icons-react';
-import { mockIncidents } from '@/lib/mock/incidents';
-import { IncidentStatus } from '@/lib/types/incident';
-
-// Mock ERT team data
-const mockTeam = [
-  { id: '1', name: 'Alpha Unit', status: 'deployed' },
-  { id: '2', name: 'Bravo Unit', status: 'available' },
-  { id: '3', name: 'Charlie Unit', status: 'deployed' },
-  { id: '4', name: 'Delta Unit', status: 'off-duty' },
-  { id: '5', name: 'Echo Unit', status: 'available' }
-];
+import { useIncidents } from '@/features/incidents/api/incidents';
+import { useErtUnits } from '@/features/ert/api/ert';
 
 export function ErtMetricsCards() {
-  const activeIncidents = mockIncidents.filter(
-    (i) => i.status === IncidentStatus.ACTIVE
-  ).length;
-  const urgentMedical = mockIncidents.filter(
-    (i) => i.requiresUrgentMedical
-  ).length;
-  const deployedUnits = mockTeam.filter((t) => t.status === 'deployed').length;
-  const availableUnits = mockTeam.filter(
-    (t) => t.status === 'available'
-  ).length;
+  const { data: incidentsData, isLoading: incidentsLoading } = useIncidents();
+  const { data: unitsData, isLoading: unitsLoading } = useErtUnits();
+
+  const isLoading = incidentsLoading || unitsLoading;
+
+  const activeIncidents =
+    incidentsData?.items?.filter(
+      (i) => i.status === 'Active' || i.status === 'Verified'
+    ).length ?? 0;
+  const urgentMedical =
+    incidentsData?.items?.filter((i) => i.requiresUrgentMedical).length ?? 0;
+  const deployedUnits =
+    unitsData?.items?.filter((u) => u.status === 'DEPLOYED').length ?? 0;
+  const availableUnits =
+    unitsData?.items?.filter((u) => u.status === 'IDLE').length ?? 0;
 
   return (
     <div className='grid grid-cols-1 gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4'>
@@ -42,7 +41,7 @@ export function ErtMetricsCards() {
         <CardHeader>
           <CardDescription>Active Incidents</CardDescription>
           <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-            {activeIncidents}
+            {isLoading ? <Skeleton className='h-8 w-12' /> : activeIncidents}
           </CardTitle>
           <CardAction>
             <Badge variant='outline'>
@@ -57,7 +56,7 @@ export function ErtMetricsCards() {
         <CardHeader>
           <CardDescription>Urgent Medical</CardDescription>
           <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-            {urgentMedical}
+            {isLoading ? <Skeleton className='h-8 w-12' /> : urgentMedical}
           </CardTitle>
           <CardAction>
             <Badge variant='outline'>
@@ -72,7 +71,7 @@ export function ErtMetricsCards() {
         <CardHeader>
           <CardDescription>Deployed Units</CardDescription>
           <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-            {deployedUnits}
+            {isLoading ? <Skeleton className='h-8 w-12' /> : deployedUnits}
           </CardTitle>
           <CardAction>
             <Badge variant='outline'>
@@ -87,7 +86,7 @@ export function ErtMetricsCards() {
         <CardHeader>
           <CardDescription>Available Units</CardDescription>
           <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-            {availableUnits}
+            {isLoading ? <Skeleton className='h-8 w-12' /> : availableUnits}
           </CardTitle>
           <CardAction>
             <Badge variant='outline'>

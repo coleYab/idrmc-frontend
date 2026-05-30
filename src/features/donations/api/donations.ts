@@ -7,16 +7,22 @@ import {
 } from '@/lib/fetch-client';
 import { queryKeys } from '@/lib/query-keys';
 import {
-  CreateDonationSchema,
+  CampaignSchema,
+  CreateCampaignSchema,
   DonationSchema,
-  UpdateDonationSchema,
-  type CreateDonationDto,
+  DonationStatusResponseSchema,
+  InitializeDonationResponseSchema,
+  type Campaign,
+  type CampaignListParams,
+  type CreateCampaignDto,
   type Donation,
-  type DonationsListParams,
-  type UpdateDonationDto
+  type DonationStatusResponse,
+  type InitializeDonationDto,
+  type InitializeDonationResponse
 } from '../types';
 
 const donationsListSchema = DonationSchema.array();
+const campaignsListSchema = CampaignSchema.array();
 
 function parseDonation(data: unknown): Donation {
   return DonationSchema.parse(data);
@@ -26,7 +32,17 @@ function parseDonations(data: unknown): Donation[] {
   return donationsListSchema.parse(data);
 }
 
-export function useDonations(params?: DonationsListParams) {
+function parseCampaign(data: unknown): Campaign {
+  return CampaignSchema.parse(data);
+}
+
+function parseCampaigns(data: unknown): Campaign[] {
+  return campaignsListSchema.parse(data);
+}
+
+// --- Legacy Donation Hooks (deprecated, use campaigns instead) ---
+
+export function useDonations(params?: CampaignListParams) {
   const { getToken } = useAuth();
 
   return useQuery({
@@ -63,76 +79,139 @@ export function useDonation(id: string) {
   });
 }
 
-export function useCreateDonation() {
+// --- Campaign Hooks ---
+
+export function useCampaigns(params?: CampaignListParams) {
   const { getToken } = useAuth();
-  const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (payload: CreateDonationDto) => {
-      const validatedPayload = CreateDonationSchema.parse(payload);
-
-      const data = await fetchClient<Donation>(
-        '/donations',
-        {
-          method: 'POST',
-          body: JSON.stringify(validatedPayload)
-        },
+  return useQuery({
+    queryKey: queryKeys.donations.campaigns.list(params),
+    queryFn: async () => {
+      const response = await fetchClientResponse<Campaign[]>(
+        '/donations/campaigns',
+        { params },
         getToken
       );
 
-      return parseDonation(data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.donations.root });
+      return {
+        items: parseCampaigns(response.data),
+        meta: response.meta
+      } satisfies PaginatedResult<Campaign>;
     }
   });
 }
 
-export function useUpdateDonation(id: string) {
+export function useCampaign(id: string) {
+  const { getToken } = useAuth();
+
+  return useQuery({
+    queryKey: queryKeys.donations.campaigns.detail(id),
+    queryFn: async () => {
+      const data = await fetchClient<Campaign>(
+        `/donations/campaigns/${id}`,
+        {},
+        getToken
+      );
+      return parseCampaign(data);
+    },
+    enabled: !!id
+  });
+}
+
+export function useCreateCampaign() {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload: UpdateDonationDto) => {
-      const validatedPayload = UpdateDonationSchema.parse(payload);
-
-      const data = await fetchClient<Donation>(
-        `/donations/${id}`,
+    mutationFn: async (payload: CreateCampaignDto) => {
+      const validated = CreateCampaignSchema.parse(payload);
+      const data = await fetchClient<Campaign>(
+        '/donations/campaigns',
         {
-          method: 'PUT',
-          body: JSON.stringify(validatedPayload)
+          method: 'POST',
+          body: JSON.stringify(validated)
         },
         getToken
       );
-
-      return parseDonation(data);
+      return parseCampaign(data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.donations.root });
       queryClient.invalidateQueries({
-        queryKey: queryKeys.donations.detail(id)
+        queryKey: queryKeys.donations.campaigns.root
       });
     }
   });
 }
 
-export function useDeleteDonation() {
+export function useUpdateCampaignStatus() {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      await fetchClient<void>(
-        `/donations/${id}`,
+    mutationFn: async ({
+      id,
+      payload
+    }: {
+      id: string;
+      payload: { status: string; reason?: string };
+    }) => {
+      const data = await fetchClient<Campaign>(
+        `/donations/campaigns/${id}/status`,
         {
-          method: 'DELETE'
+          method: 'PATCH',
+          body: JSON.stringify(payload)
         },
         getToken
       );
+      return parseCampaign(data);
     },
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.donations.root });
-      queryClient.removeQueries({ queryKey: queryKeys.donations.detail(id) });
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.donations.campaigns.root
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.donations.campaigns.detail(variables.id)
+      });
     }
+  });
+}
+
+// --- Payment Hooks ---
+
+export function useInitializeDonation() {
+  const { getToken } = useAuth();
+
+  return useMutation({
+    mutationFn: async (payload: InitializeDonationDto) => {
+      const data = await fetchClient<InitializeDonationResponse>(
+        '/donations/initialize',
+        {
+          method: 'POST',
+          body: JSON.stringify(payload),
+          headers: {
+            'Idempotency-Key': crypto.randomUUID()
+          }
+        },
+        getToken
+      );
+      return InitializeDonationResponseSchema.parse(data);
+    }
+  });
+}
+
+export function useDonationStatus(donationId: string) {
+  const { getToken } = useAuth();
+
+  return useQuery({
+    queryKey: queryKeys.donations.payment.status(donationId),
+    queryFn: async () => {
+      const data = await fetchClient<DonationStatusResponse>(
+        `/donations/${donationId}/status`,
+        {},
+        getToken
+      );
+      return DonationStatusResponseSchema.parse(data);
+    },
+    enabled: !!donationId
   });
 }

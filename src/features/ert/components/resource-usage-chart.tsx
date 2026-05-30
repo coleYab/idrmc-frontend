@@ -1,6 +1,7 @@
 'use client';
 
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { useResources } from '@/features/ert/api/resources';
 
 import {
   Card,
@@ -9,6 +10,7 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   ChartConfig,
   ChartContainer,
@@ -16,61 +18,52 @@ import {
   ChartTooltipContent
 } from '@/components/ui/chart';
 
-const chartData = [
-  { day: 'Mon', utilized: 210, available: 340 },
-  { day: 'Tue', utilized: 280, available: 270 },
-  { day: 'Wed', utilized: 320, available: 230 },
-  { day: 'Thu', utilized: 290, available: 260 },
-  { day: 'Fri', utilized: 350, available: 200 },
-  { day: 'Sat', utilized: 310, available: 240 },
-  { day: 'Sun', utilized: 300, available: 250 }
-];
-
 const chartConfig = {
   utilized: {
-    label: 'Utilized',
+    label: 'Quantity',
     color: 'var(--chart-1)'
-  },
-  available: {
-    label: 'Available',
-    color: 'var(--chart-2)'
   }
 } satisfies ChartConfig;
 
 export function ResourceUsageChart() {
+  const { data, isLoading } = useResources();
+  const resources = data?.items ?? [];
+
+  const chartData = resources.map((r) => ({
+    name: r.name,
+    utilized: r.quantity
+  }));
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Resource Utilization Trend</CardTitle>
-        <CardDescription>
-          Weekly resource usage and availability
-        </CardDescription>
+        <CardDescription>Available quantity by resource type</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
-          <AreaChart data={chartData} accessibilityLayer>
-            <CartesianGrid strokeDasharray='3 3' />
-            <XAxis dataKey='day' />
-            <YAxis />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Area
-              type='monotone'
-              dataKey='utilized'
-              stackId='a'
-              stroke='var(--color-utilized)'
-              fill='var(--color-utilized)'
-              fillOpacity={0.4}
-            />
-            <Area
-              type='monotone'
-              dataKey='available'
-              stackId='a'
-              stroke='var(--color-available)'
-              fill='var(--color-available)'
-              fillOpacity={0.4}
-            />
-          </AreaChart>
-        </ChartContainer>
+        {isLoading ? (
+          <Skeleton className='h-48 w-full' />
+        ) : chartData.length === 0 ? (
+          <div className='text-muted-foreground flex h-48 items-center justify-center text-sm'>
+            No resource data available.
+          </div>
+        ) : (
+          <ChartContainer config={chartConfig}>
+            <AreaChart data={chartData} accessibilityLayer>
+              <CartesianGrid strokeDasharray='3 3' />
+              <XAxis dataKey='name' />
+              <YAxis />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Area
+                type='monotone'
+                dataKey='utilized'
+                stroke='var(--color-utilized)'
+                fill='var(--color-utilized)'
+                fillOpacity={0.4}
+              />
+            </AreaChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   );

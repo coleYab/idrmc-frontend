@@ -1,59 +1,22 @@
+'use client';
+
+import { useErtUnits } from '@/features/ert/api/ert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-
-export const metadata = { title: 'ERT - Team Status' };
-
-const mockTeam = [
-  {
-    id: '1',
-    name: 'Alpha Unit',
-    lead: 'Abebe Girma',
-    members: 5,
-    status: 'deployed',
-    location: 'Oromia Region'
-  },
-  {
-    id: '2',
-    name: 'Bravo Unit',
-    lead: 'Tigist Haile',
-    members: 4,
-    status: 'available',
-    location: 'Base Camp'
-  },
-  {
-    id: '3',
-    name: 'Charlie Unit',
-    lead: 'Dawit Bekele',
-    members: 6,
-    status: 'deployed',
-    location: 'Amhara Region'
-  },
-  {
-    id: '4',
-    name: 'Delta Unit',
-    lead: 'Meron Tadesse',
-    members: 4,
-    status: 'off-duty',
-    location: 'Base Camp'
-  },
-  {
-    id: '5',
-    name: 'Echo Unit',
-    lead: 'Yonas Alemu',
-    members: 5,
-    status: 'available',
-    location: 'Base Camp'
-  }
-];
+import { Skeleton } from '@/components/ui/skeleton';
+import { IconUsers } from '@tabler/icons-react';
 
 const statusVariant = (s: string) =>
-  s === 'deployed'
-    ? 'destructive'
-    : s === 'available'
-      ? 'outline'
-      : 'secondary';
+  s === 'DEPLOYED' ? 'destructive' : s === 'IDLE' ? 'outline' : 'secondary';
+
+const statusLabel = (s: string) =>
+  s === 'IDLE' ? 'Available' : s === 'DEPLOYED' ? 'Deployed' : s;
 
 export default function TeamPage() {
+  const { data, isLoading } = useErtUnits();
+
+  const units = data?.items ?? [];
+
   return (
     <div className='@container/main flex flex-1 flex-col gap-4 p-4 lg:p-6'>
       <div>
@@ -62,34 +25,71 @@ export default function TeamPage() {
           Current status of all ERT units
         </p>
       </div>
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-        {mockTeam.map((unit) => (
-          <Card key={unit.id}>
-            <CardHeader className='pb-2'>
-              <div className='flex items-center justify-between'>
-                <CardTitle className='text-base'>{unit.name}</CardTitle>
-                <Badge
-                  variant={statusVariant(unit.status)}
-                  className='capitalize'
-                >
-                  {unit.status}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className='space-y-1 text-sm'>
-              <p>
-                Lead: <span className='font-medium'>{unit.lead}</span>
-              </p>
-              <p>
-                Members: <span className='font-medium'>{unit.members}</span>
-              </p>
-              <p>
-                Location: <span className='font-medium'>{unit.location}</span>
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {isLoading ? (
+        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className='pb-2'>
+                <Skeleton className='h-5 w-24' />
+              </CardHeader>
+              <CardContent className='space-y-1'>
+                <Skeleton className='h-4 w-32' />
+                <Skeleton className='h-4 w-20' />
+                <Skeleton className='h-4 w-36' />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : units.length === 0 ? (
+        <div className='border-muted text-muted-foreground flex flex-col items-center gap-2 rounded-2xl border border-dashed p-12 text-center'>
+          <IconUsers className='size-10' />
+          <p className='text-sm font-medium'>No ERT units registered</p>
+          <p className='text-xs'>
+            Units will appear here once they are created and deployed.
+          </p>
+        </div>
+      ) : (
+        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+          {units.map((unit) => (
+            <Card key={unit.unitID}>
+              <CardHeader className='pb-2'>
+                <div className='flex items-center justify-between'>
+                  <CardTitle className='text-base'>{unit.name}</CardTitle>
+                  <Badge
+                    variant={statusVariant(unit.status)}
+                    className='capitalize'
+                  >
+                    {statusLabel(unit.status)}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className='space-y-1 text-sm'>
+                <p>
+                  Region:{' '}
+                  <span className='font-medium'>
+                    {unit.region ?? 'Not assigned'}
+                  </span>
+                </p>
+                <p>
+                  Status:{' '}
+                  <span className='font-medium'>
+                    {statusLabel(unit.status)}
+                  </span>
+                </p>
+                {unit.location && (
+                  <p>
+                    Location:{' '}
+                    <span className='font-medium'>
+                      {unit.location.latitude.toFixed(4)},{' '}
+                      {unit.location.longitude.toFixed(4)}
+                    </span>
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

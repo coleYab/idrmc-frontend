@@ -1,6 +1,7 @@
 'use client';
 
 import { Bar, BarChart, XAxis } from 'recharts';
+import { useResourceNeeds } from '@/features/ert/api/resources';
 
 import {
   Card,
@@ -9,6 +10,7 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   ChartConfig,
   ChartContainer,
@@ -16,43 +18,70 @@ import {
   ChartTooltipContent
 } from '@/components/ui/chart';
 
-const chartData = [
-  { category: 'Medical', allocated: 450, deployed: 320 },
-  { category: 'Food', allocated: 380, deployed: 280 },
-  { category: 'Water', allocated: 320, deployed: 240 },
-  { category: 'Shelter', allocated: 290, deployed: 190 },
-  { category: 'Equipment', allocated: 260, deployed: 180 }
-];
-
 const chartConfig = {
   allocated: {
-    label: 'Allocated',
+    label: 'Required',
     color: 'var(--chart-1)'
   },
   deployed: {
-    label: 'Deployed',
+    label: 'Fulfilled',
     color: 'var(--chart-2)'
   }
 } satisfies ChartConfig;
 
 export function ResourceAllocationChart() {
+  const { data, isLoading } = useResourceNeeds();
+  const needs = data?.items ?? [];
+
+  const byResource = new Map<string, { required: number; fulfilled: number }>();
+
+  for (const need of needs) {
+    const entry = byResource.get(need.resourceID) ?? {
+      required: 0,
+      fulfilled: 0
+    };
+    entry.required += need.quantityRequired;
+    entry.fulfilled += need.quantityFulfilled ?? 0;
+    byResource.set(need.resourceID, entry);
+  }
+
+  const chartData = Array.from(byResource.entries()).map(
+    ([resourceID, vals]) => ({
+      category: resourceID.slice(0, 8),
+      allocated: vals.required,
+      deployed: vals.fulfilled
+    })
+  );
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Resource Allocation & Deployment</CardTitle>
         <CardDescription>
-          Allocated vs deployed resources by category
+          Required vs fulfilled resources by need
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
-          <BarChart accessibilityLayer data={chartData}>
-            <XAxis dataKey='category' />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Bar dataKey='allocated' fill='var(--color-allocated)' radius={8} />
-            <Bar dataKey='deployed' fill='var(--color-deployed)' radius={8} />
-          </BarChart>
-        </ChartContainer>
+        {isLoading ? (
+          <Skeleton className='h-48 w-full' />
+        ) : chartData.length === 0 ? (
+          <div className='text-muted-foreground flex h-48 items-center justify-center text-sm'>
+            No resource needs have been created yet.
+          </div>
+        ) : (
+          <ChartContainer config={chartConfig}>
+            <BarChart accessibilityLayer data={chartData}>
+              <XAxis dataKey='category' />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Bar
+                dataKey='allocated'
+                fill='var(--color-allocated)'
+                radius={8}
+              />
+              <Bar dataKey='deployed' fill='var(--color-deployed)' radius={8} />
+            </BarChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   );

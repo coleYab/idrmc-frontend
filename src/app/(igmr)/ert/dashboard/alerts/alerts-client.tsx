@@ -1,8 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import PageContainer from '@/components/layout/page-container';
-import { useErtStore } from '@/features/ert/utils/store';
+import { useDisasters } from '@/features/disasters/api/disasters';
+import {
+  useResources,
+  useCreateResourceNeed
+} from '@/features/ert/api/resources';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -22,45 +26,38 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { IconAlertTriangle } from '@tabler/icons-react';
 
 export default function AlertsClient() {
-  const alerts = useErtStore((state) => state.alerts);
-  const resources = useErtStore((state) => state.resources);
-  const allocations = useErtStore((state) => state.allocations);
-  const allocateResource = useErtStore((state) => state.allocateResource);
-  const removeAlert = useErtStore((state) => state.removeAlert);
+  const { data: disastersData, isLoading: disastersLoading } = useDisasters();
+  const { data: resourcesData, isLoading: resourcesLoading } = useResources();
+  const createNeed = useCreateResourceNeed();
 
-  const [selectedAlertId, setSelectedAlertId] = useState(alerts[0]?.id ?? '');
+  const disasters = disastersData?.items ?? [];
+  const resources = resourcesData?.items ?? [];
+
+  const [selectedDisasterId, setSelectedDisasterId] = useState(
+    disasters[0]?.id ?? ''
+  );
   const [selectedResourceId, setSelectedResourceId] = useState(
     resources[0]?.id ?? ''
   );
   const [quantity, setQuantity] = useState(1);
 
-  const selectedAlert = alerts.find((alert) => alert.id === selectedAlertId);
+  const selectedDisaster = disasters.find((d) => d.id === selectedDisasterId);
 
-  const alertAllocations = useMemo(
-    () =>
-      allocations
-        .filter((allocation) => allocation.alertId === selectedAlertId)
-        .map((allocation) => ({
-          ...allocation,
-          resource: resources.find(
-            (resource) => resource.id === allocation.resourceId
-          )
-        })),
-    [allocations, resources, selectedAlertId]
-  );
+  const isLoading = disastersLoading || resourcesLoading;
 
-  const handleAllocate = () => {
-    if (!selectedAlert) {
-      toast.error('Please select an alert first.');
+  const handleCreateNeed = async () => {
+    if (!selectedDisaster) {
+      toast.error('Please select a disaster first.');
       return;
     }
 
     if (!selectedResourceId) {
-      toast.error('Choose a resource to allocate.');
+      toast.error('Choose a resource to request.');
       return;
     }
 
@@ -70,29 +67,34 @@ export default function AlertsClient() {
       return;
     }
 
-    const resource = resources.find((item) => item.id === selectedResourceId);
-    if (!resource || amount > resource.available) {
-      toast.error('There is not enough inventory to allocate that amount.');
-      return;
+    try {
+      await createNeed.mutateAsync({
+        resourceID: selectedResourceId,
+        quantityRequired: amount,
+        priority: 'high',
+        incidentID: selectedDisaster.id
+      });
+      setQuantity(1);
+      toast.success('Resource need created successfully.');
+    } catch {
+      toast.error('Failed to create resource need.');
     }
+  };
 
-    allocateResource(selectedAlert.id, selectedResourceId, amount);
-    setQuantity(1);
-    toast.success(
-      `Allocated ${amount} ${resource.unit} of ${resource.name} to ${selectedAlert.title}.`
+  if (isLoading) {
+    return (
+      <PageContainer
+        scrollable={true}
+        pageTitle='ERT Alerts'
+        pageDescription='View all disaster alerts declared by the disaster manager.'
+      >
+        <div className='grid gap-4 lg:grid-cols-[320px_1fr]'>
+          <Skeleton className='h-80 w-full' />
+          <Skeleton className='h-80 w-full' />
+        </div>
+      </PageContainer>
     );
-  };
-
-  const handleDismiss = () => {
-    if (!selectedAlert) {
-      return;
-    }
-
-    removeAlert(selectedAlert.id);
-    toast.success('Dismissed alert and returned allocated resources.');
-    const nextAlert = alerts.find((alert) => alert.id !== selectedAlert.id);
-    setSelectedAlertId(nextAlert?.id ?? '');
-  };
+  }
 
   return (
     <PageContainer
@@ -104,35 +106,39 @@ export default function AlertsClient() {
         <div className='space-y-4'>
           <Card>
             <CardHeader>
-              <CardTitle>Active Alerts</CardTitle>
+              <CardTitle>Active Disasters</CardTitle>
               <CardDescription>
-                Select an alert to allocate resources.
+                Select a disaster to request resources.
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-3'>
-              {alerts.length === 0 ? (
+              {disasters.length === 0 ? (
                 <div className='border-muted text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm'>
-                  No disaster alerts are currently active.
+                  No active disasters at this time.
                 </div>
               ) : (
-                alerts.map((alert) => (
+                disasters.map((disaster) => (
                   <div
-                    key={alert.id}
+                    key={disaster.id}
                     className={`cursor-pointer rounded-2xl border p-4 transition ${
-                      alert.id === selectedAlertId
+                      disaster.id === selectedDisasterId
                         ? 'border-primary bg-primary/10'
                         : 'border-border bg-background hover:border-primary/70'
                     }`}
-                    onClick={() => setSelectedAlertId(alert.id)}
+                    onClick={() => setSelectedDisasterId(disaster.id)}
                   >
                     <div className='flex items-center justify-between gap-4'>
                       <div>
-                        <h3 className='text-sm font-semibold'>{alert.title}</h3>
+                        <h3 className='text-sm font-semibold'>
+                          {disaster.title}
+                        </h3>
                         <p className='text-muted-foreground text-xs'>
-                          {alert.location}
+                          {disaster.location}
                         </p>
                       </div>
-                      <Badge variant='secondary'>{alert.status}</Badge>
+                      <Badge variant='secondary'>
+                        {disaster.disasterType ?? disaster.incidentType}
+                      </Badge>
                     </div>
                   </div>
                 ))
@@ -142,44 +148,45 @@ export default function AlertsClient() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Alert Context</CardTitle>
+              <CardTitle>Disaster Context</CardTitle>
               <CardDescription>
-                Quick view for the selected alert.
+                Quick view for the selected disaster.
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-4'>
-              {selectedAlert ? (
+              {selectedDisaster ? (
                 <>
                   <div className='space-y-2'>
                     <div className='text-muted-foreground flex items-center gap-2 text-sm'>
                       <IconAlertTriangle className='size-4' />
-                      <span>Active alert information</span>
+                      <span>Active disaster information</span>
                     </div>
-                    <p className='text-sm'>{selectedAlert.body}</p>
+                    <p className='text-sm'>{selectedDisaster.description}</p>
                     <div className='grid gap-3 sm:grid-cols-2'>
                       <div>
                         <p className='text-muted-foreground text-xs tracking-[0.16em] uppercase'>
                           Location
                         </p>
-                        <p className='text-sm'>{selectedAlert.location}</p>
+                        <p className='text-sm'>{selectedDisaster.location}</p>
                       </div>
                       <div>
                         <p className='text-muted-foreground text-xs tracking-[0.16em] uppercase'>
-                          Raised
+                          Declared
                         </p>
                         <p className='text-sm'>
-                          {new Date(selectedAlert.createdAt).toLocaleString()}
+                          {selectedDisaster.createdAt
+                            ? new Date(
+                                selectedDisaster.createdAt
+                              ).toLocaleString()
+                            : 'Unknown'}
                         </p>
                       </div>
                     </div>
                   </div>
-                  <Button variant='destructive' onClick={handleDismiss}>
-                    Dismiss Alert and Release Resources
-                  </Button>
                 </>
               ) : (
                 <div className='text-muted-foreground text-sm'>
-                  Choose an alert from the list to see details and attach
+                  Choose a disaster from the list to see details and request
                   resources.
                 </div>
               )}
@@ -190,9 +197,9 @@ export default function AlertsClient() {
         <div className='space-y-4'>
           <Card>
             <CardHeader>
-              <CardTitle>Allocate Resources</CardTitle>
+              <CardTitle>Request Resources</CardTitle>
               <CardDescription>
-                Assign inventory to the selected disaster alert.
+                Create a resource need for the selected disaster.
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-4'>
@@ -214,8 +221,7 @@ export default function AlertsClient() {
                     <SelectContent>
                       {resources.map((resource) => (
                         <SelectItem key={resource.id} value={resource.id}>
-                          {resource.name} — {resource.available} {resource.unit}{' '}
-                          available
+                          {resource.name} — {resource.quantity} available
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -223,13 +229,13 @@ export default function AlertsClient() {
                 </div>
                 <div>
                   <Label
-                    htmlFor='allocation-quantity'
+                    htmlFor='need-quantity'
                     className='mb-2 block text-sm font-medium'
                   >
                     Quantity
                   </Label>
                   <Input
-                    id='allocation-quantity'
+                    id='need-quantity'
                     type='number'
                     min={1}
                     value={quantity}
@@ -240,52 +246,17 @@ export default function AlertsClient() {
                 </div>
               </div>
               <Button
-                onClick={handleAllocate}
-                disabled={!selectedAlert || resources.length === 0}
+                onClick={handleCreateNeed}
+                disabled={!selectedDisaster || resources.length === 0}
               >
-                Allocate Resource
+                Create Resource Need
               </Button>
             </CardContent>
             <CardFooter>
               <p className='text-muted-foreground text-sm'>
-                Resources are deducted from inventory when assigned to an alert.
+                Resource needs are sent to inventory for fulfillment.
               </p>
             </CardFooter>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Allocated Resources</CardTitle>
-              <CardDescription>
-                Resources currently assigned to this alert.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className='space-y-3'>
-              {selectedAlert && alertAllocations.length > 0 ? (
-                alertAllocations.map(({ resource, quantity }) => (
-                  <div
-                    key={resource?.id ?? quantity}
-                    className='rounded-2xl border p-4'
-                  >
-                    <div className='flex items-center justify-between gap-3'>
-                      <div>
-                        <h3 className='text-sm font-semibold'>
-                          {resource?.name ?? 'Unknown resource'}
-                        </h3>
-                        <p className='text-muted-foreground text-xs'>
-                          {resource?.description}
-                        </p>
-                      </div>
-                      <Badge>{quantity} assigned</Badge>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className='text-muted-foreground text-sm'>
-                  No resources are assigned to this alert yet.
-                </p>
-              )}
-            </CardContent>
           </Card>
         </div>
       </div>

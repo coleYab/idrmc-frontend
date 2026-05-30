@@ -1,12 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import PageContainer from '@/components/layout/page-container';
 import {
-  useDonations,
-  useCreateDonation
+  useCampaigns,
+  useCreateCampaign
 } from '@/features/donations/api/donations';
-import { useErtStore } from '@/features/ert/utils/store';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -17,91 +16,59 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { IconHeart } from '@tabler/icons-react';
 
 export default function DonationsClient() {
-  const alerts = useErtStore((state) => state.alerts);
-  const { data: donationsData, isLoading } = useDonations();
-  const createDonation = useCreateDonation();
+  const { data: campaignsData, isLoading } = useCampaigns();
+  const createCampaign = useCreateCampaign();
 
-  const donations = donationsData?.items ?? [];
+  const campaigns = campaignsData?.items ?? [];
 
-  const [alertId, setAlertId] = useState(alerts[0]?.id ?? '');
-  const [title, setTitle] = useState('');
-  const [goal, setGoal] = useState(25000);
-  const [giftAmount, setGiftAmount] = useState(1000);
-
-  const donationWithAlerts = useMemo(
-    () =>
-      donations.map((donation) => ({
-        donation,
-        alert: alerts.find((a) => a.id === donation.disasterId)
-      })),
-    [alerts, donations]
-  );
+  const [goalAmount, setGoalAmount] = useState(25000);
+  const [description, setDescription] = useState('');
 
   const handleCreateCampaign = async () => {
-    if (!alertId) {
-      toast.error('Select an alert to tie the campaign to.');
+    if (!description.trim()) {
+      toast.error('Campaign description is required.');
       return;
     }
-    if (!title.trim()) {
-      toast.error('Donation title is required.');
-      return;
-    }
-    if (goal <= 0) {
-      toast.error('Donation goal must be greater than zero.');
+    if (goalAmount <= 0) {
+      toast.error('Goal amount must be greater than zero.');
       return;
     }
 
     try {
-      await createDonation.mutateAsync({
-        title: title.trim(),
-        description: `Donation campaign for alert ${alertId}`,
-        goal
+      await createCampaign.mutateAsync({
+        disasterID: '00000000-0000-0000-0000-000000000000',
+        goalAmount,
+        description: description.trim()
       });
-      setTitle('');
-      setGoal(25000);
+      setDescription('');
+      setGoalAmount(25000);
       toast.success('Donation campaign created.');
     } catch {
       toast.error('Failed to create donation campaign.');
     }
   };
 
-  const handleContribute = async (donationId: string) => {
-    if (giftAmount <= 0) {
-      toast.error('Contribution amount must be positive.');
-      return;
-    }
-    try {
-      const donation = donations.find((d) => d.id === donationId);
-      if (!donation) return;
-      await createDonation.mutateAsync({
-        title: donation.title,
-        description: donation.description ?? '',
-        goal: (donation.goal ?? 0) + giftAmount
-      });
-      toast.success('Donation contribution added.');
-    } catch {
-      toast.error('Failed to add contribution.');
-    }
-  };
+  const statusVariant = (s: string) =>
+    s === 'ACTIVE'
+      ? 'default'
+      : s === 'CLOSED'
+        ? 'secondary'
+        : s === 'DRAFT'
+          ? 'outline'
+          : 'destructive';
 
   return (
     <PageContainer
       scrollable={true}
       pageTitle='Donations'
-      pageDescription='Track donations linked to specific alerts and view which campaigns have reached their recovery goal.'
+      pageDescription='Track donation campaigns and view which ones have reached their recovery goal.'
     >
       <div className='grid gap-4 lg:grid-cols-[1fr_360px]'>
         <div className='space-y-4'>
@@ -109,45 +76,22 @@ export default function DonationsClient() {
             <CardHeader>
               <CardTitle>Create Donation Campaign</CardTitle>
               <CardDescription>
-                Start a new fundraising effort for an active alert.
+                Start a new fundraising effort for disaster recovery.
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-4'>
               <div>
                 <Label
-                  htmlFor='alert-select'
+                  htmlFor='campaign-desc'
                   className='mb-2 block text-sm font-medium'
                 >
-                  Alert
-                </Label>
-                <Select
-                  value={alertId}
-                  onValueChange={(value) => setAlertId(value)}
-                >
-                  <SelectTrigger id='alert-select' className='w-full'>
-                    <SelectValue placeholder='Choose an alert' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {alerts.map((alert) => (
-                      <SelectItem key={alert.id} value={alert.id}>
-                        {alert.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label
-                  htmlFor='campaign-title'
-                  className='mb-2 block text-sm font-medium'
-                >
-                  Campaign Title
+                  Description
                 </Label>
                 <Input
-                  id='campaign-title'
-                  value={title}
-                  onChange={(event) => setTitle(event.target.value)}
-                  placeholder='Recovery fund title'
+                  id='campaign-desc'
+                  value={description}
+                  onChange={(event) => setDescription(event.target.value)}
+                  placeholder='Recovery fund description'
                 />
               </div>
               <div>
@@ -155,14 +99,16 @@ export default function DonationsClient() {
                   htmlFor='goal-amount'
                   className='mb-2 block text-sm font-medium'
                 >
-                  Goal
+                  Goal Amount (ETB)
                 </Label>
                 <Input
                   id='goal-amount'
                   type='number'
-                  value={goal}
-                  min={1000}
-                  onChange={(event) => setGoal(Number(event.target.value))}
+                  value={goalAmount}
+                  min={100}
+                  onChange={(event) =>
+                    setGoalAmount(Number(event.target.value))
+                  }
                 />
               </div>
               <Button onClick={handleCreateCampaign}>Create Campaign</Button>
@@ -170,79 +116,76 @@ export default function DonationsClient() {
           </Card>
 
           <div className='space-y-4'>
-            {donationWithAlerts.map(({ donation, alert }) => {
-              const raised = donation.raised ?? 0;
-              const goalAmount = donation.goal ?? 1;
-              const percent = Math.min(
-                100,
-                Math.round((raised / goalAmount) * 100)
-              );
-              const achieved = raised >= goalAmount && goalAmount > 0;
-
-              return (
-                <Card key={donation.id}>
+            {isLoading ? (
+              Array.from({ length: 2 }).map((_, i) => (
+                <Card key={i}>
                   <CardHeader>
-                    <div className='flex items-start justify-between gap-3'>
-                      <div>
-                        <CardTitle>{donation.title}</CardTitle>
-                        <CardDescription>
-                          {alert ? alert.title : 'Alert no longer active'}
-                        </CardDescription>
-                      </div>
-                      <Badge variant={achieved ? 'default' : 'secondary'}>
-                        {achieved ? 'Goal achieved' : `${percent}%`}
-                      </Badge>
-                    </div>
+                    <Skeleton className='h-5 w-48' />
+                    <Skeleton className='h-4 w-32' />
                   </CardHeader>
-                  <CardContent className='space-y-4'>
-                    <div className='grid gap-2'>
-                      <div className='text-muted-foreground flex items-center justify-between gap-2 text-sm'>
-                        <span>Raised</span>
-                        <span>
-                          ${raised.toLocaleString()} / $
-                          {goalAmount.toLocaleString()}
-                        </span>
-                      </div>
-                      <Progress value={percent} />
-                    </div>
-                    <div className='grid gap-3 sm:grid-cols-3'>
-                      <div>
-                        <Label
-                          htmlFor={`gift-${donation.id}`}
-                          className='mb-2 block text-sm font-medium'
-                        >
-                          Contribution
-                        </Label>
-                        <Input
-                          id={`gift-${donation.id}`}
-                          type='number'
-                          min={50}
-                          value={giftAmount}
-                          onChange={(event) =>
-                            setGiftAmount(Number(event.target.value))
-                          }
-                        />
-                      </div>
-                      <div className='flex items-end sm:col-span-2'>
-                        <Button
-                          className='w-full'
-                          disabled={achieved}
-                          onClick={() => handleContribute(donation.id)}
-                        >
-                          Add Contribution
-                        </Button>
-                      </div>
-                    </div>
+                  <CardContent>
+                    <Skeleton className='h-4 w-full' />
+                    <Skeleton className='mt-2 h-2 w-full' />
                   </CardContent>
                 </Card>
-              );
-            })}
+              ))
+            ) : campaigns.length === 0 ? (
+              <div className='border-muted text-muted-foreground flex flex-col items-center gap-2 rounded-2xl border border-dashed p-12 text-center'>
+                <IconHeart className='size-10 text-rose-500' />
+                <p className='text-sm font-medium'>No donation campaigns yet</p>
+                <p className='text-xs'>
+                  Create a campaign above to start fundraising.
+                </p>
+              </div>
+            ) : (
+              campaigns.map((campaign) => {
+                const percent = Math.min(
+                  100,
+                  Math.round(campaign.progressPercentage)
+                );
+                const achieved = campaign.currentAmount >= campaign.goalAmount;
+
+                return (
+                  <Card key={campaign.campaignID}>
+                    <CardHeader>
+                      <div className='flex items-start justify-between gap-3'>
+                        <div>
+                          <CardTitle>
+                            {campaign.description.slice(0, 50)}
+                          </CardTitle>
+                          <CardDescription>
+                            {campaign.currency} · {campaign.donationCount}{' '}
+                            donations
+                          </CardDescription>
+                        </div>
+                        <Badge variant={statusVariant(campaign.status)}>
+                          {achieved ? 'Goal achieved' : campaign.status}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className='space-y-4'>
+                      <div className='grid gap-2'>
+                        <div className='text-muted-foreground flex items-center justify-between gap-2 text-sm'>
+                          <span>Raised</span>
+                          <span>
+                            {campaign.currentAmount.toLocaleString()} /{' '}
+                            {campaign.goalAmount.toLocaleString()}{' '}
+                            {campaign.currency}
+                          </span>
+                        </div>
+                        <Progress value={percent} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
           </div>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Donation Summary</CardTitle>
+            <CardTitle>Campaign Summary</CardTitle>
             <CardDescription>
               Track active campaigns and recovery funding.
             </CardDescription>
@@ -256,22 +199,11 @@ export default function DonationsClient() {
                     <div>
                       <p className='text-sm font-semibold'>Total campaigns</p>
                       <p className='text-muted-foreground text-xs'>
-                        {donations.length} campaigns
+                        {campaigns.length} campaigns
                       </p>
                     </div>
                   </div>
-                  <Badge>{donations.length}</Badge>
-                </div>
-              </div>
-              <div className='rounded-2xl border p-4'>
-                <div className='flex items-center justify-between gap-3'>
-                  <div>
-                    <p className='text-sm font-semibold'>Trending goal</p>
-                    <p className='text-muted-foreground text-xs'>
-                      Keep donor momentum for recovery operations.
-                    </p>
-                  </div>
-                  <Badge variant='secondary'>Priority</Badge>
+                  <Badge>{campaigns.length}</Badge>
                 </div>
               </div>
             </div>
