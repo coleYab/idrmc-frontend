@@ -64,7 +64,7 @@ import {
   useUpdateClerkUserRoles,
   useDeleteClerkUser
 } from '@/features/admin/api/clerk-users';
-import { ROLE_OPTIONS } from '@/features/admin/types/clerk-user';
+import { ROLE_OPTIONS, type Role } from '@/features/admin/types/clerk-user';
 
 const roleColors: Record<string, string> = {
   admin: 'destructive',
@@ -112,7 +112,7 @@ export default function UsersAdminClient() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteFirstName, setInviteFirstName] = useState('');
   const [inviteLastName, setInviteLastName] = useState('');
-  const [inviteRole, setInviteRole] = useState('user');
+  const [inviteRole, setInviteRole] = useState<Role>('user');
 
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 

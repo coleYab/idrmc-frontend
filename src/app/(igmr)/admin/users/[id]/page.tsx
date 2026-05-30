@@ -47,7 +47,7 @@ import {
   useUpdateClerkUserRoles,
   useDeleteClerkUser
 } from '@/features/admin/api/clerk-users';
-import { ROLE_OPTIONS } from '@/features/admin/types/clerk-user';
+import { ROLE_OPTIONS, type Role } from '@/features/admin/types/clerk-user';
 import { useActivityLogs } from '@/features/admin/api/admin';
 
 const roleColors: Record<string, string> = {
@@ -101,7 +101,7 @@ export default function UserDetailPage({
 
   const handleAddRole = async (role: string) => {
     if (!user) return;
-    if (user.roles.includes(role)) {
+    if (user.roles.includes(role as Role)) {
       toast.info('User already has this role.');
       return;
     }
