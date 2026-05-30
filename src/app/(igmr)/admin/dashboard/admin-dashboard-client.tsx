@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
 import PageContainer from '@/components/layout/page-container';
 import {
   Card,
@@ -10,25 +9,20 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
-  IconAlertTriangle,
-  IconBolt,
   IconServer,
+  IconBolt,
   IconShieldCheck,
   IconSettings,
-  IconUsers,
-  IconActivity,
-  IconDatabase,
-  IconCpu,
-  IconTrendingUp,
-  IconClock
+  IconActivity
 } from '@tabler/icons-react';
-import {
-  sampleActivities,
-  sampleUsers,
-  systemStatus,
-  systemMetrics
-} from '../admin-mock-data';
+import { AdminMetricsCards } from '@/features/admin/components/admin-metrics-cards';
+import { IncidentsStatusChart } from '@/features/admin/components/incidents-status-chart';
+import { IncidentsTypeChart } from '@/features/admin/components/incidents-type-chart';
+import { ErtUnitStatusChart } from '@/features/admin/components/ert-unit-status-chart';
+import { useSystemHealth } from '@/features/admin/api/admin';
+import { useActivityLogs } from '@/features/admin/api/admin';
 
 function formatDate(dateString: string) {
   return new Intl.DateTimeFormat('en-US', {
@@ -38,280 +32,28 @@ function formatDate(dateString: string) {
 }
 
 export default function AdminDashboardClient() {
-  const activeUsers = sampleUsers.filter((user) => user.active).length;
-  const inactiveUsers = sampleUsers.length - activeUsers;
-  const recentActivity = sampleActivities.slice(0, 4);
-  const failureCount = sampleActivities.filter(
-    (item) => item.status === 'Failed'
-  ).length;
-  const lastActivity = recentActivity[0];
+  const { data: healthData, isLoading: healthLoading } = useSystemHealth();
+  const { data: activityData, isLoading: activityLoading } = useActivityLogs({
+    limit: 5,
+    sortOrder: 'DESC'
+  });
+
+  const health = healthData?.health;
+  const metrics = healthData?.metrics;
+  const activities = activityData?.items ?? [];
 
   return (
     <PageContainer
       scrollable={true}
       pageTitle='Admin Dashboard'
-      pageDescription='System overview, uptime, failures, configuration, and recent admin activity.'
+      pageDescription='System overview, incidents, disasters, and recent admin activity.'
     >
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium'>Uptime</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>{systemStatus.uptime}</div>
-            <p className='text-muted-foreground mt-1 text-xs'>
-              Continuous service availability
-            </p>
-          </CardContent>
-        </Card>
+      <AdminMetricsCards />
 
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium'>Failures</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>
-              {systemStatus.failuresToday}
-            </div>
-            <p className='text-muted-foreground mt-1 text-xs'>
-              Service incidents recorded today
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium'>Active nodes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>{systemStatus.nodesOnline}</div>
-            <p className='text-muted-foreground mt-1 text-xs'>
-              Nodes currently online
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium'>Admin users</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>{activeUsers}</div>
-            <p className='text-muted-foreground mt-1 text-xs'>
-              {inactiveUsers} inactive accounts
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className='grid gap-5 pt-5 md:grid-cols-2 lg:grid-cols-3'>
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium'>API Response</CardTitle>
-          </CardHeader>
-          <CardContent className='pt-0'>
-            <div className='flex items-center gap-3'>
-              <IconBolt className='h-8 w-8 text-green-500' />
-              <div>
-                <div className='text-2xl font-bold'>
-                  {systemMetrics.apiResponseTime.value}
-                  <span className='text-muted-foreground ml-1 text-sm'>
-                    {systemMetrics.apiResponseTime.unit}
-                  </span>
-                </div>
-                <Badge variant='default' className='mt-2'>
-                  {systemMetrics.apiResponseTime.status}
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium'>CPU Usage</CardTitle>
-          </CardHeader>
-          <CardContent className='pt-0'>
-            <div className='flex items-center gap-3'>
-              <IconCpu className='h-8 w-8 text-blue-500' />
-              <div>
-                <div className='text-2xl font-bold'>
-                  {systemMetrics.cpuUsage.value}
-                  <span className='text-muted-foreground ml-1 text-sm'>%</span>
-                </div>
-                <Badge
-                  variant={
-                    systemMetrics.cpuUsage.status === 'normal'
-                      ? 'secondary'
-                      : 'destructive'
-                  }
-                  className='mt-2'
-                >
-                  {systemMetrics.cpuUsage.status}
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium'>Memory</CardTitle>
-          </CardHeader>
-          <CardContent className='pt-0'>
-            <div className='flex items-center gap-3'>
-              <IconDatabase className='h-8 w-8 text-purple-500' />
-              <div>
-                <div className='text-2xl font-bold'>
-                  {systemMetrics.memoryUsage.value}
-                  <span className='text-muted-foreground ml-1 text-sm'>
-                    /{systemMetrics.memoryUsage.total}GB
-                  </span>
-                </div>
-                <Badge
-                  variant={
-                    systemMetrics.memoryUsage.status === 'normal'
-                      ? 'secondary'
-                      : 'destructive'
-                  }
-                  className='mt-2'
-                >
-                  {systemMetrics.memoryUsage.status}
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium'>Error Rate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='flex items-center gap-3'>
-              <IconAlertTriangle className='h-8 w-8 text-orange-500' />
-              <div>
-                <div className='text-2xl font-bold'>
-                  {systemMetrics.errorRate.value}
-                  <span className='text-muted-foreground ml-1 text-sm'>%</span>
-                </div>
-                <Badge variant='default' className='mt-2'>
-                  {systemMetrics.errorRate.status}
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium'>
-              Cache Hit Rate
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='flex items-center gap-3'>
-              <IconTrendingUp className='h-8 w-8 text-green-600' />
-              <div>
-                <div className='text-2xl font-bold'>
-                  {systemMetrics.cacheHitRate}
-                  <span className='text-muted-foreground ml-1 text-sm'>%</span>
-                </div>
-                <p className='text-muted-foreground mt-1 text-xs'>
-                  Excellent cache performance
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium'>
-              Database Connections
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='space-y-3'>
-              <div className='flex items-center justify-between'>
-                <span className='text-2xl font-bold'>
-                  {systemMetrics.databaseConnections.active}/
-                  {systemMetrics.databaseConnections.max}
-                </span>
-              </div>
-              <div className='bg-muted h-2 w-full rounded-full'>
-                <div
-                  className='h-2 rounded-full bg-green-500'
-                  style={{
-                    width: `${(systemMetrics.databaseConnections.active / systemMetrics.databaseConnections.max) * 100}%`
-                  }}
-                />
-              </div>
-              <Badge variant='secondary'>
-                {systemMetrics.databaseConnections.status}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className='pb-10'>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium'>Disk Usage</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='space-y-3'>
-              <div className='flex items-center justify-between'>
-                <span className='text-2xl font-bold'>
-                  {systemMetrics.diskUsage.used}/{systemMetrics.diskUsage.total}
-                  GB
-                </span>
-              </div>
-              <div className='bg-muted h-2 w-full rounded-full'>
-                <div
-                  className='h-2 rounded-full bg-blue-500'
-                  style={{
-                    width: `${(systemMetrics.diskUsage.used / systemMetrics.diskUsage.total) * 100}%`
-                  }}
-                />
-              </div>
-              <Badge variant='secondary'>
-                {systemMetrics.diskUsage.status}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium'>System Load</CardTitle>
-          </CardHeader>
-          <CardContent className='space-y-2'>
-            <div className='flex items-center justify-between'>
-              <p className='text-muted-foreground text-sm'>Active sessions</p>
-              <span className='font-semibold'>
-                {systemMetrics.activeSessions}
-              </span>
-            </div>
-            <div className='flex items-center justify-between'>
-              <p className='text-muted-foreground text-sm'>Requests/sec</p>
-              <span className='font-semibold'>
-                {systemMetrics.requestVolume.perSecond}
-              </span>
-            </div>
-            <div className='flex items-center justify-between'>
-              <p className='text-muted-foreground text-sm'>Trend</p>
-              <Badge
-                variant={
-                  systemMetrics.requestVolume.trend === 'up'
-                    ? 'default'
-                    : 'secondary'
-                }
-              >
-                {systemMetrics.requestVolume.trend}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+      <div className='grid gap-4 pt-5 md:grid-cols-2 lg:grid-cols-3'>
+        <IncidentsStatusChart />
+        <IncidentsTypeChart />
+        <ErtUnitStatusChart />
       </div>
 
       <div className='grid gap-4 pt-5 lg:grid-cols-[1.2fr_0.8fr]'>
@@ -323,34 +65,61 @@ export default function AdminDashboardClient() {
             </CardDescription>
           </CardHeader>
           <CardContent className='grid gap-4 md:grid-cols-2'>
-            <div className='border-muted space-y-3 rounded-lg border p-4'>
-              <div className='flex items-center gap-2'>
-                <IconServer />
-                <p className='font-medium'>Config version</p>
-              </div>
-              <p>{systemStatus.configVersion}</p>
-            </div>
-            <div className='border-muted space-y-3 rounded-lg border p-4'>
-              <div className='flex items-center gap-2'>
-                <IconBolt />
-                <p className='font-medium'>Last deploy</p>
-              </div>
-              <p>{systemStatus.lastDeploy}</p>
-            </div>
-            <div className='border-muted space-y-3 rounded-lg border p-4'>
-              <div className='flex items-center gap-2'>
-                <IconShieldCheck />
-                <p className='font-medium'>Audit logging</p>
-              </div>
-              <p>{systemStatus.auditLogging}</p>
-            </div>
-            <div className='border-muted space-y-3 rounded-lg border p-4'>
-              <div className='flex items-center gap-2'>
-                <IconSettings />
-                <p className='font-medium'>Backup schedule</p>
-              </div>
-              <p>{systemStatus.backupSchedule}</p>
-            </div>
+            {healthLoading ? (
+              <>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className='border-muted rounded-lg border p-4'>
+                    <Skeleton className='h-4 w-28' />
+                    <Skeleton className='mt-2 h-4 w-20' />
+                  </div>
+                ))}
+              </>
+            ) : (
+              <>
+                <div className='border-muted space-y-3 rounded-lg border p-4'>
+                  <div className='flex items-center gap-2'>
+                    <IconServer />
+                    <p className='font-medium'>Uptime</p>
+                  </div>
+                  <p>{health?.uptime ?? 'Unknown'}</p>
+                </div>
+                <div className='border-muted space-y-3 rounded-lg border p-4'>
+                  <div className='flex items-center gap-2'>
+                    <IconServer />
+                    <p className='font-medium'>Config version</p>
+                  </div>
+                  <p>{health?.configVersion ?? 'Unknown'}</p>
+                </div>
+                <div className='border-muted space-y-3 rounded-lg border p-4'>
+                  <div className='flex items-center gap-2'>
+                    <IconBolt />
+                    <p className='font-medium'>Last deploy</p>
+                  </div>
+                  <p>{health?.lastDeploy ?? 'Unknown'}</p>
+                </div>
+                <div className='border-muted space-y-3 rounded-lg border p-4'>
+                  <div className='flex items-center gap-2'>
+                    <IconShieldCheck />
+                    <p className='font-medium'>Audit logging</p>
+                  </div>
+                  <p>{health?.auditLogging ?? 'Unknown'}</p>
+                </div>
+                <div className='border-muted space-y-3 rounded-lg border p-4'>
+                  <div className='flex items-center gap-2'>
+                    <IconSettings />
+                    <p className='font-medium'>Backup schedule</p>
+                  </div>
+                  <p>{health?.backupSchedule ?? 'Unknown'}</p>
+                </div>
+                <div className='border-muted space-y-3 rounded-lg border p-4'>
+                  <div className='flex items-center gap-2'>
+                    <IconServer />
+                    <p className='font-medium'>Nodes online</p>
+                  </div>
+                  <p>{health?.nodesOnline ?? 'Unknown'}</p>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -360,90 +129,262 @@ export default function AdminDashboardClient() {
             <CardDescription>Quick status and key alerts.</CardDescription>
           </CardHeader>
           <CardContent className='space-y-4'>
-            <div className='border-muted rounded-lg border p-4'>
-              <div className='flex items-center justify-between gap-2'>
-                <p className='font-medium'>Critical failures</p>
-                <Badge variant={failureCount > 0 ? 'destructive' : 'default'}>
-                  {failureCount > 0 ? 'Attention' : 'Stable'}
-                </Badge>
-              </div>
-              <p className='text-muted-foreground text-sm'>
-                {failureCount} admin actions requiring review.
-              </p>
-            </div>
-            <div className='border-muted rounded-lg border p-4'>
-              <div className='flex items-center justify-between gap-2'>
-                <p className='font-medium'>Recent action</p>
-                <Badge variant='secondary'>Latest</Badge>
-              </div>
-              {lastActivity ? (
-                <>
-                  <p className='font-medium'>{lastActivity.action}</p>
+            {healthLoading ? (
+              <>
+                <Skeleton className='h-20 w-full' />
+                <Skeleton className='h-20 w-full' />
+              </>
+            ) : (
+              <>
+                <div className='border-muted rounded-lg border p-4'>
+                  <div className='flex items-center justify-between gap-2'>
+                    <p className='font-medium'>Failures today</p>
+                    <Badge
+                      variant={
+                        (health?.failuresToday ?? 0) > 0
+                          ? 'destructive'
+                          : 'default'
+                      }
+                    >
+                      {(health?.failuresToday ?? 0) > 0
+                        ? 'Attention'
+                        : 'Stable'}
+                    </Badge>
+                  </div>
                   <p className='text-muted-foreground text-sm'>
-                    {formatDate(lastActivity.timestamp)}
+                    {health?.failuresToday ?? 0} failures recorded today.
                   </p>
-                </>
-              ) : (
-                <p className='text-muted-foreground text-sm'>
-                  No activity recorded yet.
-                </p>
-              )}
-            </div>
+                </div>
+                <div className='border-muted rounded-lg border p-4'>
+                  <div className='flex items-center justify-between gap-2'>
+                    <p className='font-medium'>Last health check</p>
+                    <Badge variant='secondary'>
+                      {metrics?.lastHealthCheck
+                        ? new Date(metrics.lastHealthCheck).toLocaleDateString()
+                        : 'Pending'}
+                    </Badge>
+                  </div>
+                  <p className='text-muted-foreground text-sm'>
+                    {metrics?.activeSessions != null
+                      ? `${metrics.activeSessions} active sessions`
+                      : 'No session data'}
+                  </p>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      <div className='grid gap-4 pt-5 lg:grid-cols-2'>
+      <div className='grid gap-4 pt-5 lg:grid-cols-[1.2fr_0.8fr]'>
         <Card>
           <CardHeader>
-            <CardTitle>Configuration summary</CardTitle>
+            <CardTitle>System metrics</CardTitle>
+            <CardDescription>Performance and resource usage.</CardDescription>
           </CardHeader>
-          <CardContent className='space-y-3 text-sm'>
-            <div className='grid gap-3'>
-              <div className='border-muted rounded-lg border p-4'>
-                <p className='font-medium'>Alert sensitivity</p>
-                <p className='text-muted-foreground'>
-                  Set to 60% for disaster triggers.
-                </p>
+          <CardContent>
+            {healthLoading ? (
+              <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className='border-muted rounded-lg border p-4'>
+                    <Skeleton className='h-4 w-24' />
+                    <Skeleton className='mt-2 h-8 w-16' />
+                  </div>
+                ))}
               </div>
-              <div className='border-muted rounded-lg border p-4'>
-                <p className='font-medium'>Backup retention</p>
-                <p className='text-muted-foreground'>
-                  90 days with daily snapshots.
-                </p>
+            ) : metrics ? (
+              <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+                {metrics.apiResponseTime && (
+                  <div className='border-muted rounded-lg border p-4'>
+                    <p className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
+                      API Response
+                    </p>
+                    <p className='mt-1 text-2xl font-bold'>
+                      {metrics.apiResponseTime.value}
+                      <span className='text-muted-foreground ml-1 text-sm'>
+                        {metrics.apiResponseTime.unit ?? 'ms'}
+                      </span>
+                    </p>
+                    <Badge
+                      variant={
+                        metrics.apiResponseTime.status === 'normal'
+                          ? 'secondary'
+                          : 'default'
+                      }
+                      className='mt-2'
+                    >
+                      {metrics.apiResponseTime.status}
+                    </Badge>
+                  </div>
+                )}
+                {metrics.cpuUsage && (
+                  <div className='border-muted rounded-lg border p-4'>
+                    <p className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
+                      CPU Usage
+                    </p>
+                    <p className='mt-1 text-2xl font-bold'>
+                      {metrics.cpuUsage.value}%
+                    </p>
+                    <Badge
+                      variant={
+                        metrics.cpuUsage.status === 'normal'
+                          ? 'secondary'
+                          : 'destructive'
+                      }
+                      className='mt-2'
+                    >
+                      {metrics.cpuUsage.status}
+                    </Badge>
+                  </div>
+                )}
+                {metrics.memoryUsage && (
+                  <div className='border-muted rounded-lg border p-4'>
+                    <p className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
+                      Memory
+                    </p>
+                    <p className='mt-1 text-2xl font-bold'>
+                      {metrics.memoryUsage.value}
+                      <span className='text-muted-foreground ml-1 text-sm'>
+                        /{metrics.memoryUsage.total}GB
+                      </span>
+                    </p>
+                    <Badge
+                      variant={
+                        metrics.memoryUsage.status === 'normal'
+                          ? 'secondary'
+                          : 'destructive'
+                      }
+                      className='mt-2'
+                    >
+                      {metrics.memoryUsage.status}
+                    </Badge>
+                  </div>
+                )}
+                {metrics.errorRate && (
+                  <div className='border-muted rounded-lg border p-4'>
+                    <p className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
+                      Error Rate
+                    </p>
+                    <p className='mt-1 text-2xl font-bold'>
+                      {metrics.errorRate.value}%
+                    </p>
+                    <Badge className='mt-2'>{metrics.errorRate.status}</Badge>
+                  </div>
+                )}
+                {metrics.cacheHitRate != null && (
+                  <div className='border-muted rounded-lg border p-4'>
+                    <p className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
+                      Cache Hit Rate
+                    </p>
+                    <p className='mt-1 text-2xl font-bold'>
+                      {metrics.cacheHitRate}%
+                    </p>
+                    <p className='text-muted-foreground mt-1 text-xs'>
+                      Cache efficiency metric
+                    </p>
+                  </div>
+                )}
+                {metrics.databaseConnections && (
+                  <div className='border-muted rounded-lg border p-4'>
+                    <p className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
+                      DB Connections
+                    </p>
+                    <p className='mt-1 text-2xl font-bold'>
+                      {metrics.databaseConnections.value}/
+                      {metrics.databaseConnections.total ?? '—'}
+                    </p>
+                    <Badge variant='secondary' className='mt-2'>
+                      {metrics.databaseConnections.status}
+                    </Badge>
+                  </div>
+                )}
+                {metrics.activeSessions != null && (
+                  <div className='border-muted rounded-lg border p-4'>
+                    <p className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
+                      Active Sessions
+                    </p>
+                    <p className='mt-1 text-2xl font-bold'>
+                      {metrics.activeSessions}
+                    </p>
+                  </div>
+                )}
+                {metrics.requestVolume && (
+                  <div className='border-muted rounded-lg border p-4'>
+                    <p className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
+                      Requests/sec
+                    </p>
+                    <p className='mt-1 text-2xl font-bold'>
+                      {metrics.requestVolume.perSecond ?? '—'}
+                    </p>
+                    {metrics.requestVolume.trend && (
+                      <Badge
+                        variant={
+                          metrics.requestVolume.trend === 'up'
+                            ? 'default'
+                            : 'secondary'
+                        }
+                        className='mt-2'
+                      >
+                        {metrics.requestVolume.trend}
+                      </Badge>
+                    )}
+                  </div>
+                )}
+                {metrics.diskUsage && (
+                  <div className='border-muted rounded-lg border p-4'>
+                    <p className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
+                      Disk Usage
+                    </p>
+                    <p className='mt-1 text-2xl font-bold'>
+                      {metrics.diskUsage.value}/{metrics.diskUsage.total}GB
+                    </p>
+                    <Badge variant='secondary' className='mt-2'>
+                      {metrics.diskUsage.status}
+                    </Badge>
+                  </div>
+                )}
               </div>
-              <div className='border-muted rounded-lg border p-4'>
-                <p className='font-medium'>Audit retention</p>
-                <p className='text-muted-foreground'>
-                  180 days with export support.
-                </p>
-              </div>
-            </div>
+            ) : (
+              <p className='text-muted-foreground text-sm'>
+                No system metrics available.
+              </p>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardTitle>Recent admin activity</CardTitle>
+            <CardDescription>Latest audit trail entries</CardDescription>
           </CardHeader>
           <CardContent className='space-y-3'>
-            {recentActivity.map((activity) => (
-              <div
-                key={activity.id}
-                className='border-muted rounded-lg border p-4'
-              >
-                <div className='flex items-center gap-2'>
-                  <IconActivity />
-                  <p className='font-medium'>{activity.action}</p>
+            {activityLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className='h-20 w-full' />
+              ))
+            ) : activities.length === 0 ? (
+              <p className='text-muted-foreground px-2 text-sm'>
+                No activity recorded yet.
+              </p>
+            ) : (
+              activities.map((entry) => (
+                <div
+                  key={entry.logID}
+                  className='border-muted rounded-lg border p-4'
+                >
+                  <div className='flex items-center gap-2'>
+                    <IconActivity />
+                    <p className='font-medium'>{entry.actionType}</p>
+                  </div>
+                  <p className='text-muted-foreground text-sm'>
+                    {entry.details}
+                  </p>
+                  <p className='text-muted-foreground mt-2 text-xs'>
+                    {formatDate(entry.timestamp)} · {entry.performedBy}
+                  </p>
                 </div>
-                <p className='text-muted-foreground text-sm'>
-                  {activity.target}
-                </p>
-                <p className='text-muted-foreground mt-2 text-xs'>
-                  {formatDate(activity.timestamp)} · {activity.user}
-                </p>
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
       </div>
