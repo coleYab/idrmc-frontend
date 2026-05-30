@@ -1,3 +1,4 @@
+import { auth } from '@clerk/nextjs/server';
 import PageContainer from '@/components/layout/page-container';
 import IncidentVerificationForm from '@/features/incval/components/incident-verification-form';
 import { getIncidentVerifyInfo } from '@/config/incval-infoconfig';
@@ -27,21 +28,35 @@ async function verifyIncidentAction(
 ) {
   'use server';
 
-  if (data.action === 'verify') {
-    await fetchClient(`/incidents/${incidentId}/resolve`, {
-      method: 'PUT',
-      body: JSON.stringify({ status: 'VERIFIED' })
-    });
+  const { getToken } = await auth();
 
-    await fetchClient(`/incidents/${incidentId}`, {
-      method: 'PUT',
-      body: JSON.stringify({ severity: data.severityLevel })
-    }).catch(() => undefined);
+  if (data.action === 'verify') {
+    await fetchClient(
+      `/incidents/${incidentId}/resolve`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ status: 'VERIFIED' })
+      },
+      getToken
+    );
+
+    await fetchClient(
+      `/incidents/${incidentId}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ severity: data.severityLevel })
+      },
+      getToken
+    ).catch(() => undefined);
   } else {
-    await fetchClient(`/incidents/${incidentId}/resolve`, {
-      method: 'PUT',
-      body: JSON.stringify({ status: 'REJECTED' })
-    });
+    await fetchClient(
+      `/incidents/${incidentId}/resolve`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ status: 'REJECTED' })
+      },
+      getToken
+    );
   }
 }
 
@@ -49,12 +64,14 @@ export default async function IncidentVerifyPage(
   props: IncidentVerifyPageProps
 ) {
   const { incidentId } = await props.params;
+  const { getToken } = await auth();
 
   const incidentResponse = await fetchClient<unknown>(
     `/incidents/${incidentId}`,
     {
       cache: 'no-store'
-    }
+    },
+    getToken
   ).catch(() => undefined);
 
   const incident = incidentResponse

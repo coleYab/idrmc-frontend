@@ -1,7 +1,8 @@
 'use client';
 
 import PageContainer from '@/components/layout/page-container';
-import { useErtStore } from '@/features/ert/utils/store';
+import { useErtUnits } from '@/features/ert/api/ert';
+import { useResources } from '@/features/ert/api/resources';
 import {
   Card,
   CardContent,
@@ -10,18 +11,18 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { IconMapPin } from '@tabler/icons-react';
 
 export default function MapResourcesClient() {
-  const alerts = useErtStore((state) => state.alerts);
-  const allocations = useErtStore((state) => state.allocations);
-  const resources = useErtStore((state) => state.resources);
+  const { data: unitsData, isLoading: unitsLoading } = useErtUnits();
+  const { data: resourcesData, isLoading: resourcesLoading } = useResources();
 
-  const alertResourceCounts = alerts.map((alert) => ({
-    alert,
-    count: allocations.filter((allocation) => allocation.alertId === alert.id)
-      .length
-  }));
+  const isLoading = unitsLoading || resourcesLoading;
+  const units = unitsData?.items ?? [];
+  const resources = resourcesData?.items ?? [];
+
+  const deployedUnits = units.filter((u) => u.status === 'DEPLOYED');
 
   return (
     <PageContainer
@@ -40,9 +41,10 @@ export default function MapResourcesClient() {
           <CardContent className='bg-muted border-border flex h-105 flex-col items-center justify-center rounded-3xl border border-dashed text-center'>
             <IconMapPin className='text-muted-foreground size-12' />
             <p className='text-muted-foreground mt-4 max-w-xl text-sm'>
-              This space shows deployed resources and incident locations.
-              Resource allocation changes update in real time across alert and
-              inventory pages.
+              This space shows deployed units and resources.
+              {deployedUnits.length > 0
+                ? ` ${deployedUnits.length} unit(s) currently deployed.`
+                : ''}
             </p>
           </CardContent>
         </Card>
@@ -50,27 +52,29 @@ export default function MapResourcesClient() {
         <div className='space-y-4'>
           <Card>
             <CardHeader>
-              <CardTitle>Incident Resource Summary</CardTitle>
+              <CardTitle>Deployed Units</CardTitle>
               <CardDescription>
-                Active alerts with assigned resources.
+                ERT units currently in the field.
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-3'>
-              {alertResourceCounts.length === 0 ? (
+              {isLoading ? (
+                <Skeleton className='h-20 w-full' />
+              ) : deployedUnits.length === 0 ? (
                 <p className='text-muted-foreground text-sm'>
-                  No active incidents are assigned resources yet.
+                  No units currently deployed.
                 </p>
               ) : (
-                alertResourceCounts.map(({ alert, count }) => (
-                  <div key={alert.id} className='rounded-2xl border p-4'>
+                deployedUnits.map((unit) => (
+                  <div key={unit.unitID} className='rounded-2xl border p-4'>
                     <div className='flex items-center justify-between gap-3'>
                       <div>
-                        <p className='text-sm font-semibold'>{alert.title}</p>
+                        <p className='text-sm font-semibold'>{unit.name}</p>
                         <p className='text-muted-foreground text-xs'>
-                          {alert.location}
+                          {unit.region ?? 'No region'}
                         </p>
                       </div>
-                      <Badge>{count} resources</Badge>
+                      <Badge>{unit.status}</Badge>
                     </div>
                   </div>
                 ))
@@ -80,24 +84,34 @@ export default function MapResourcesClient() {
           <Card>
             <CardHeader>
               <CardTitle>Available Resources</CardTitle>
-              <CardDescription>Inventory ready for deployment.</CardDescription>
+              <CardDescription>
+                Resource types ready for deployment.
+              </CardDescription>
             </CardHeader>
             <CardContent className='space-y-3'>
-              {resources.map((resource) => (
-                <div key={resource.id} className='rounded-2xl border p-4'>
-                  <div className='flex items-center justify-between gap-3'>
-                    <div>
-                      <p className='text-sm font-semibold'>{resource.name}</p>
-                      <p className='text-muted-foreground text-xs'>
-                        {resource.unit}
-                      </p>
+              {isLoading ? (
+                <Skeleton className='h-20 w-full' />
+              ) : resources.length === 0 ? (
+                <p className='text-muted-foreground py-6 text-center text-sm'>
+                  No resources available.
+                </p>
+              ) : (
+                resources.map((resource) => (
+                  <div key={resource.id} className='rounded-2xl border p-4'>
+                    <div className='flex items-center justify-between gap-3'>
+                      <div>
+                        <p className='text-sm font-semibold'>{resource.name}</p>
+                        <p className='text-muted-foreground text-xs'>
+                          {resource.category}
+                        </p>
+                      </div>
+                      <Badge>
+                        {resource.quantity.toLocaleString()} available
+                      </Badge>
                     </div>
-                    <Badge>
-                      {resource.available.toLocaleString()} available
-                    </Badge>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </CardContent>
           </Card>
         </div>

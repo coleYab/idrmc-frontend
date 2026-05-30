@@ -1,6 +1,7 @@
 'use client';
 
 import { LabelList, Pie, PieChart } from 'recharts';
+import { useResources } from '@/features/ert/api/resources';
 
 import {
   Card,
@@ -9,48 +10,46 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
-  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent
 } from '@/components/ui/chart';
 
-const chartData = [
-  { name: 'Medical Supplies', value: 320, fill: 'var(--color-medical)' },
-  { name: 'Food & Water', value: 280, fill: 'var(--color-food)' },
-  { name: 'Shelter Materials', value: 190, fill: 'var(--color-shelter)' },
-  { name: 'Equipment', value: 180, fill: 'var(--color-equipment)' },
-  { name: 'Other', value: 150, fill: 'var(--color-other)' }
+const COLORS = [
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)'
 ];
 
-const chartConfig = {
-  value: {
-    label: 'Units'
-  },
-  medical: {
-    label: 'Medical Supplies',
-    color: 'var(--chart-1)'
-  },
-  food: {
-    label: 'Food & Water',
-    color: 'var(--chart-2)'
-  },
-  shelter: {
-    label: 'Shelter Materials',
-    color: 'var(--chart-3)'
-  },
-  equipment: {
-    label: 'Equipment',
-    color: 'var(--chart-4)'
-  },
-  other: {
-    label: 'Other',
-    color: 'var(--chart-5)'
-  }
-} satisfies ChartConfig;
-
 export function ResourceDistributionChart() {
+  const { data, isLoading } = useResources();
+  const resources = data?.items ?? [];
+
+  const byCategory = new Map<string, number>();
+  for (const r of resources) {
+    const category = r.category ?? 'Uncategorized';
+    byCategory.set(category, (byCategory.get(category) ?? 0) + r.quantity);
+  }
+
+  const entries = Array.from(byCategory.entries());
+
+  const chartData = entries.map(([name, value], i) => ({
+    name,
+    value,
+    fill: COLORS[i % COLORS.length]
+  }));
+
+  const chartConfig = Object.fromEntries(
+    entries.map(([name], i) => [
+      name.toLowerCase().replace(/\s+/g, '-'),
+      { label: name, color: COLORS[i % COLORS.length] }
+    ])
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -58,19 +57,27 @@ export function ResourceDistributionChart() {
         <CardDescription>Current deployment breakdown by type</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
-          <PieChart>
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Pie data={chartData} dataKey='value' label>
-              <LabelList
-                dataKey='name'
-                position='outside'
-                offset={8}
-                fontSize={12}
-              />
-            </Pie>
-          </PieChart>
-        </ChartContainer>
+        {isLoading ? (
+          <Skeleton className='h-48 w-full' />
+        ) : chartData.length === 0 ? (
+          <div className='text-muted-foreground flex h-48 items-center justify-center text-sm'>
+            No resource data available.
+          </div>
+        ) : (
+          <ChartContainer config={chartConfig}>
+            <PieChart>
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Pie data={chartData} dataKey='value' label>
+                <LabelList
+                  dataKey='name'
+                  position='outside'
+                  offset={8}
+                  fontSize={12}
+                />
+              </Pie>
+            </PieChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   );

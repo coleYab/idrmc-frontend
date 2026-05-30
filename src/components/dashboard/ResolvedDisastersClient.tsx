@@ -1,7 +1,6 @@
 'use client';
 
-import { mockIncidents } from '@/lib/mock/incidents';
-import { IncidentStatus, IncidentSeverityLevel } from '@/lib/types/incident';
+import { useDisasters } from '@/features/disasters/api/disasters';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -21,19 +20,13 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-const getSeverityColor = (severity: IncidentSeverityLevel) => {
-  switch (severity) {
-    case IncidentSeverityLevel.CRITICAL:
-      return 'destructive';
-    case IncidentSeverityLevel.HIGH:
-      return 'destructive';
-    case IncidentSeverityLevel.MEDIUM:
-      return 'secondary';
-    case IncidentSeverityLevel.LOW:
-      return 'outline';
-    default:
-      return 'outline';
-  }
+const getSeverityColor = (severity: string) => {
+  const s = severity.toLowerCase();
+  if (s === 'critical') return 'destructive';
+  if (s === 'high') return 'destructive';
+  if (s === 'medium') return 'secondary';
+  if (s === 'low') return 'outline';
+  return 'outline';
 };
 
 const formatDate = (dateString: string) => {
@@ -48,8 +41,11 @@ const formatDate = (dateString: string) => {
 
 export function ResolvedDisastersClient() {
   const router = useRouter();
-  const resolvedDisasters = mockIncidents.filter(
-    (incident) => incident.status === IncidentStatus.RESOLVED
+  const { data: disasters } = useDisasters();
+  const allDisasters = disasters ?? [];
+  const resolvedDisasters = allDisasters.filter(
+    (incident) =>
+      incident.status === 'Resolved' || incident.status === 'resolved'
   );
 
   return (
@@ -92,11 +88,13 @@ export function ResolvedDisastersClient() {
                   </div>
                   <div className='flex items-center gap-2'>
                     <IconUser className='text-muted-foreground size-4' />
-                    <span className='truncate'>{disaster.reportedBy}</span>
+                    <span className='truncate'>
+                      {(disaster as any).reportedBy ?? 'N/A'}
+                    </span>
                   </div>
                   <div className='flex items-center gap-2'>
                     <IconClock className='text-muted-foreground size-4' />
-                    <span>{formatDate(disaster.createdAt)}</span>
+                    <span>{formatDate(disaster.createdAt ?? '')}</span>
                   </div>
                 </div>
 
@@ -107,23 +105,23 @@ export function ResolvedDisastersClient() {
                     </span>
                     <Badge variant='outline'>{disaster.incidentType}</Badge>
                   </div>
-                  {disaster.resolvedAt && (
+                  {(disaster as any).resolvedAt && (
                     <div className='flex items-center justify-between text-sm'>
                       <span className='text-muted-foreground'>
                         Resolved At:
                       </span>
                       <span className='text-xs font-medium'>
-                        {formatDate(disaster.resolvedAt)}
+                        {formatDate((disaster as any).resolvedAt)}
                       </span>
                     </div>
                   )}
-                  {disaster.resolvedBy && (
+                  {(disaster as any).resolvedBy && (
                     <div className='flex items-center justify-between text-sm'>
                       <span className='text-muted-foreground'>
                         Resolved By:
                       </span>
                       <span className='text-xs font-medium'>
-                        {disaster.resolvedBy}
+                        {(disaster as any).resolvedBy}
                       </span>
                     </div>
                   )}

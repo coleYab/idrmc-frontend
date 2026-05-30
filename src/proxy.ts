@@ -16,7 +16,7 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 const routeAccessMap: Record<string, string[]> = {
-  admin: ['/incval', '/ert', '/disastermanager', '/dashboard'],
+  admin: ['/admin', '/incval', '/ert', '/disastermanager', '/dashboard'],
   incident_validator: ['/incval', '/dashboard/incidents', '/dashboard/incval'],
   disaster_response_team: [
     '/disastermanager',
@@ -24,7 +24,7 @@ const routeAccessMap: Record<string, string[]> = {
     '/dashboard/locations'
   ],
   emergency_response_team: ['/ert', '/dashboard/incidents', '/dashboard/ert'],
-  user: ['/dashboard/profile']
+  user: ['/incval', '/ert', '/disastermanager', '/dashboard']
 };
 
 const protectedPrefixes = Array.from(
@@ -56,7 +56,9 @@ function getDefaultDashboardPath(role: string) {
 }
 
 export default clerkMiddleware(async (auth, request) => {
-  if (isPublicRoute(request)) {
+  const { pathname } = request.nextUrl;
+
+  if (isPublicRoute(request) || pathname.startsWith('/api/clerk')) {
     return;
   }
 
@@ -67,15 +69,31 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   const user = await (await clerkClient()).users.getUser(userId);
-  const role =
-    normalizeRole(user.publicMetadata?.role) ||
-    normalizeRole(user.unsafeMetadata?.role);
-  const { pathname } = request.nextUrl;
+
+  const rawRoles = user.publicMetadata?.roles as unknown;
+  const rawRole = user.publicMetadata?.role as unknown;
+
+  const roles: string[] = [];
+  if (Array.isArray(rawRoles)) {
+    for (const r of rawRoles) {
+      const normalized = normalizeRole(r);
+      if (normalized) roles.push(normalized);
+    }
+  }
+  const legacyRole = normalizeRole(rawRole);
+  if (legacyRole && !roles.includes(legacyRole)) {
+    roles.push(legacyRole);
+  }
+  if (roles.length === 0) {
+    roles.push('user');
+  }
 
   if (protectedPrefixes.some((prefix) => pathname.startsWith(prefix))) {
-    if (!canAccessPath(role, pathname)) {
+    const hasAccess = roles.some((role) => canAccessPath(role, pathname));
+    if (!hasAccess) {
+      const defaultRole = roles[0];
       return NextResponse.redirect(
-        new URL(getDefaultDashboardPath(role), request.url)
+        new URL(getDefaultDashboardPath(defaultRole), request.url)
       );
     }
   }

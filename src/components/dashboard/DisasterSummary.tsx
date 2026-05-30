@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Card,
   CardContent,
@@ -8,16 +10,18 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { IconMapPin, IconUsers } from '@tabler/icons-react';
-import { mockIncidents } from '@/lib/mock/incidents';
-import { IncidentSeverityLevel, IncidentStatus } from '@/lib/types/incident';
+import { useDisasters } from '@/features/disasters/api/disasters';
 
 interface DisasterSummaryProps {
   className?: string;
 }
 
 export function DisasterSummary({ className }: DisasterSummaryProps) {
+  const { data: disasters } = useDisasters();
+  const allDisasters = disasters ?? [];
+
   // Group incidents by region and calculate disaster levels
-  const regionStats = mockIncidents.reduce(
+  const regionStats = allDisasters.reduce(
     (acc, incident) => {
       // Extract region from location (assuming format "Region, Country")
       const region = incident.location.split(',')[0].trim();
@@ -39,24 +43,18 @@ export function DisasterSummary({ className }: DisasterSummaryProps) {
       acc[region].affectedPopulation += incident.affectedPopulationCount;
       acc[region].incidents.push(incident);
 
-      if (incident.status === IncidentStatus.ACTIVE) {
+      if (incident.status === 'Active' || incident.status === 'active') {
         acc[region].active += 1;
       }
 
-      switch (incident.severity) {
-        case IncidentSeverityLevel.CRITICAL:
-          acc[region].critical += 1;
-          break;
-        case IncidentSeverityLevel.HIGH:
-          acc[region].high += 1;
-          break;
-        case IncidentSeverityLevel.MEDIUM:
-          acc[region].medium += 1;
-          break;
-        case IncidentSeverityLevel.LOW:
-          acc[region].low += 1;
-          break;
-      }
+      const sev =
+        typeof incident.severity === 'string'
+          ? incident.severity.toLowerCase()
+          : '';
+      if (sev === 'critical') acc[region].critical += 1;
+      else if (sev === 'high') acc[region].high += 1;
+      else if (sev === 'medium') acc[region].medium += 1;
+      else if (sev === 'low') acc[region].low += 1;
 
       return acc;
     },
@@ -70,7 +68,7 @@ export function DisasterSummary({ className }: DisasterSummaryProps) {
         medium: number;
         low: number;
         affectedPopulation: number;
-        incidents: typeof mockIncidents;
+        incidents: any[];
       }
     >
   );

@@ -1,5 +1,6 @@
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
+import DashboardSwitcher from './dashboard-switcher';
 
 export default function ErtHeader() {
   return (
@@ -9,6 +10,9 @@ export default function ErtHeader() {
       <div>
         <p className='text-sm font-semibold'>Emergency Response Team Console</p>
         <p className='text-muted-foreground text-xs'>Operational Dashboard</p>
+      </div>
+      <div className='ml-auto flex items-center gap-2'>
+        <DashboardSwitcher variant='header' />
       </div>
     </header>
   );

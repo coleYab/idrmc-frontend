@@ -12,7 +12,6 @@ import {
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { updateDisasterStatus } from './actions';
-import { IncidentStatus } from '@/lib/types/incident';
 
 interface StatusUpdaterProps {
   disasterId: string;
@@ -45,10 +44,10 @@ export function StatusUpdater({
           <SelectValue placeholder='Status' />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={IncidentStatus.PENDING}>Pending</SelectItem>
-          <SelectItem value={IncidentStatus.VERIFIED}>Verified</SelectItem>
-          <SelectItem value={IncidentStatus.ACTIVE}>Active</SelectItem>
-          <SelectItem value={IncidentStatus.RESOLVED}>Resolved</SelectItem>
+          <SelectItem value='Pending'>Pending</SelectItem>
+          <SelectItem value='Verified'>Verified</SelectItem>
+          <SelectItem value='Active'>Active</SelectItem>
+          <SelectItem value='Resolved'>Resolved</SelectItem>
         </SelectContent>
       </Select>
       <Button

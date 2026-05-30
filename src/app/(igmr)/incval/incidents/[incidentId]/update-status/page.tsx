@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { auth } from '@clerk/nextjs/server';
 import PageContainer from '@/components/layout/page-container';
 import IncidentStatusUpdateForm from '@/features/incval/components/incident-status-update-form';
 import { getIncidentUpdateStatusInfo } from '@/config/incval-infoconfig';
@@ -13,10 +14,12 @@ export default async function IncidentUpdateStatusPage(
   props: IncidentUpdateStatusPageProps
 ) {
   const { incidentId } = await props.params;
+  const { getToken } = await auth();
 
   const incidentResponse = await fetchClient<unknown>(
     `/incidents/${incidentId}`,
-    { cache: 'no-store' }
+    { cache: 'no-store' },
+    getToken
   ).catch(() => undefined);
 
   const incident: Incident | undefined = incidentResponse

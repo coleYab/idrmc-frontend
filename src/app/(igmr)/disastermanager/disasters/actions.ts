@@ -1,23 +1,21 @@
 'use server';
 
-import { mockIncidents } from '@/lib/mock/incidents';
-import { IncidentStatus } from '@/lib/types/incident';
+import { auth } from '@clerk/nextjs/server';
+import { fetchClient } from '@/lib/fetch-client';
 import { revalidatePath } from 'next/cache';
 
 export async function updateDisasterStatus(id: string, newStatus: string) {
-  const incident = mockIncidents.find((i) => i.id === id);
-  if (!incident) {
-    throw new Error('Disaster not found');
-  }
+  const { getToken } = await auth();
 
-  incident.status = newStatus as IncidentStatus;
+  await fetchClient(
+    `/disasters/${id}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify({ status: newStatus })
+    },
+    getToken
+  );
 
-  if (newStatus === IncidentStatus.RESOLVED) {
-    incident.resolvedAt = new Date().toISOString();
-    incident.resolvedBy = 'Current User (Admin)';
-  }
-
-  // Revalidate the disasters layout
   revalidatePath('/disastermanager/disasters', 'layout');
 
   return { success: true };

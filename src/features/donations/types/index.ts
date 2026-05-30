@@ -63,31 +63,96 @@ export const DonationSchema = z.preprocess(
 
 export type Donation = z.infer<typeof DonationSchema>;
 
-const CreateDonationShape = z.object({
-  title: z.string().min(1),
-  description: z.string().min(1),
-  disasterId: z.string().uuid().optional(),
-  goal: z.number().nonnegative().optional(),
-  currency: z.string().optional(),
-  status: z.string().optional()
+export const CampaignStatusEnum = z.enum([
+  'DRAFT',
+  'ACTIVE',
+  'PAUSED',
+  'CLOSED'
+]);
+
+export const CampaignSchema = z.object({
+  campaignID: z.string().uuid(),
+  disasterID: z.string().uuid(),
+  goalAmount: z.number().min(0.01),
+  currentAmount: z.number(),
+  currency: z.string().default('ETB'),
+  status: CampaignStatusEnum,
+  donationCount: z.number().int(),
+  description: z.string(),
+  progressPercentage: z.number().min(0).max(100),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  closedAt: z.string().datetime().nullable().optional()
 });
 
-export const CreateDonationSchema = z.preprocess(
-  normalizeDonationPayload,
-  CreateDonationShape
-);
+export type Campaign = z.infer<typeof CampaignSchema>;
 
-export type CreateDonationDto = z.infer<typeof CreateDonationSchema>;
+export const CreateCampaignSchema = z.object({
+  disasterID: z.string().uuid(),
+  goalAmount: z.number().min(0.01),
+  currency: z.string().optional(),
+  description: z.string().min(1)
+});
 
-export const UpdateDonationSchema = z.preprocess(
-  normalizeDonationPayload,
-  CreateDonationShape.partial()
-);
+export type CreateCampaignDto = z.infer<typeof CreateCampaignSchema>;
 
-export type UpdateDonationDto = z.infer<typeof UpdateDonationSchema>;
+export const UpdateCampaignStatusSchema = z.object({
+  status: CampaignStatusEnum,
+  reason: z.string().optional()
+});
 
-export interface DonationsListParams {
-  [key: string]: string | number | boolean | undefined;
+export type UpdateCampaignStatusDto = z.infer<
+  typeof UpdateCampaignStatusSchema
+>;
+
+export const DonorInfoSchema = z.object({
+  fullName: z.string(),
+  email: z.string().email(),
+  phoneNumber: z.string().optional(),
+  isAnonymous: z.boolean()
+});
+
+export const InitializeDonationSchema = z.object({
+  campaignID: z.string().uuid(),
+  amount: z.number().min(0.01),
+  currency: z.string(),
+  donor: DonorInfoSchema
+});
+
+export type InitializeDonationDto = z.infer<typeof InitializeDonationSchema>;
+
+export const InitializeDonationResponseSchema = z.object({
+  checkoutUrl: z.string(),
+  donationId: z.string(),
+  tx_ref: z.string()
+});
+
+export type InitializeDonationResponse = z.infer<
+  typeof InitializeDonationResponseSchema
+>;
+
+export const DonationStatusEnum = z.enum([
+  'INITIALIZED',
+  'PENDING_GATEWAY',
+  'COMPLETED',
+  'FAILED',
+  'REFUNDED'
+]);
+
+export const DonationStatusResponseSchema = z.object({
+  donationId: z.string().uuid(),
+  status: DonationStatusEnum,
+  failureReason: z.string().nullable().optional()
+});
+
+export type DonationStatusResponse = z.infer<
+  typeof DonationStatusResponseSchema
+>;
+
+export interface CampaignListParams {
+  status?: string;
+  disasterId?: string;
+  page?: number;
   limit?: number;
-  offset?: number;
+  [key: string]: string | number | boolean | undefined;
 }
