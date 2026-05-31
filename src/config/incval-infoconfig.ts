@@ -60,17 +60,24 @@ export const incvalInfo = {
     'Map Explorer',
     'Global visualization for Pending, Active, and Resolved incidents.',
     'Use clustered map pins to identify density hotspots, geographic patterns, and spread trends across regions.'
-  ),
-  incidentsSearch: makeInfo(
-    'Incident Search',
-    'Advanced query interface for targeted incident discovery.',
-    'Filter by date ranges, geographic coordinates, reporter identifiers, and incident attributes for deep investigations.'
-  ),
-  reportsIncidentSummary: makeInfo(
-    'Incident Summary Reports',
-    'Quantitative overview of incident activity and performance.',
-    'Generate charts and summary tables for incident frequency, disaster type mix, and verification/response timelines.'
   )
+  // (
+  //   incidentVerify: makeInfo(
+  //     'Incident Verification Workflow',
+  //     'Structured process for validating and verifying new incident reports.',
+  //     'Inspect raw submission data including disaster type, coordinates, timestamps, textual notes, and attached media before verification actions.'
+  //   ),
+
+  // incidentsSearch: makeInfo(
+  //   'Incident Search',
+  //   'Advanced query interface for targeted incident discovery.',
+  //   'Filter by date ranges, geographic coordinates, reporter identifiers, and incident attributes for deep investigations.'
+  // ),
+  // reportsIncidentSummary: makeInfo(
+  //   'Incident Summary Reports',
+  //   'Quantitative overview of incident activity and performance.',
+  //   'Generate charts and summary tables for incident frequency, disaster type mix, and verification/response timelines.'
+  // )
 };
 
 export function getIncidentDetailsInfo(incidentId: string): InfobarContent {
