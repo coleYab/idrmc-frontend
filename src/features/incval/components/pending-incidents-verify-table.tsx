@@ -113,11 +113,13 @@ export const columns: ColumnDef<Incident>[] = [
 
 export function PendingIncidentsVerifyTable() {
   const [pageSize] = useQueryState('perPage', parseAsInteger.withDefault(10));
-  const { data, isLoading } = useIncidents({ limit: 100, offset: 0 });
+  const { data, isLoading } = useIncidents({
+    status: 'Pending',
+    limit: 100,
+    offset: 0
+  });
 
-  const pendingIncidents = (data?.items ?? []).filter(
-    (incident) => incident.status === 'Pending'
-  );
+  const pendingIncidents = data?.items ?? [];
 
   const { table } = useDataTable({
     data: pendingIncidents,

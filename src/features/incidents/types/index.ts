@@ -80,17 +80,18 @@ export const IncidentSchema = z.preprocess(
 export type Incident = z.infer<typeof IncidentSchema>;
 
 export const UpdateIncidentStatusSchema = z.object({
-  status: z.enum(['VERIFIED', 'REJECTED', 'RESOLVED'])
+  status: z.enum(['Verified', 'Active', 'Resolved', 'Rejected'])
 });
 
 export type UpdateIncidentStatusDto = z.infer<
   typeof UpdateIncidentStatusSchema
 >;
 
-export const UpdateIncidentSchema = z.preprocess(
-  normalizeIncidentPayload,
-  ReportIncidentShape.partial()
-);
+export const UpdateIncidentSchema = z.object({
+  title: z.string().min(1).max(100),
+  description: z.string().min(1).max(500),
+  severity: SeverityLevelEnum.optional()
+});
 
 export type UpdateIncidentDto = z.infer<typeof UpdateIncidentSchema>;
 
@@ -98,4 +99,6 @@ export interface IncidentListParams {
   [key: string]: string | number | boolean | undefined;
   limit?: number;
   offset?: number;
+  status?: string;
+  severity?: string;
 }

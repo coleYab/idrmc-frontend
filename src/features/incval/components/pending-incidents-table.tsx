@@ -10,15 +10,14 @@ import {
   SeverityLevelEnum,
   type Incident
 } from '@/features/incidents/types';
+import { useIncidents } from '@/features/incidents/api/incidents';
 import { Badge } from '@/components/ui/badge';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
 import { Column } from '@tanstack/react-table';
 import { AlertTriangle, Clock, MapPin, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { incidentService } from '@/services/incidentServices';
 
 export const columns: ColumnDef<Incident>[] = [
   {
@@ -167,24 +166,8 @@ export const columns: ColumnDef<Incident>[] = [
 export function PendingIncidentsTable() {
   const router = useRouter();
   const [pageSize] = useQueryState('perPage', parseAsInteger.withDefault(10));
-  const [incidents, setIncidents] = useState<Incident[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    incidentService.getAll().then((items) => {
-      if (!cancelled) {
-        setIncidents(
-          items.filter((item) => item.status === 'Pending') as Incident[]
-        );
-        setLoading(false);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data, isLoading } = useIncidents({ status: 'Pending' });
+  const incidents = data?.items ?? [];
 
   const pageCount = Math.ceil(incidents.length / pageSize);
 
@@ -198,7 +181,7 @@ export function PendingIncidentsTable() {
 
   return (
     <>
-      {loading ? (
+      {isLoading ? (
         <div className='text-muted-foreground text-sm'>
           Loading incidents...
         </div>

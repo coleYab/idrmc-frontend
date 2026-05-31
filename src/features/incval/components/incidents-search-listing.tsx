@@ -1,3 +1,4 @@
+import { auth } from '@clerk/nextjs/server';
 import { IncidentsSearchTable } from './incidents-search-table';
 import { fetchClientResponse } from '@/lib/fetch-client';
 import {
@@ -108,6 +109,7 @@ function filterIncidents(
 export default async function IncidentsSearchListingPage({
   searchParams
 }: IncidentsSearchListingPageProps) {
+  const { getToken } = await auth();
   // Parse search params directly
   const title = normalizeQueryValue(searchParams.incidentTitle);
   const incidentTypeRaw = normalizeQueryValue(searchParams.incidentType);
@@ -144,10 +146,14 @@ export default async function IncidentsSearchListingPage({
   let parsedIncidents: Incident[];
 
   try {
-    const response = await fetchClientResponse<unknown[]>('/incidents', {
-      params,
-      cache: 'no-store'
-    });
+    const response = await fetchClientResponse<unknown[]>(
+      '/incidents',
+      {
+        params,
+        cache: 'no-store'
+      },
+      getToken
+    );
 
     parsedIncidents = IncidentSchema.array().parse(response.data);
   } catch (error) {

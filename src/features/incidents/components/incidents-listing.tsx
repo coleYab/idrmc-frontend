@@ -1,3 +1,4 @@
+import { auth } from '@clerk/nextjs/server';
 import { searchParamsCache } from '@/lib/searchparams';
 import { IncidentsTable } from './incidents-tables';
 import { fetchClientResponse } from '@/lib/fetch-client';
@@ -5,6 +6,7 @@ import { incidentService } from '@/services/incidentServices';
 import { IncidentSchema, type Incident } from '../types';
 
 export default async function IncidentsListingPage() {
+  const { getToken } = await auth();
   const page = Number(searchParamsCache.get('page') ?? 1);
   const pageLimit = Number(searchParamsCache.get('perPage') ?? 10);
 
@@ -21,18 +23,22 @@ export default async function IncidentsListingPage() {
   let totalItems: number | undefined;
 
   try {
-    const response = await fetchClientResponse<unknown[]>('/incidents', {
-      params: {
-        limit,
-        offset,
-        status: status ?? undefined,
-        severity: severityLevel ?? undefined,
-        id: id ?? undefined,
-        description: description ?? undefined,
-        location: location ?? undefined
+    const response = await fetchClientResponse<unknown[]>(
+      '/incidents',
+      {
+        params: {
+          limit,
+          offset,
+          status: status ?? undefined,
+          severity: severityLevel ?? undefined,
+          id: id ?? undefined,
+          description: description ?? undefined,
+          location: location ?? undefined
+        },
+        cache: 'no-store'
       },
-      cache: 'no-store'
-    });
+      getToken
+    );
 
     responseData = response.data;
     totalItems = response.meta?.total ?? response.meta?.count;
