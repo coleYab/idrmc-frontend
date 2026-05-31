@@ -17,6 +17,8 @@ export function DisastersTable(props: {
       {...props}
       columns={columns}
       basePath='/disastermanager/disasters'
+      searchFields={['title', 'location', 'incidentType']}
+      searchPlaceholder='Search by title, location, or type...'
     />
   );
 }
@@ -33,6 +35,8 @@ export function DisastersFilteredTable({
       useQuery={useDisasters}
       status={status}
       typeLabel='disasters'
+      searchFields={['title', 'location', 'incidentType']}
+      searchPlaceholder='Search by title, location, or type...'
     />
   );
 }

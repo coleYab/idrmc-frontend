@@ -43,14 +43,9 @@ const THROTTLE_MS = 50;
 interface UseDataTableProps<TData>
   extends Omit<
       TableOptions<TData>,
-      | 'state'
-      | 'pageCount'
-      | 'getCoreRowModel'
-      | 'manualFiltering'
-      | 'manualPagination'
-      | 'manualSorting'
+      'state' | 'getCoreRowModel' | 'manualFiltering' | 'manualSorting'
     >,
-    Required<Pick<TableOptions<TData>, 'pageCount'>> {
+    Partial<Pick<TableOptions<TData>, 'pageCount'>> {
   initialState?: Omit<Partial<TableState>, 'sorting'> & {
     sorting?: ExtendedColumnSort<TData>[];
   };
@@ -62,6 +57,8 @@ interface UseDataTableProps<TData>
   scroll?: boolean;
   shallow?: boolean;
   startTransition?: React.TransitionStartFunction;
+  manualPagination?: boolean;
+  manualFiltering?: boolean;
 }
 
 export function useDataTable<TData>(props: UseDataTableProps<TData>) {
@@ -77,6 +74,8 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
     scroll = false,
     shallow = true,
     startTransition,
+    manualPagination = true,
+    manualFiltering = true,
     ...tableProps
   } = props;
 
@@ -109,6 +108,8 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>(initialState?.columnVisibility ?? {});
 
+  // For server-side (manual) pagination, sync page/perPage to URL.
+  // For client-side pagination, TanStack manages state internally — no URL sync.
   const [page, setPage] = useQueryState(
     PAGE_KEY,
     parseAsInteger.withOptions(queryStateOptions).withDefault(1)
@@ -121,14 +122,21 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
   );
 
   const pagination: PaginationState = React.useMemo(() => {
+    if (!manualPagination) {
+      return {
+        pageIndex: 0,
+        pageSize: initialState?.pagination?.pageSize ?? 10
+      };
+    }
     return {
-      pageIndex: page - 1, // zero-based index -> one-based index
+      pageIndex: page - 1,
       pageSize: perPage
     };
-  }, [page, perPage]);
+  }, [manualPagination, page, perPage, initialState?.pagination?.pageSize]);
 
   const onPaginationChange = React.useCallback(
     (updaterOrValue: Updater<PaginationState>) => {
+      if (!manualPagination) return;
       if (typeof updaterOrValue === 'function') {
         const newPagination = updaterOrValue(pagination);
         void setPage(newPagination.pageIndex + 1);
@@ -138,7 +146,7 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
         void setPerPage(updaterOrValue.pageSize);
       }
     },
-    [pagination, setPage, setPerPage]
+    [pagination, setPage, setPerPage, manualPagination]
   );
 
   const columnIds = React.useMemo(() => {
@@ -194,7 +202,7 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
 
   const debouncedSetFilterValues = useDebouncedCallback(
     (values: typeof filterValues) => {
-      void setPage(1);
+      if (manualPagination) void setPage(1);
       void setFilterValues(values);
     },
     debounceMs
@@ -281,9 +289,9 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
     ...tableProps,
     columns,
     initialState,
-    pageCount,
+    ...(manualPagination ? { pageCount } : {}),
     state: {
-      pagination,
+      ...(manualPagination ? { pagination } : {}),
       sorting,
       columnVisibility,
       rowSelection,
@@ -295,7 +303,7 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
-    onPaginationChange,
+    ...(manualPagination ? { onPaginationChange } : {}),
     onSortingChange,
     onColumnFiltersChange,
     onColumnVisibilityChange: setColumnVisibility,
@@ -306,9 +314,9 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues(),
-    manualPagination: true,
+    manualPagination,
     manualSorting: true,
-    manualFiltering: true
+    manualFiltering
   });
 
   return { table, shallow, debounceMs, throttleMs };

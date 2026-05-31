@@ -13,7 +13,13 @@ export function IncidentsTable(props: {
   totalItems: number;
 }) {
   return (
-    <EntityTable {...props} columns={columns} basePath='/incval/incidents' />
+    <EntityTable
+      {...props}
+      columns={columns}
+      basePath='/incval/incidents'
+      searchFields={['title', 'location']}
+      searchPlaceholder='Search by title or location...'
+    />
   );
 }
 
@@ -25,6 +31,8 @@ export function IncidentsFilteredTable({ status }: { status: string }) {
       useQuery={useIncidents}
       status={status}
       typeLabel='incidents'
+      searchFields={['title', 'location']}
+      searchPlaceholder='Search by title or location...'
     />
   );
 }
