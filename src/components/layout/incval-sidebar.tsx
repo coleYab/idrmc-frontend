@@ -17,6 +17,7 @@ import {
   IconReportAnalytics,
   IconShare3,
   IconUserCircle
+  // IconCheckList
 } from '@tabler/icons-react';
 import {
   Sidebar,
@@ -73,16 +74,21 @@ const primaryRoutes = [
     href: '/incval/incidents/map-explorer',
     icon: IconMapSearch
   },
-  {
-    title: 'Incident Search',
-    href: '/incval/incidents/search',
-    icon: IconFileSearch
-  },
-  {
-    title: 'Incident Summary',
-    href: '/incval/reports/incident-summary',
-    icon: IconReportAnalytics
-  },
+  // {
+  //   title:'Verified Incidents',
+  //   href: '/incval/incidents/verify',
+  //   icon: IconCheckList
+  // }
+  // {
+  //   title: 'Incident Search',
+  //   href: '/incval/incidents/search',
+  //   icon: IconFileSearch
+  // },
+  // {
+  //   title: 'Incident Summary',
+  //   href: '/incval/reports/incident-summary',
+  //   icon: IconReportAnalytics
+  // },
   {
     title: 'My Profile',
     href: '/incval/profile',
@@ -181,7 +187,7 @@ export default function IncvalSidebar() {
           </SidebarMenu>
         </SidebarGroup>
 
-        <SidebarGroup>
+        {/* <SidebarGroup>
           <SidebarGroupLabel>Detailed Actions</SidebarGroupLabel>
           <SidebarMenu>
             {quickActions.map((route) => (
@@ -199,7 +205,7 @@ export default function IncvalSidebar() {
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
-        </SidebarGroup>
+        </SidebarGroup> */}
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>

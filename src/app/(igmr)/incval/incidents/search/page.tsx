@@ -16,15 +16,16 @@ export default async function IncidentsSearchPage(props: PageProps) {
   const searchParams = await props.searchParams;
 
   return (
-    <PageContainer
-      scrollable={false}
-      pageTitle='Advanced Incident Search'
-      pageDescription='Query incidents with detailed multi-criteria filters including date ranges, locations, and reporter information.'
-      infoContent={incvalInfo.incidentsSearch}
-    >
-      <Suspense fallback={<div>Loading...</div>}>
-        <IncidentsSearchListingPage searchParams={searchParams} />
-      </Suspense>
-    </PageContainer>
+    // <PageContainer
+    //   scrollable={false}
+    //   pageTitle='Advanced Incident Search'
+    //   pageDescription='Query incidents with detailed multi-criteria filters including date ranges, locations, and reporter information.'
+    //   infoContent={incvalInfo.incidentsSearch}
+    // >
+    //   <Suspense fallback={<div>Loading...</div>}>
+    //     <IncidentsSearchListingPage searchParams={searchParams} />
+    //   </Suspense>
+    // </PageContainer>
+    <div></div>
   );
 }
