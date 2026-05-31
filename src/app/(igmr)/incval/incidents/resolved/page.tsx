@@ -2,7 +2,7 @@ import PageContainer from '@/components/layout/page-container';
 import { Suspense } from 'react';
 import { searchParamsCache } from '@/lib/searchparams';
 import { SearchParams } from 'nuqs/server';
-import { ResolvedIncidentsTable } from '@/features/incval/components/resolved-incidents-table';
+import { IncidentsFilteredTable } from '@/features/incidents/components/incidents-tables';
 import { incvalInfo } from '@/config/incval-infoconfig';
 
 export const metadata = {
@@ -25,7 +25,7 @@ export default async function IncidentsResolvedPage(props: PageProps) {
       infoContent={incvalInfo.incidentsResolved}
     >
       <Suspense fallback={<div>Loading...</div>}>
-        <ResolvedIncidentsTable />
+        <IncidentsFilteredTable status='Resolved' />
       </Suspense>
     </PageContainer>
   );

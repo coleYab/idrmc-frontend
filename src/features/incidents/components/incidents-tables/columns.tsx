@@ -16,7 +16,9 @@ export const columns: ColumnDef<Incident>[] = [
       <DataTableColumnHeader column={column} title='Incident ID' />
     ),
     cell: ({ cell }) => (
-      <div className='font-medium'>{cell.getValue<string>()}</div>
+      <div className='max-w-[120px] truncate font-medium'>
+        {cell.getValue<string>()}
+      </div>
     ),
     meta: {
       label: 'Incident ID',
@@ -27,21 +29,51 @@ export const columns: ColumnDef<Incident>[] = [
     enableColumnFilter: true
   },
   {
-    id: 'description',
-    accessorKey: 'description',
+    id: 'title',
+    accessorKey: 'title',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Description' />
+      <DataTableColumnHeader column={column} title='Title' />
     ),
     cell: ({ cell }) => (
-      <div className='max-w-[400px] truncate'>{cell.getValue<string>()}</div>
+      <div className='max-w-[250px] truncate font-medium'>
+        {cell.getValue<string>()}
+      </div>
     ),
     meta: {
-      label: 'Description',
-      placeholder: 'Search Description...',
+      label: 'Title',
+      placeholder: 'Search title...',
       variant: 'text',
       icon: Text
     },
     enableColumnFilter: true
+  },
+  {
+    id: 'incidentType',
+    accessorKey: 'incidentType',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Type' />
+    ),
+    cell: ({ row }) => {
+      const type = row.original.incidentType;
+      return (
+        <Badge variant='outline' className='capitalize'>
+          {type}
+        </Badge>
+      );
+    },
+    enableColumnFilter: true,
+    meta: {
+      label: 'Type',
+      variant: 'multiSelect',
+      options: [
+        { value: 'Flood', label: 'Flood' },
+        { value: 'Drought', label: 'Drought' },
+        { value: 'Landslide', label: 'Landslide' },
+        { value: 'Locust', label: 'Locust' },
+        { value: 'Conflict', label: 'Conflict' },
+        { value: 'Fire', label: 'Fire' }
+      ]
+    }
   },
   {
     id: 'location',

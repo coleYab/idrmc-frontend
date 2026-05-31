@@ -1,37 +1,30 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { DataTable } from '@/components/ui/table/data-table';
-import { DataTableToolbar } from '@/components/ui/table/data-table-toolbar';
-import { useDataTable } from '@/hooks/use-data-table';
+import {
+  EntityTable,
+  EntityFilteredTable
+} from '@/components/table/data-table-entity';
 import { columns } from './columns';
+import { useIncidents } from '@/features/incidents/api/incidents';
 import type { Incident } from '../../types';
 
-interface IncidentsTableProps {
+export function IncidentsTable(props: {
   data: Incident[];
   totalItems: number;
+}) {
+  return (
+    <EntityTable {...props} columns={columns} basePath='/incval/incidents' />
+  );
 }
 
-export function IncidentsTable({ data, totalItems }: IncidentsTableProps) {
-  const router = useRouter();
-  const pageCount = Math.ceil(totalItems / 10);
-
-  const { table } = useDataTable({
-    data,
-    columns,
-    pageCount,
-    shallow: false,
-    debounceMs: 500
-  });
-
+export function IncidentsFilteredTable({ status }: { status: string }) {
   return (
-    <DataTable
-      table={table}
-      onRowClick={(row) =>
-        router.push(`/incval/incidents/${row.original.id}/details`)
-      }
-    >
-      <DataTableToolbar table={table} />
-    </DataTable>
+    <EntityFilteredTable
+      columns={columns}
+      basePath='/incval/incidents'
+      useQuery={useIncidents}
+      status={status}
+      typeLabel='incidents'
+    />
   );
 }

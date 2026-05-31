@@ -13,7 +13,8 @@ export default async function IncidentsListingPage() {
   const status = searchParamsCache.get('status');
   const severityLevel = searchParamsCache.get('severityLevel');
   const id = searchParamsCache.get('id');
-  const description = searchParamsCache.get('description');
+  const incidentTitle = searchParamsCache.get('incidentTitle');
+  const incidentType = searchParamsCache.get('incidentType');
   const location = searchParamsCache.get('location');
 
   const limit = pageLimit ?? 10;
@@ -31,8 +32,9 @@ export default async function IncidentsListingPage() {
           offset,
           status: status ?? undefined,
           severity: severityLevel ?? undefined,
+          type: incidentType ?? undefined,
           id: id ?? undefined,
-          description: description ?? undefined,
+          title: incidentTitle ?? undefined,
           location: location ?? undefined
         },
         cache: 'no-store'
