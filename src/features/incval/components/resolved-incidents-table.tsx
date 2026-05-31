@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { incidentService } from '@/services/incidentServices';
 
 export const columns: ColumnDef<Incident>[] = [
@@ -204,6 +205,7 @@ export const columns: ColumnDef<Incident>[] = [
 ];
 
 export function ResolvedIncidentsTable() {
+  const router = useRouter();
   const [pageSize] = useQueryState('perPage', parseAsInteger.withDefault(10));
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
@@ -241,7 +243,12 @@ export function ResolvedIncidentsTable() {
           Loading incidents...
         </div>
       ) : (
-        <DataTable table={table}>
+        <DataTable
+          table={table}
+          onRowClick={(row) =>
+            router.push(`/incval/incidents/${row.original.id}/details`)
+          }
+        >
           <DataTableToolbar table={table} />
         </DataTable>
       )}
