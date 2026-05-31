@@ -35,7 +35,7 @@ export default function AlertsClient() {
   const { data: resourcesData, isLoading: resourcesLoading } = useResources();
   const createNeed = useCreateResourceNeed();
 
-  const disasters = disastersData ?? [];
+  const disasters = disastersData?.items ?? [];
   const resources = resourcesData?.items ?? [];
 
   const [selectedDisasterId, setSelectedDisasterId] = useState(

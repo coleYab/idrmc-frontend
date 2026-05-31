@@ -7,13 +7,28 @@ const normalizeDisasterPayload = (rawData: unknown) => {
   }
 
   const data = rawData as Record<string, unknown>;
+  const incidentType = data.incidentType ?? data.type;
+  const affectedPopulationCount =
+    data.affectedPopulationCount ?? data.totalAffectedPopulation;
   const allocatedBudget = data.allocatedBudget ?? data.budgetAllocated;
   const economicLoss = data.economicLoss ?? data.estimatedEconomicLoss;
 
+  const rawStatus = data.status;
+  const status =
+    rawStatus === 'Active' || rawStatus === 'Resolved'
+      ? rawStatus
+      : typeof rawStatus === 'string' &&
+          ['Pending', 'Verified', 'Repeated'].includes(rawStatus)
+        ? 'Active'
+        : 'Resolved';
+
   return {
     ...data,
+    incidentType,
+    affectedPopulationCount,
     allocatedBudget,
-    economicLoss
+    economicLoss,
+    status
   };
 };
 
@@ -26,10 +41,20 @@ export const DisasterTypeEnum = z.enum([
   'Fire'
 ]);
 
+export const DisasterStatusEnum = z.enum(['Active', 'Resolved']);
+
+export const DisasterSeverityLevelEnum = z.enum([
+  'Low',
+  'Medium',
+  'High',
+  'Critical'
+]);
+
 const CreateDisasterShape = ReportIncidentShape.extend({
   allocatedBudget: z.number().nonnegative().optional(),
   economicLoss: z.number().nonnegative().optional(),
-  linkedIncidentIds: z.array(z.string().uuid()).optional()
+  linkedIncidentIds: z.array(z.string().uuid()).optional(),
+  attachments: z.array(z.string()).optional()
 });
 
 export const CreateDisasterSchema = z.preprocess(
@@ -51,10 +76,22 @@ export const DisasterSchema = z.preprocess(
   CreateDisasterShape.extend({
     id: z.string().uuid(),
     disasterType: DisasterTypeEnum.optional(),
-    status: z.string().optional(),
-    createdAt: z.iso.datetime().optional(),
-    updatedAt: z.iso.datetime().optional()
+    status: DisasterStatusEnum,
+    declaredBy: z.string(),
+    activatedAt: z.iso.datetime().nullable().optional(),
+    closedAt: z.iso.datetime().nullable().optional(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime()
   })
 );
 
 export type Disaster = z.infer<typeof DisasterSchema>;
+
+export interface DisasterListParams {
+  [key: string]: string | number | boolean | undefined;
+  limit?: number;
+  offset?: number;
+  status?: string;
+  severity?: string;
+  type?: string;
+}

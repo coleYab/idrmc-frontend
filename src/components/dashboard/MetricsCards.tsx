@@ -90,16 +90,13 @@ function MetricCard({
 
 export function MetricsCards({ className }: MetricsCardsProps) {
   const { data: disasters, isLoading } = useDisasters();
-  const allDisasters = disasters ?? [];
+  const allDisasters = disasters?.items ?? [];
 
-  const pendingReports = allDisasters.filter(
-    (i) => i.status === 'Pending' || i.status === 'pending'
-  ).length;
   const activeIncidents = allDisasters.filter(
-    (i) => i.status === 'Active' || i.status === 'active'
+    (i) => i.status === 'Active'
   ).length;
   const resolvedIncidents = allDisasters.filter(
-    (i) => i.status === 'Resolved' || i.status === 'resolved'
+    (i) => i.status === 'Resolved'
   ).length;
   const totalIncidents = allDisasters.length;
 
@@ -109,41 +106,33 @@ export function MetricsCards({ className }: MetricsCardsProps) {
   return (
     <div
       className={cn(
-        'grid w-full grid-cols-1 gap-4 px-4 lg:grid-cols-4 lg:px-6',
+        'grid w-full grid-cols-1 gap-4 px-4 lg:grid-cols-3 lg:px-6',
         className
       )}
     >
       <MetricCard
-        label='Pending Reports'
-        value={pendingReports}
-        badge={pct(pendingReports)}
-        badgeTrend='down'
-        trendLabel='Awaiting verification'
-        subtitle='Reports requiring immediate attention'
-      />
-      <MetricCard
-        label='Active Incidents'
+        label='Active Disasters'
         value={activeIncidents}
         badge={pct(activeIncidents)}
         badgeTrend='up'
         trendLabel='Currently being managed'
-        subtitle='Incidents under active response'
+        subtitle='Disasters under active response'
       />
       <MetricCard
-        label='Resolved Incidents'
+        label='Resolved Disasters'
         value={resolvedIncidents}
         badge={pct(resolvedIncidents)}
         badgeTrend='up'
         trendLabel='Successfully handled'
-        subtitle='Completed incident responses'
+        subtitle='Completed disaster responses'
       />
       <MetricCard
-        label='Total Incidents'
+        label='Total Disasters'
         value={totalIncidents}
         badge='All time'
         badgeTrend='neutral'
-        trendLabel='Total reported incidents'
-        subtitle='Cumulative incident count'
+        trendLabel='Total reported disasters'
+        subtitle='Cumulative disaster count'
       />
     </div>
   );

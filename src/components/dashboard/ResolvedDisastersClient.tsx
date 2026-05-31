@@ -42,10 +42,9 @@ const formatDate = (dateString: string) => {
 export function ResolvedDisastersClient() {
   const router = useRouter();
   const { data: disasters } = useDisasters();
-  const allDisasters = disasters ?? [];
+  const allDisasters = disasters?.items ?? [];
   const resolvedDisasters = allDisasters.filter(
-    (incident) =>
-      incident.status === 'Resolved' || incident.status === 'resolved'
+    (incident) => incident.status === 'Resolved'
   );
 
   return (

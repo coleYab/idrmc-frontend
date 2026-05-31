@@ -23,7 +23,7 @@ export function AdminMetricsCards() {
     resourcesLoading;
 
   const incidents = incidentsData?.items ?? [];
-  const disasters = disastersData ?? [];
+  const disasters = disastersData?.items ?? [];
   const users = usersData?.items ?? [];
   const units = unitsData?.items ?? [];
   const resources = resourcesData?.items ?? [];

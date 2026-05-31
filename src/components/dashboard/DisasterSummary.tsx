@@ -18,7 +18,7 @@ interface DisasterSummaryProps {
 
 export function DisasterSummary({ className }: DisasterSummaryProps) {
   const { data: disasters } = useDisasters();
-  const allDisasters = disasters ?? [];
+  const allDisasters = disasters?.items ?? [];
 
   // Group incidents by region and calculate disaster levels
   const regionStats = allDisasters.reduce(
@@ -43,7 +43,7 @@ export function DisasterSummary({ className }: DisasterSummaryProps) {
       acc[region].affectedPopulation += incident.affectedPopulationCount;
       acc[region].incidents.push(incident);
 
-      if (incident.status === 'Active' || incident.status === 'active') {
+      if (incident.status === 'Active') {
         acc[region].active += 1;
       }
 

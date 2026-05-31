@@ -1,18 +1,30 @@
 import PageContainer from '@/components/layout/page-container';
-import { ActiveDisastersClient } from '@/components/dashboard/ActiveDisastersClient';
+import { Suspense } from 'react';
+import { searchParamsCache } from '@/lib/searchparams';
+import { SearchParams } from 'nuqs/server';
+import { DisastersFilteredTable } from '@/features/disasters/components/disasters-tables';
 
 export const metadata = {
   title: 'Active Disasters - Disaster Management'
 };
 
-export default function ActiveDisastersPage() {
+type PageProps = {
+  searchParams: Promise<SearchParams>;
+};
+
+export default async function ActiveDisastersPage(props: PageProps) {
+  const searchParams = await props.searchParams;
+  searchParamsCache.parse(searchParams);
+
   return (
     <PageContainer
-      scrollable={true}
+      scrollable={false}
       pageTitle='Active Disasters'
       pageDescription='Currently active disasters requiring immediate response and coordination.'
     >
-      <ActiveDisastersClient />
+      <Suspense fallback={<div>Loading...</div>}>
+        <DisastersFilteredTable status='Active' />
+      </Suspense>
     </PageContainer>
   );
 }

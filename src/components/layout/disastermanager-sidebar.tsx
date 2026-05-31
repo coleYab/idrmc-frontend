@@ -9,6 +9,7 @@ import {
   IconChevronsDown,
   IconClipboardCheck,
   IconLayoutDashboard,
+  IconList,
   IconLogout,
   IconMapPin,
   IconMapSearch,
@@ -45,6 +46,11 @@ const primaryRoutes = [
     title: 'Dashboard',
     href: '/disastermanager/dashboard',
     icon: IconLayoutDashboard
+  },
+  {
+    title: 'All Disasters',
+    href: '/disastermanager/disasters',
+    icon: IconList
   },
   {
     title: 'Active Disasters',

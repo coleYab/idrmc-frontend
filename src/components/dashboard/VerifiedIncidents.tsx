@@ -36,12 +36,11 @@ interface VerifiedIncidentsProps {
 export function VerifiedIncidents({ className }: VerifiedIncidentsProps) {
   const { addNotification } = useNotificationStore();
   const { data: disasters } = useDisasters();
-  const allDisasters = disasters ?? [];
+  const allDisasters = disasters?.items ?? [];
 
   // Filter verified incidents
   const verifiedIncidents = allDisasters.filter(
-    (incident) =>
-      incident.status === 'Verified' || incident.status === 'verified'
+    (incident) => incident.status === 'Active'
   );
 
   const createAlertForIncident = (incident: (typeof allDisasters)[number]) => {

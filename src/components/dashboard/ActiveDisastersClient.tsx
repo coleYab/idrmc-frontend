@@ -59,10 +59,10 @@ export function ActiveDisastersClient() {
   const [isBroadcasting, setIsBroadcasting] = useState<string | null>(null);
 
   const { data: disasters } = useDisasters();
-  const allDisasters = disasters ?? [];
+  const allDisasters = disasters?.items ?? [];
 
   const activeDisasters = allDisasters.filter(
-    (incident) => incident.status === 'Active' || incident.status === 'active'
+    (incident) => incident.status === 'Active'
   );
 
   interface BackendError {

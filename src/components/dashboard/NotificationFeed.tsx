@@ -20,17 +20,11 @@ interface NotificationFeedProps {
 
 export function NotificationFeed({ className }: NotificationFeedProps) {
   const { data: disasters } = useDisasters();
-  const allDisasters = disasters ?? [];
+  const allDisasters = disasters?.items ?? [];
 
   // Get recent incidents (pending and active) sorted by creation date
   const recentIncidents = allDisasters
-    .filter(
-      (incident) =>
-        incident.status === 'Pending' ||
-        incident.status === 'pending' ||
-        incident.status === 'Active' ||
-        incident.status === 'active'
-    )
+    .filter((incident) => incident.status === 'Active')
     .sort(
       (a, b) =>
         new Date(b.createdAt ?? '').getTime() -

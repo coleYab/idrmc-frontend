@@ -1,6 +1,6 @@
 import { useAuth } from '@clerk/nextjs';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchClient } from '@/lib/fetch-client';
+import { fetchClient, fetchClientResponse } from '@/lib/fetch-client';
 import { queryKeys } from '@/lib/query-keys';
 import {
   CreateDisasterSchema,
@@ -8,8 +8,10 @@ import {
   UpdateDisasterSchema,
   type CreateDisasterDto,
   type Disaster,
+  type DisasterListParams,
   type UpdateDisasterDto
 } from '../types';
+import type { PaginatedResult } from '@/lib/fetch-client';
 
 const disastersListSchema = DisasterSchema.array();
 
@@ -21,14 +23,22 @@ function parseDisasters(data: unknown): Disaster[] {
   return disastersListSchema.parse(data);
 }
 
-export function useDisasters() {
+export function useDisasters(params?: DisasterListParams) {
   const { getToken } = useAuth();
 
   return useQuery({
-    queryKey: queryKeys.disasters.list(),
+    queryKey: queryKeys.disasters.list(params),
     queryFn: async () => {
-      const data = await fetchClient<Disaster[]>('/disasters', {}, getToken);
-      return parseDisasters(data);
+      const response = await fetchClientResponse<Disaster[]>(
+        '/disasters',
+        { params },
+        getToken
+      );
+
+      return {
+        items: parseDisasters(response.data),
+        meta: response.meta
+      } satisfies PaginatedResult<Disaster>;
     }
   });
 }
