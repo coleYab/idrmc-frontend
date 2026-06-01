@@ -73,11 +73,6 @@ const primaryRoutes = [
     icon: IconMapSearch
   },
   {
-    title: 'Disaster Reports',
-    href: '/disastermanager/reports',
-    icon: IconReportAnalytics
-  },
-  {
     title: 'My Profile',
     href: '/disastermanager/profile',
     icon: IconUserCircle
