@@ -37,15 +37,18 @@ const chartConfig = {
 
 export function DisasterTypeChart() {
   return (
-    <Card>
+    <Card className='flex h-full flex-col'>
       <CardHeader>
         <CardTitle>Disasters by Type</CardTitle>
         <CardDescription>
           Active and resolved disasters by category
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
+      <CardContent className='flex-grow'>
+        <ChartContainer
+          config={chartConfig}
+          className='aspect-video max-h-[300px] w-full'
+        >
           <BarChart accessibilityLayer data={chartData}>
             <XAxis dataKey='type' />
             <ChartTooltip content={<ChartTooltipContent />} />

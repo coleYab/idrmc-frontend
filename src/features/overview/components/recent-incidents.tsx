@@ -9,15 +9,15 @@ import {
 
 export function RecentIncidents() {
   return (
-    <Card>
+    <Card className='flex h-full flex-col'>
       <CardHeader>
         <CardTitle>Recent Incidents</CardTitle>
         <CardDescription>
           There were 24 new reports filed this week.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className='space-y-8'>
+      <CardContent className='flex flex-grow flex-col justify-between py-6'>
+        <div className='flex flex-grow flex-col justify-between space-y-6'>
           <div className='flex items-center'>
             <Avatar className='h-9 w-9'>
               <AvatarImage src='/avatars/01.png' alt='Avatar' />

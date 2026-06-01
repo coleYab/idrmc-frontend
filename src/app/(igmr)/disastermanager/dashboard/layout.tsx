@@ -1,3 +1,4 @@
+import PageContainer from '@/components/layout/page-container';
 import React from 'react';
 
 export default function DisasterManagerDashboardLayout({
@@ -14,15 +15,17 @@ export default function DisasterManagerDashboardLayout({
   area_stats: React.ReactNode;
 }) {
   return (
-    <div className='flex flex-1 flex-col gap-4 py-4'>
-      {children}
+    <PageContainer>
+      <div className='flex flex-1 flex-col gap-4 py-4'>
+        {children}
 
-      <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7'>
-        <div className='col-span-4'>{bar_stats}</div>
-        <div className='col-span-4 md:col-span-3'>{recent_incidents}</div>
-        <div className='col-span-4'>{area_stats}</div>
-        <div className='col-span-4 min-h-0 md:col-span-3'>{pie_stats}</div>
+        <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7'>
+          <div className='col-span-4'>{bar_stats}</div>
+          <div className='col-span-4 md:col-span-3'>{recent_incidents}</div>
+          <div className='col-span-4'>{area_stats}</div>
+          <div className='col-span-4 min-h-0 md:col-span-3'>{pie_stats}</div>
+        </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

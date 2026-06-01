@@ -38,13 +38,16 @@ const chartConfig = {
 
 export function DisasterTrendChart() {
   return (
-    <Card>
+    <Card className='flex h-full flex-col'>
       <CardHeader>
         <CardTitle>Disaster Trends</CardTitle>
         <CardDescription>New and ongoing disasters over time</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
+      <CardContent className='flex-grow'>
+        <ChartContainer
+          config={chartConfig}
+          className='aspect-video max-h-[300px] w-full'
+        >
           <AreaChart data={chartData} accessibilityLayer>
             <CartesianGrid strokeDasharray='3 3' />
             <XAxis dataKey='date' />

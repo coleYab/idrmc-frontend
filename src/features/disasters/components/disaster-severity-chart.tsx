@@ -47,13 +47,16 @@ const chartConfig = {
 
 export function DisasterSeverityChart() {
   return (
-    <Card>
+    <Card className='flex h-full flex-col'>
       <CardHeader>
         <CardTitle>Disaster Severity Distribution</CardTitle>
         <CardDescription>Current disasters by severity level</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
+      <CardContent className='flex flex-grow items-center justify-center'>
+        <ChartContainer
+          config={chartConfig}
+          className='mx-auto aspect-square max-h-[300px] min-h-[250px]'
+        >
           <PieChart>
             <ChartTooltip content={<ChartTooltipContent />} />
             <Pie data={chartData} dataKey='value' label>
