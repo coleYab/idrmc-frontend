@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -30,7 +30,8 @@ import {
   IconCamera,
   IconArrowLeft,
   IconActivity,
-  IconCheck
+  IconCheck,
+  IconX
 } from '@tabler/icons-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -91,6 +92,7 @@ export default function IncidentDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const incidentId = params.incidentId as string;
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   const { data: incident, isLoading } = useIncident(incidentId);
   const updateDetails = useUpdateIncident(incidentId);
@@ -202,8 +204,8 @@ export default function IncidentDetailsPage() {
   return (
     <PageContainer
       scrollable={true}
-      pageTitle={`Incident ${incidentId}`}
-      pageDescription='Edit incident details, severity, and status.'
+      pageTitle={incident.title}
+      pageDescription={`ID: ${incidentId} · Edit incident details, severity, and status.`}
       infoContent={getIncidentDetailsInfo(incidentId)}
       pageHeaderAction={
         <Button asChild variant='outline'>
@@ -313,6 +315,51 @@ export default function IncidentDetailsPage() {
           <div className='space-y-6'>
             <Card>
               <CardHeader>
+                <CardTitle className='flex items-center gap-2'>
+                  <IconCamera className='size-5' />
+                  Attachments
+                </CardTitle>
+                <CardDescription>
+                  Photos, videos, and evidence files
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {attachments.length === 0 ? (
+                  <p className='text-muted-foreground py-4 text-center text-sm'>
+                    No attachments uploaded
+                  </p>
+                ) : (
+                  <div className='grid gap-3'>
+                    {attachments.map((src, idx) => (
+                      <div
+                        key={idx}
+                        className='group hover:ring-primary relative cursor-pointer overflow-hidden rounded-md border transition-all hover:ring-2'
+                        onClick={() => setLightboxImage(src)}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={src}
+                          alt={`Incident attachment ${idx + 1}`}
+                          className='h-32 w-full object-cover transition-transform duration-300 group-hover:scale-105'
+                          loading='lazy'
+                        />
+                        <div className='absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100'>
+                          <span className='rounded bg-black/60 px-2.5 py-1 text-xs font-medium text-white shadow-sm'>
+                            Click to view
+                          </span>
+                        </div>
+                        <div className='absolute bottom-2 left-2 rounded bg-black/70 px-2 py-1 text-xs text-white'>
+                          Attachment {idx + 1}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
                 <CardTitle>Metadata</CardTitle>
                 <CardDescription>
                   Read-only metadata about this incident
@@ -409,42 +456,6 @@ export default function IncidentDetailsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className='flex items-center gap-2'>
-                  <IconCamera className='size-5' />
-                  Attachments
-                </CardTitle>
-                <CardDescription>
-                  Photos, videos, and evidence files
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {attachments.length === 0 ? (
-                  <p className='text-muted-foreground py-4 text-center text-sm'>
-                    No attachments uploaded
-                  </p>
-                ) : (
-                  <div className='grid gap-3'>
-                    {attachments.map((src, idx) => (
-                      <div key={idx} className='relative'>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={src}
-                          alt={`Incident attachment ${idx + 1}`}
-                          className='h-32 w-full rounded-md border object-cover'
-                          loading='lazy'
-                        />
-                        <div className='absolute bottom-2 left-2 rounded bg-black/70 px-2 py-1 text-xs text-white'>
-                          Attachment {idx + 1}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
                 <CardTitle>Resolution Info</CardTitle>
               </CardHeader>
               <CardContent className='space-y-3'>
@@ -503,6 +514,31 @@ export default function IncidentDetailsPage() {
           </div>
         </div>
       </Form>
+
+      {lightboxImage && (
+        <div
+          className='fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 transition-all duration-300'
+          onClick={() => setLightboxImage(null)}
+        >
+          <button
+            onClick={() => setLightboxImage(null)}
+            className='absolute top-4 right-4 rounded-full bg-black/60 p-2 text-white transition-colors hover:bg-black/80'
+          >
+            <IconX className='size-6' />
+          </button>
+          <div
+            className='relative max-h-[90vh] max-w-[90vw] overflow-hidden'
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={lightboxImage}
+              alt='Lightbox preview'
+              className='max-h-[90vh] max-w-[90vw] rounded-lg object-contain'
+            />
+          </div>
+        </div>
+      )}
     </PageContainer>
   );
 }
