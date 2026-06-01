@@ -3,8 +3,8 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
 import { Badge } from '@/components/ui/badge';
-import { CellAction } from './cell-action';
 import { STATUS_OPTIONS, SEVERITY_OPTIONS } from './options';
+import { CellAction } from './cell-action';
 import { Text } from 'lucide-react';
 import type { Incident } from '../../types';
 
@@ -146,9 +146,5 @@ export const columns: ColumnDef<Incident>[] = [
       const date = new Date(cell.getValue<string>());
       return <div>{date.toLocaleDateString()}</div>;
     }
-  },
-  {
-    id: 'actions',
-    cell: ({ row }) => <CellAction data={row.original} />
   }
 ];
