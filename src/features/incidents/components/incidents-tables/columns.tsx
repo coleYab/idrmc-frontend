@@ -29,6 +29,7 @@ export const columns: ColumnDef<Incident>[] = [
     },
     enableColumnFilter: true
   },
+  //id is fixed here and another comments
   {
     id: 'title',
     accessorKey: 'title',

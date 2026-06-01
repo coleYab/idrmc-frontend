@@ -12,7 +12,7 @@ export const metadata = {
 type PageProps = {
   searchParams: Promise<SearchParams>;
 };
-
+// with new commment to test the CI/CD pipeline
 export default async function IncidentsPendingPage(props: PageProps) {
   const searchParams = await props.searchParams;
   searchParamsCache.parse(searchParams);
