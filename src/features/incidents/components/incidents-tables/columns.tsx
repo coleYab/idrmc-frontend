@@ -10,6 +10,7 @@ import type { Incident } from '../../types';
 
 export const columns: ColumnDef<Incident>[] = [
   {
+    // this another commit with id and stuff
     id: 'id',
     accessorKey: 'id',
     header: ({ column }) => (
