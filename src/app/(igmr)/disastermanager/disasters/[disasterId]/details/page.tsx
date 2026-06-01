@@ -123,7 +123,7 @@ export default function DisasterDetailsPage() {
       }
     >
       <div className='grid gap-6 lg:grid-cols-3'>
-        {/* Main Disaster Information */}
+        {/* Main Disaster Information and fixed the ui to include some id */}
         <div className='space-y-6 lg:col-span-2'>
           <Card>
             <CardHeader>
@@ -216,7 +216,7 @@ export default function DisasterDetailsPage() {
 
               <Separator />
 
-              {/* Critical Information */}
+              {/* Critical Information of the distaster appears here and other sevity level  */}
               <div className='space-y-4'>
                 <h3 className='text-lg font-semibold'>Critical Information</h3>
 

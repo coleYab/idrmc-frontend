@@ -27,6 +27,7 @@ export const columns: ColumnDef<Disaster>[] = [
     },
     enableColumnFilter: true
   },
+  // we removed the action button from here
   {
     id: 'title',
     accessorKey: 'title',
