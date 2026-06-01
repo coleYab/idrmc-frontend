@@ -111,8 +111,8 @@ export default function DisasterDetailsPage() {
   return (
     <PageContainer
       scrollable={true}
-      pageTitle={`Disaster ${disasterId} Details`}
-      pageDescription='Comprehensive disaster information for response coordination and management.'
+      pageTitle={disaster.title}
+      pageDescription={`ID: ${disasterId} · Comprehensive disaster information for response coordination and management.`}
       pageHeaderAction={
         <Button asChild variant='outline'>
           <Link href='/disastermanager/disasters/active'>
