@@ -33,8 +33,6 @@ const chartConfig = {
 export function ResourceAllocationChart() {
   const { data, isLoading, isError } = useResourceNeeds();
   const apiNeeds = data?.items ?? [];
-  const { mockErtResourceNeeds } = require('@/lib/mock/ert');
-
   const needs =
     isError || apiNeeds.length === 0 ? mockErtResourceNeeds : apiNeeds;
 

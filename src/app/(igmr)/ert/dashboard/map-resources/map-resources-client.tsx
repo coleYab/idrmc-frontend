@@ -3,6 +3,7 @@
 import PageContainer from '@/components/layout/page-container';
 import { useErtUnits } from '@/features/ert/api/ert';
 import { useResources } from '@/features/ert/api/resources';
+import { mockErtUnits, mockErtResources } from '@/lib/mock/ert';
 import {
   Card,
   CardContent,
@@ -16,12 +17,25 @@ import { IconMapPin } from '@tabler/icons-react';
 import { ErtMapView } from '@/features/ert/components/map-resources/ert-map-view';
 
 export default function MapResourcesClient() {
-  const { data: unitsData, isLoading: unitsLoading } = useErtUnits();
-  const { data: resourcesData, isLoading: resourcesLoading } = useResources();
+  const {
+    data: unitsData,
+    isLoading: unitsLoading,
+    isError: unitsError
+  } = useErtUnits();
+  const {
+    data: resourcesData,
+    isLoading: resourcesLoading,
+    isError: resourcesError
+  } = useResources();
 
   const isLoading = unitsLoading || resourcesLoading;
-  const units = unitsData?.items ?? [];
-  const resources = resourcesData?.items ?? [];
+  const apiUnits = unitsData?.items ?? [];
+  const apiResources = resourcesData?.items ?? [];
+  const units = unitsError || apiUnits.length === 0 ? mockErtUnits : apiUnits;
+  const resources =
+    resourcesError || apiResources.length === 0
+      ? mockErtResources
+      : apiResources;
 
   const deployedUnits = units.filter((u) => u.status === 'DEPLOYED');
 

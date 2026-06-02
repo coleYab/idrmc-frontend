@@ -7,6 +7,7 @@ import {
   useResources,
   useCreateResourceNeed
 } from '@/features/ert/api/resources';
+import { mockErtResources } from '@/lib/mock/ert';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -32,11 +33,19 @@ import { IconAlertTriangle } from '@tabler/icons-react';
 
 export default function AlertsClient() {
   const { data: disastersData, isLoading: disastersLoading } = useDisasters();
-  const { data: resourcesData, isLoading: resourcesLoading } = useResources();
+  const {
+    data: resourcesData,
+    isLoading: resourcesLoading,
+    isError: resourcesError
+  } = useResources();
   const createNeed = useCreateResourceNeed();
 
   const disasters = disastersData?.items ?? [];
-  const resources = resourcesData?.items ?? [];
+  const apiResources = resourcesData?.items ?? [];
+  const resources =
+    resourcesError || apiResources.length === 0
+      ? mockErtResources
+      : apiResources;
 
   const [selectedDisasterId, setSelectedDisasterId] = useState(
     disasters[0]?.id ?? ''

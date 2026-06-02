@@ -5,6 +5,11 @@ import PageContainer from '@/components/layout/page-container';
 import { useResources, useResourceNeeds } from '@/features/ert/api/resources';
 import { useErtUnits } from '@/features/ert/api/ert';
 import {
+  mockErtResources,
+  mockErtResourceNeeds,
+  mockErtUnits
+} from '@/lib/mock/ert';
+import {
   Card,
   CardContent,
   CardDescription,
@@ -16,13 +21,27 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { IconBox, IconTruck, IconUsers } from '@tabler/icons-react';
 
 export default function ResourcesClient() {
-  const { data: resourcesData, isLoading: resourcesLoading } = useResources();
-  const { data: needsData, isLoading: needsLoading } = useResourceNeeds();
+  const {
+    data: resourcesData,
+    isLoading: resourcesLoading,
+    isError: resourcesError
+  } = useResources();
+  const {
+    data: needsData,
+    isLoading: needsLoading,
+    isError: needsError
+  } = useResourceNeeds();
   const { data: unitsData } = useErtUnits();
 
   const isLoading = resourcesLoading || needsLoading;
-  const resources = resourcesData?.items ?? [];
-  const needs = needsData?.items ?? [];
+  const apiResources = resourcesData?.items ?? [];
+  const apiNeeds = needsData?.items ?? [];
+  const resources =
+    resourcesError || apiResources.length === 0
+      ? mockErtResources
+      : apiResources;
+  const needs =
+    needsError || apiNeeds.length === 0 ? mockErtResourceNeeds : apiNeeds;
 
   const allocationTotals = useMemo(
     () =>
@@ -200,7 +219,8 @@ export default function ResourcesClient() {
                     <div>
                       <p className='text-sm font-medium'>Units</p>
                       <p className='text-muted-foreground text-xs'>
-                        {unitsData?.items?.length ?? 0} ERT units registered
+                        {(unitsData?.items ?? mockErtUnits).length} ERT units
+                        registered
                       </p>
                     </div>
                   </div>

@@ -2,6 +2,7 @@
 
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { useResources } from '@/features/ert/api/resources';
+import { mockErtResources } from '@/lib/mock/ert';
 
 import {
   Card,
@@ -26,8 +27,10 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function ResourceUsageChart() {
-  const { data, isLoading } = useResources();
-  const resources = data?.items ?? [];
+  const { data, isLoading, isError } = useResources();
+  const apiResources = data?.items ?? [];
+  const resources =
+    isError || apiResources.length === 0 ? mockErtResources : apiResources;
 
   const chartData = resources.map((r) => ({
     name: r.name,

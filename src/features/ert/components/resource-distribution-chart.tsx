@@ -2,6 +2,7 @@
 
 import { LabelList, Pie, PieChart } from 'recharts';
 import { useResources } from '@/features/ert/api/resources';
+import { mockErtResources } from '@/lib/mock/ert';
 
 import {
   Card,
@@ -26,8 +27,10 @@ const COLORS = [
 ];
 
 export function ResourceDistributionChart() {
-  const { data, isLoading } = useResources();
-  const resources = data?.items ?? [];
+  const { data, isLoading, isError } = useResources();
+  const apiResources = data?.items ?? [];
+  const resources =
+    isError || apiResources.length === 0 ? mockErtResources : apiResources;
 
   const byCategory = new Map<string, number>();
   for (const r of resources) {
