@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { IconMapPin } from '@tabler/icons-react';
 import { ErtMapView } from '@/features/ert/components/map-resources/ert-map-view';
 
 export default function MapResourcesClient() {

@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { IconBox, IconTruck, IconUsers } from '@tabler/icons-react';
+import { IconBox, IconUsers } from '@tabler/icons-react';
 
 export default function ResourcesClient() {
   const {

@@ -15,7 +15,6 @@ import {
   IconFirstAidKit,
   IconUsers,
   IconBox,
-  IconHeart,
   IconStack2
 } from '@tabler/icons-react';
 import { useIncidents } from '@/features/incidents/api/incidents';
