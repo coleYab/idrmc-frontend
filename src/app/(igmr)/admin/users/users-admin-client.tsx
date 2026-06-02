@@ -303,8 +303,8 @@ export default function UsersAdminClient() {
         </div>
       }
     >
-      <div className='grid gap-4 lg:grid-cols-[280px_1fr]'>
-        <div className='space-y-4'>
+      <div className='space-y-4'>
+        <div className='grid gap-4 sm:grid-cols-2'>
           <Card>
             <CardHeader>
               <CardTitle>Summary</CardTitle>
