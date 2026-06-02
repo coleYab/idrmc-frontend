@@ -1,6 +1,8 @@
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
 import DashboardSwitcher from './dashboard-switcher';
+import { ThemeModeToggle } from '@/components/themes/theme-mode-toggle';
+import { ThemeSelector } from '@/components/themes/theme-selector';
 
 export default function DisasterManagerHeader() {
   return (
@@ -14,6 +16,8 @@ export default function DisasterManagerHeader() {
         </p>
       </div>
       <div className='ml-auto flex items-center gap-2'>
+        <ThemeSelector />
+        <ThemeModeToggle />
         <DashboardSwitcher variant='header' />
       </div>
     </header>
