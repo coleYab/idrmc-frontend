@@ -48,6 +48,9 @@ export function StatusUpdater({
           <SelectItem value='Verified'>Verified</SelectItem>
           <SelectItem value='Active'>Active</SelectItem>
           <SelectItem value='Resolved'>Resolved</SelectItem>
+          <SelectItem value='Repeated'>Repeated</SelectItem>
+          <SelectItem value='False Alarm'>False Alarm</SelectItem>
+          <SelectItem value='Rejected'>Rejected</SelectItem>
         </SelectContent>
       </Select>
       <Button

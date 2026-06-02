@@ -98,13 +98,16 @@ export const columns: ColumnDef<Disaster>[] = [
     ),
     cell: ({ cell }) => {
       const status = cell.getValue<string>();
-      const variant = status === 'Active' ? 'destructive' : 'secondary';
+      const variant =
+        status === 'Active'
+          ? 'destructive'
+          : status === 'Pending' || status === 'Verified'
+            ? 'secondary'
+            : status === 'Resolved'
+              ? 'default'
+              : 'outline';
 
-      return (
-        <Badge variant={variant} className='capitalize'>
-          {status}
-        </Badge>
-      );
+      return <Badge variant={variant}>{status}</Badge>;
     },
     enableColumnFilter: true,
     meta: {

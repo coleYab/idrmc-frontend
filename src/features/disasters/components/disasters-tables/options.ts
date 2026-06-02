@@ -1,6 +1,11 @@
 export const STATUS_OPTIONS = [
+  { value: 'Pending', label: 'Pending' },
+  { value: 'Verified', label: 'Verified' },
   { value: 'Active', label: 'Active' },
-  { value: 'Resolved', label: 'Resolved' }
+  { value: 'Resolved', label: 'Resolved' },
+  { value: 'Repeated', label: 'Repeated' },
+  { value: 'False Alarm', label: 'False Alarm' },
+  { value: 'Rejected', label: 'Rejected' }
 ];
 
 export const SEVERITY_OPTIONS = [

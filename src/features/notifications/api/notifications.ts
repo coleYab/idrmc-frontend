@@ -7,9 +7,12 @@ import {
 } from '@/lib/fetch-client';
 import { queryKeys } from '@/lib/query-keys';
 import {
+  BroadcastNotificationSchema,
   CreateNotificationSchema,
   NotificationSchema,
   UpdateNotificationSchema,
+  type BroadcastNotificationDto,
+  type BroadcastNotificationResponseDto,
   type CreateNotificationDto,
   type Notification,
   type NotificationsListParams,
@@ -113,6 +116,33 @@ export function useUpdateNotification(id: string) {
       queryClient.invalidateQueries({
         queryKey: queryKeys.notifications.detail(id)
       });
+    }
+  });
+}
+
+export function useBroadcastNotification() {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (
+      payload: BroadcastNotificationDto
+    ): Promise<BroadcastNotificationResponseDto> => {
+      const validatedPayload = BroadcastNotificationSchema.parse(payload);
+
+      const data = await fetchClient<BroadcastNotificationResponseDto>(
+        '/notifications/broadcast',
+        {
+          method: 'POST',
+          body: JSON.stringify(validatedPayload)
+        },
+        getToken
+      );
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.root });
     }
   });
 }

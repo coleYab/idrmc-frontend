@@ -71,8 +71,8 @@ export const CampaignStatusEnum = z.enum([
 ]);
 
 export const CampaignSchema = z.object({
-  campaignID: z.string().uuid(),
-  disasterID: z.string().uuid(),
+  campaignID: z.string(),
+  disasterID: z.string(),
   goalAmount: z.number().min(0.01),
   currentAmount: z.number(),
   currency: z.string().default('ETB'),
@@ -88,7 +88,7 @@ export const CampaignSchema = z.object({
 export type Campaign = z.infer<typeof CampaignSchema>;
 
 export const CreateCampaignSchema = z.object({
-  disasterID: z.string().uuid(),
+  disasterID: z.string(),
   goalAmount: z.number().min(0.01),
   currency: z.string().optional(),
   description: z.string().min(1)

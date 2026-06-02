@@ -6,6 +6,7 @@ import {
   useCampaigns,
   useCreateCampaign
 } from '@/features/donations/api/donations';
+import { useDisasters } from '@/features/disasters/api/disasters';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -19,19 +20,43 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 import { IconHeart } from '@tabler/icons-react';
 
 export default function DonationsClient() {
-  const { data: campaignsData, isLoading } = useCampaigns();
+  const { data: campaignsData, isLoading: campaignsLoading } = useCampaigns();
+  const { data: disastersData, isLoading: disastersLoading } = useDisasters({
+    status: 'Active'
+  });
   const createCampaign = useCreateCampaign();
 
   const campaigns = campaignsData?.items ?? [];
+  const activeDisasters = disastersData?.items ?? [];
 
+  const [selectedDisasterId, setSelectedDisasterId] = useState(
+    activeDisasters[0]?.id ?? ''
+  );
   const [goalAmount, setGoalAmount] = useState(25000);
   const [description, setDescription] = useState('');
 
+  const isLoading = campaignsLoading || disastersLoading;
+
+  const selectedDisaster = activeDisasters.find(
+    (d) => d.id === selectedDisasterId
+  );
+
   const handleCreateCampaign = async () => {
+    if (!selectedDisasterId) {
+      toast.error('Please select a disaster first.');
+      return;
+    }
     if (!description.trim()) {
       toast.error('Campaign description is required.');
       return;
@@ -43,7 +68,7 @@ export default function DonationsClient() {
 
     try {
       await createCampaign.mutateAsync({
-        disasterID: '00000000-0000-0000-0000-000000000000',
+        disasterID: selectedDisasterId,
         goalAmount,
         description: description.trim()
       });
@@ -80,6 +105,35 @@ export default function DonationsClient() {
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-4'>
+              <div>
+                <Label
+                  htmlFor='disaster-select'
+                  className='mb-2 block text-sm font-medium'
+                >
+                  Active Disaster
+                </Label>
+                <Select
+                  value={selectedDisasterId}
+                  onValueChange={(value) => setSelectedDisasterId(value)}
+                >
+                  <SelectTrigger id='disaster-select' className='w-full'>
+                    <SelectValue placeholder='Select a disaster' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {activeDisasters.map((disaster) => (
+                      <SelectItem key={disaster.id} value={disaster.id}>
+                        {disaster.title} — {disaster.incidentType}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedDisaster && (
+                  <p className='text-muted-foreground mt-1 text-xs'>
+                    {selectedDisaster.location} · {selectedDisaster.severity}{' '}
+                    severity
+                  </p>
+                )}
+              </div>
               <div>
                 <Label
                   htmlFor='campaign-desc'

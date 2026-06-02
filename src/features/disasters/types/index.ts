@@ -8,27 +8,19 @@ const normalizeDisasterPayload = (rawData: unknown) => {
 
   const data = rawData as Record<string, unknown>;
   const incidentType = data.incidentType ?? data.type;
+  const disasterType = data.disasterType ?? data.type;
   const affectedPopulationCount =
     data.affectedPopulationCount ?? data.totalAffectedPopulation;
   const allocatedBudget = data.allocatedBudget ?? data.budgetAllocated;
   const economicLoss = data.economicLoss ?? data.estimatedEconomicLoss;
 
-  const rawStatus = data.status;
-  const status =
-    rawStatus === 'Active' || rawStatus === 'Resolved'
-      ? rawStatus
-      : typeof rawStatus === 'string' &&
-          ['Pending', 'Verified', 'Repeated'].includes(rawStatus)
-        ? 'Active'
-        : 'Resolved';
-
   return {
     ...data,
     incidentType,
+    disasterType,
     affectedPopulationCount,
     allocatedBudget,
-    economicLoss,
-    status
+    economicLoss
   };
 };
 
@@ -41,7 +33,15 @@ export const DisasterTypeEnum = z.enum([
   'Fire'
 ]);
 
-export const DisasterStatusEnum = z.enum(['Active', 'Resolved']);
+export const DisasterStatusEnum = z.enum([
+  'Pending',
+  'Verified',
+  'Active',
+  'Resolved',
+  'Repeated',
+  'False Alarm',
+  'Rejected'
+]);
 
 export const DisasterSeverityLevelEnum = z.enum([
   'Low',
@@ -53,7 +53,7 @@ export const DisasterSeverityLevelEnum = z.enum([
 const CreateDisasterShape = ReportIncidentShape.extend({
   allocatedBudget: z.number().nonnegative().optional(),
   economicLoss: z.number().nonnegative().optional(),
-  linkedIncidentIds: z.array(z.string().uuid()).optional(),
+  linkedIncidentIds: z.array(z.string()).optional(),
   attachments: z.array(z.string()).optional()
 });
 
@@ -74,10 +74,11 @@ export type UpdateDisasterDto = z.infer<typeof UpdateDisasterSchema>;
 export const DisasterSchema = z.preprocess(
   normalizeDisasterPayload,
   CreateDisasterShape.extend({
-    id: z.string().uuid(),
+    id: z.string(),
     disasterType: DisasterTypeEnum.optional(),
     status: DisasterStatusEnum,
     declaredBy: z.string(),
+    reportedBy: z.string().optional(),
     activatedAt: z.iso.datetime().nullable().optional(),
     closedAt: z.iso.datetime().nullable().optional(),
     createdAt: z.iso.datetime(),

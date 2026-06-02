@@ -58,6 +58,27 @@ export const UpdateNotificationSchema = z.preprocess(
 
 export type UpdateNotificationDto = z.infer<typeof UpdateNotificationSchema>;
 
+export const BroadcastNotificationSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  message: z.string().min(1, 'Message is required')
+});
+
+export type BroadcastNotificationDto = z.infer<
+  typeof BroadcastNotificationSchema
+>;
+
+export const BroadcastNotificationResponseSchema = z.object({
+  totalUsers: z.number().optional(),
+  pushSentCount: z.number().optional(),
+  pushFailedCount: z.number().optional(),
+  emailSentCount: z.number().optional(),
+  emailFailedCount: z.number().optional()
+});
+
+export type BroadcastNotificationResponseDto = z.infer<
+  typeof BroadcastNotificationResponseSchema
+>;
+
 export interface NotificationsListParams {
   [key: string]: string | number | boolean | undefined;
   limit?: number;
