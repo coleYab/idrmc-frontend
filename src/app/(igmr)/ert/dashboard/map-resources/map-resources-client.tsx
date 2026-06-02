@@ -13,6 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { IconMapPin } from '@tabler/icons-react';
+import { ErtMapView } from '@/features/ert/components/map-resources/ert-map-view';
 
 export default function MapResourcesClient() {
   const { data: unitsData, isLoading: unitsLoading } = useErtUnits();
@@ -31,23 +32,9 @@ export default function MapResourcesClient() {
       pageDescription='Track which resources are deployed across incident locations and review available support on the map.'
     >
       <div className='grid gap-4 lg:grid-cols-[1.5fr_0.85fr]'>
-        <Card>
-          <CardHeader>
-            <CardTitle>Resource Map</CardTitle>
-            <CardDescription>
-              Geographic context for incident response and support.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className='bg-muted border-border flex h-105 flex-col items-center justify-center rounded-3xl border border-dashed text-center'>
-            <IconMapPin className='text-muted-foreground size-12' />
-            <p className='text-muted-foreground mt-4 max-w-xl text-sm'>
-              This space shows deployed units and resources.
-              {deployedUnits.length > 0
-                ? ` ${deployedUnits.length} unit(s) currently deployed.`
-                : ''}
-            </p>
-          </CardContent>
-        </Card>
+        <div className='space-y-4'>
+          <ErtMapView units={units} />
+        </div>
 
         <div className='space-y-4'>
           <Card>
@@ -81,6 +68,7 @@ export default function MapResourcesClient() {
               )}
             </CardContent>
           </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Available Resources</CardTitle>
