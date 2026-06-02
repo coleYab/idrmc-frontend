@@ -13,27 +13,54 @@ import {
   IconAlertTriangle,
   IconCircleCheck,
   IconFirstAidKit,
-  IconUsers
+  IconUsers,
+  IconBox,
+  IconHeart,
+  IconStack2
 } from '@tabler/icons-react';
 import { useIncidents } from '@/features/incidents/api/incidents';
 import { useErtUnits } from '@/features/ert/api/ert';
+import { useResources, useResourceNeeds } from '@/features/ert/api/resources';
+import { mockErtDashboardMetrics } from '@/lib/mock/ert';
 
 export function ErtMetricsCards() {
-  const { data: incidentsData, isLoading: incidentsLoading } = useIncidents();
-  const { data: unitsData, isLoading: unitsLoading } = useErtUnits();
+  const {
+    data: incidentsData,
+    isLoading: incidentsLoading,
+    isError: incidentsError
+  } = useIncidents();
+  const {
+    data: unitsData,
+    isLoading: unitsLoading,
+    isError: unitsError
+  } = useErtUnits();
+  const { data: resourcesData, isLoading: resourcesLoading } = useResources();
+  const { data: needsData, isLoading: needsLoading } = useResourceNeeds();
 
-  const isLoading = incidentsLoading || unitsLoading;
+  const isLoading =
+    incidentsLoading || unitsLoading || resourcesLoading || needsLoading;
+  const useMock = incidentsError || unitsError;
 
-  const activeIncidents =
-    incidentsData?.items?.filter(
-      (i) => i.status === 'Active' || i.status === 'Verified'
-    ).length ?? 0;
-  const urgentMedical =
-    incidentsData?.items?.filter((i) => i.requiresUrgentMedical).length ?? 0;
-  const deployedUnits =
-    unitsData?.items?.filter((u) => u.status === 'DEPLOYED').length ?? 0;
-  const availableUnits =
-    unitsData?.items?.filter((u) => u.status === 'IDLE').length ?? 0;
+  const m = mockErtDashboardMetrics;
+
+  const activeIncidents = useMock
+    ? m.activeIncidents
+    : (incidentsData?.items?.filter(
+        (i) => i.status === 'Active' || i.status === 'Verified'
+      ).length ?? 0);
+  const urgentMedical = useMock
+    ? m.urgentMedical
+    : (incidentsData?.items?.filter((i) => i.requiresUrgentMedical).length ??
+      0);
+  const deployedUnits = useMock
+    ? m.deployedUnits
+    : (unitsData?.items?.filter((u) => u.status === 'DEPLOYED').length ?? 0);
+  const availableUnits = useMock
+    ? m.availableUnits
+    : (unitsData?.items?.filter((u) => u.status === 'IDLE').length ?? 0);
+
+  const totalResources = resourcesData?.items?.length ?? m.totalResources;
+  const totalNeeds = needsData?.items?.length ?? m.totalNeeds;
 
   return (
     <div className='grid grid-cols-1 gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4'>
@@ -46,7 +73,7 @@ export function ErtMetricsCards() {
           <CardAction>
             <Badge variant='outline'>
               <IconAlertTriangle className='size-4' />
-              Live
+              {useMock ? 'Demo' : 'Live'}
             </Badge>
           </CardAction>
         </CardHeader>
@@ -92,6 +119,36 @@ export function ErtMetricsCards() {
             <Badge variant='outline'>
               <IconCircleCheck className='size-4' />
               Ready
+            </Badge>
+          </CardAction>
+        </CardHeader>
+      </Card>
+
+      <Card className='@container/card'>
+        <CardHeader>
+          <CardDescription>Resource Types</CardDescription>
+          <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
+            {isLoading ? <Skeleton className='h-8 w-12' /> : totalResources}
+          </CardTitle>
+          <CardAction>
+            <Badge variant='outline'>
+              <IconBox className='size-4' />
+              Categories
+            </Badge>
+          </CardAction>
+        </CardHeader>
+      </Card>
+
+      <Card className='@container/card'>
+        <CardHeader>
+          <CardDescription>Active Needs</CardDescription>
+          <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
+            {isLoading ? <Skeleton className='h-8 w-12' /> : totalNeeds}
+          </CardTitle>
+          <CardAction>
+            <Badge variant='outline'>
+              <IconStack2 className='size-4' />
+              Requests
             </Badge>
           </CardAction>
         </CardHeader>

@@ -15,10 +15,10 @@ export default function ErtDashboardLayout({
     <div className='flex flex-1 flex-col gap-4 py-4'>
       {children}
 
-      <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-6'>
-        <div className='col-span-4'>{bar_stats}</div>
-        <div className='col-span-4'>{area_stats}</div>
-        <div className='col-span-4 min-h-0 md:col-span-2'>{pie_stats}</div>
+      <div className='grid grid-cols-1 gap-4 px-4 lg:px-6 xl:grid-cols-3'>
+        <div className='xl:col-span-2'>{bar_stats}</div>
+        <div className='xl:col-span-1'>{pie_stats}</div>
+        <div className='xl:col-span-3'>{area_stats}</div>
       </div>
     </div>
   );

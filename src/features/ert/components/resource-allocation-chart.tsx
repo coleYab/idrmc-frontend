@@ -2,6 +2,7 @@
 
 import { Bar, BarChart, XAxis } from 'recharts';
 import { useResourceNeeds } from '@/features/ert/api/resources';
+import { mockErtResourceNeeds } from '@/lib/mock/ert';
 
 import {
   Card,
@@ -30,8 +31,12 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function ResourceAllocationChart() {
-  const { data, isLoading } = useResourceNeeds();
-  const needs = data?.items ?? [];
+  const { data, isLoading, isError } = useResourceNeeds();
+  const apiNeeds = data?.items ?? [];
+  const { mockErtResourceNeeds } = require('@/lib/mock/ert');
+
+  const needs =
+    isError || apiNeeds.length === 0 ? mockErtResourceNeeds : apiNeeds;
 
   const byResource = new Map<string, { required: number; fulfilled: number }>();
 
