@@ -40,10 +40,15 @@ import {
   useUpdateIncident,
   useUpdateIncidentStatus
 } from '@/features/incidents/api/incidents';
+import { useCreateDisasterFromIncident } from '@/features/disasters/api/disasters';
 import {
   IncidentStatusEnum,
   SeverityLevelEnum
 } from '@/features/incidents/types';
+import {
+  IncidentLocationMap,
+  getAffectedRadius
+} from '@/features/incidents/components/incident-location-map';
 import { getIncidentDetailsInfo } from '@/config/incval-infoconfig';
 
 const editFormSchema = z.object({
@@ -308,6 +313,22 @@ export default function IncidentDetailsPage() {
                     </Link>
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className='flex items-center gap-2'>
+                  <IconMapPin className='size-5' />
+                  Location Map
+                </CardTitle>
+                <CardDescription>
+                  Affected area with estimated impact radius of{' '}
+                  {(getAffectedRadius(incident) / 1000).toFixed(0)} km
+                </CardDescription>
+              </CardHeader>
+              <CardContent className='p-0'>
+                <IncidentLocationMap data={incident} height={320} />
               </CardContent>
             </Card>
           </div>

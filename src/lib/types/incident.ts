@@ -34,6 +34,8 @@ export interface Incident {
   severity: IncidentSeverityLevel;
 
   location: string;
+  latitude?: number | null;
+  longitude?: number | null;
   attachments: string[];
 
   affectedPopulationCount: number;

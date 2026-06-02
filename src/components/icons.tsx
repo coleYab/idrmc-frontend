@@ -42,7 +42,8 @@ import {
   IconSpeakerphone,
   IconReport,
   IconShieldLock,
-  IconHeart
+  IconHeart,
+  IconMapPin
 } from '@tabler/icons-react';
 
 export type Icon = React.ComponentType<IconProps>;
@@ -92,5 +93,6 @@ export const Icons = {
   alerts: IconSpeakerphone,
   incidents: IconReport,
   admin: IconShieldLock,
-  donations: IconHeart
+  donations: IconHeart,
+  mapPin: IconMapPin
 };

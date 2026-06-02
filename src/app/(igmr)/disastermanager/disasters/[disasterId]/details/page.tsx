@@ -25,6 +25,10 @@ import {
 import { useDisaster } from '@/features/disasters/api/disasters';
 import Link from 'next/link';
 import { StatusUpdater } from '../../status-updater';
+import {
+  IncidentLocationMap,
+  getAffectedRadius
+} from '@/features/incidents/components/incident-location-map';
 
 function formatDate(date?: string | null): string {
   if (!date) {
@@ -298,6 +302,22 @@ export default function DisasterDetailsPage() {
                   </Link>
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <IconMapPin className='size-5' />
+                Location Map
+              </CardTitle>
+              <CardDescription>
+                Affected area with estimated impact radius of{' '}
+                {(getAffectedRadius(disaster) / 1000).toFixed(0)} km
+              </CardDescription>
+            </CardHeader>
+            <CardContent className='p-0'>
+              <IncidentLocationMap data={disaster} height={320} />
             </CardContent>
           </Card>
         </div>

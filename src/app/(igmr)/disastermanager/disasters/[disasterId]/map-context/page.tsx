@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import PageContainer from '@/components/layout/page-container';
 import {
   Card,
@@ -11,6 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
 import {
   IconMapPin,
   IconBuildingCommunity,
@@ -18,9 +20,7 @@ import {
   IconAlertTriangle,
   IconArrowLeft
 } from '@tabler/icons-react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { useIncident } from '@/features/incidents/api/incidents';
+import { useDisaster } from '@/features/disasters/api/disasters';
 import {
   IncidentLocationMap,
   getAffectedRadius
@@ -84,10 +84,10 @@ function extractRegion(location: string): string {
   return 'other';
 }
 
-export default function IncidentMapContextPage() {
+export default function DisasterMapContextPage() {
   const params = useParams();
-  const incidentId = params.incidentId as string;
-  const { data: incident, isLoading } = useIncident(incidentId);
+  const disasterId = params.disasterId as string;
+  const { data: disaster, isLoading } = useDisaster(disasterId);
 
   if (isLoading) {
     return (
@@ -99,15 +99,15 @@ export default function IncidentMapContextPage() {
     );
   }
 
-  if (!incident) {
+  if (!disaster) {
     return (
       <PageContainer scrollable={true}>
         <Card>
           <CardContent className='flex flex-col items-center justify-center py-12'>
             <IconAlertTriangle className='text-muted-foreground mb-4 size-12' />
-            <h3 className='mb-2 text-lg font-semibold'>Incident Not Found</h3>
+            <h3 className='mb-2 text-lg font-semibold'>Disaster Not Found</h3>
             <p className='text-muted-foreground max-w-md text-center'>
-              The incident with ID &quot;{incidentId}&quot; was not found.
+              The disaster with ID &quot;{disasterId}&quot; was not found.
             </p>
           </CardContent>
         </Card>
@@ -115,18 +115,18 @@ export default function IncidentMapContextPage() {
     );
   }
 
-  const regionKey = extractRegion(incident.location);
+  const regionKey = extractRegion(disaster.location);
   const adminInfo = regionAdmin[regionKey];
-  const radiusKm = (getAffectedRadius(incident) / 1000).toFixed(1);
+  const radiusKm = (getAffectedRadius(disaster) / 1000).toFixed(1);
 
   return (
     <PageContainer
       scrollable={true}
       pageTitle='Map Context'
-      pageDescription={`Geographic context for "${incident.title}"`}
+      pageDescription={`Geographic context for "${disaster.title}"`}
       pageHeaderAction={
         <Button asChild variant='outline'>
-          <Link href={`/incval/incidents/${incidentId}/details`}>
+          <Link href={`/disastermanager/disasters/${disasterId}/details`}>
             <IconArrowLeft className='mr-2 size-4' />
             Back to Details
           </Link>
@@ -142,12 +142,16 @@ export default function IncidentMapContextPage() {
                 Affected Area
               </CardTitle>
               <CardDescription>
-                Estimated impact zone — {radiusKm} km radius from incident
+                Estimated impact zone — {radiusKm} km radius from disaster
                 location
               </CardDescription>
             </CardHeader>
             <CardContent className='p-0'>
-              <IncidentLocationMap data={incident} height={500} zoom={9} />
+              <IncidentLocationMap
+                data={disaster as any}
+                height={500}
+                zoom={9}
+              />
             </CardContent>
           </Card>
         </div>
@@ -214,7 +218,7 @@ export default function IncidentMapContextPage() {
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
                 <IconUsers className='size-5' />
-                Incident Impact
+                Disaster Impact
               </CardTitle>
             </CardHeader>
             <CardContent className='space-y-4'>
@@ -222,15 +226,10 @@ export default function IncidentMapContextPage() {
                 <span className='text-sm font-medium'>Status</span>
                 <Badge
                   variant={
-                    incident.status === 'Active' ||
-                    incident.status === 'Verified'
-                      ? 'default'
-                      : incident.status === 'Resolved'
-                        ? 'secondary'
-                        : 'outline'
+                    disaster.status === 'Active' ? 'default' : 'secondary'
                   }
                 >
-                  {incident.status}
+                  {disaster.status}
                 </Badge>
               </div>
               <Separator />
@@ -238,32 +237,32 @@ export default function IncidentMapContextPage() {
                 <span className='text-sm font-medium'>Severity</span>
                 <Badge
                   variant={
-                    incident.severity === 'Critical' ||
-                    incident.severity === 'High'
+                    disaster.severity === 'Critical' ||
+                    disaster.severity === 'High'
                       ? 'destructive'
                       : 'secondary'
                   }
                 >
-                  {incident.severity}
+                  {disaster.severity}
                 </Badge>
               </div>
               <Separator />
               <div className='flex items-center justify-between'>
                 <span className='text-sm font-medium'>Affected Population</span>
                 <span className='text-sm font-semibold tabular-nums'>
-                  {incident.affectedPopulationCount.toLocaleString()}
+                  {disaster.affectedPopulationCount.toLocaleString()}
                 </span>
               </div>
               <Separator />
               <div className='flex items-center justify-between'>
                 <span className='text-sm font-medium'>Incident Type</span>
-                <Badge variant='outline'>{incident.incidentType}</Badge>
+                <Badge variant='outline'>{disaster.incidentType}</Badge>
               </div>
               <Separator />
               <div className='flex items-center justify-between'>
                 <span className='text-sm font-medium'>Location</span>
                 <span className='text-muted-foreground text-right text-sm'>
-                  {incident.location}
+                  {disaster.location}
                 </span>
               </div>
             </CardContent>
